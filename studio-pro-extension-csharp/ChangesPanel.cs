@@ -20,6 +20,13 @@ public partial class ChangesPanel : UserControl
 
     private readonly string projectPath;
     private bool isRefreshing;
+    private GitChangesPayload currentPayload = new()
+    {
+        IsGitRepo = false,
+        BranchName = string.Empty,
+        Changes = Array.Empty<GitFileChange>(),
+        Error = null,
+    };
 
     /// <summary>
     /// Initializes a new panel instance for designer support.
@@ -49,6 +56,7 @@ public partial class ChangesPanel : UserControl
 
         isRefreshing = true;
         btnRefresh.Enabled = false;
+        btnExport.Enabled = false;
         lblStatus.Text = "Loading changes...";
 
         try
@@ -76,6 +84,33 @@ public partial class ChangesPanel : UserControl
             }
 
             isRefreshing = false;
+            SetExportButtonState();
+        }
+    }
+
+    private async void btnExport_Click(object? sender, EventArgs e)
+    {
+        if (isRefreshing || !CanExport(currentPayload))
+        {
+            return;
+        }
+
+        var payloadToExport = currentPayload;
+        btnExport.Enabled = false;
+        lblStatus.Text = "Exporting changes...";
+
+        try
+        {
+            var outputPath = await Task.Run(() => GitChangesExportService.ExportChanges(payloadToExport, ResolveProjectPath()));
+            lblStatus.Text = $"Exported {payloadToExport.Changes.Count} file(s) to {outputPath}";
+        }
+        catch (Exception exception)
+        {
+            lblStatus.Text = $"Export failed: {exception.Message}";
+        }
+        finally
+        {
+            SetExportButtonState();
         }
     }
 
@@ -91,6 +126,7 @@ public partial class ChangesPanel : UserControl
 
     private void UpdateUI(GitChangesPayload payload)
     {
+        currentPayload = payload;
         lblBranch.Text = payload.IsGitRepo && !string.IsNullOrWhiteSpace(payload.BranchName)
             ? $"Branch: {payload.BranchName}"
             : string.Empty;
@@ -105,18 +141,21 @@ public partial class ChangesPanel : UserControl
             if (!payload.IsGitRepo)
             {
                 lblStatus.Text = "Not a Git repository";
+                SetExportButtonState();
                 return;
             }
 
             if (!string.IsNullOrWhiteSpace(payload.Error))
             {
                 lblStatus.Text = $"Error: {payload.Error}";
+                SetExportButtonState();
                 return;
             }
 
             if (payload.Changes.Count == 0)
             {
                 lblStatus.Text = "No uncommitted changes";
+                SetExportButtonState();
                 return;
             }
 
@@ -140,6 +179,7 @@ public partial class ChangesPanel : UserControl
             }
 
             lblStatus.Text = $"{payload.Changes.Count} file(s) changed - {payload.BranchName}";
+            SetExportButtonState();
         }
         finally
         {
@@ -280,4 +320,19 @@ public partial class ChangesPanel : UserControl
             _ => DefaultColor,
         };
     }
+
+    private void SetExportButtonState()
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        btnExport.Enabled = !isRefreshing && CanExport(currentPayload);
+    }
+
+    private static bool CanExport(GitChangesPayload payload) =>
+        payload.IsGitRepo &&
+        string.IsNullOrWhiteSpace(payload.Error) &&
+        payload.Changes.Count > 0;
 }

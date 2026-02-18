@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MendixCommitParser")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cd0b2f26996f08c9b227f62bd3ce03785e59f660")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+413ea3bd06cca9e98f6f65312af08448d8182ce8")]
 [assembly: System.Reflection.AssemblyProductAttribute("MendixCommitParser")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MendixCommitParser")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

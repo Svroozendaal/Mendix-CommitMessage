@@ -27,10 +27,23 @@ Or specify a custom app path:
 .\deploy-autocommitmessage.ps1 -AppPath "C:\Workspaces\Mendix\YourApp"
 ```
 
+Set a custom data root for Phase 6 exports:
+
+```powershell
+.\deploy-autocommitmessage.ps1 -DataRootPath "C:\Path\To\Mendix-AutoCommitMessage\mendix-data"
+```
+
 This deploys to:
 
 - `<AppPath>\extensions\AutoCommitMessage\AutoCommitMessage.dll`
 - `<AppPath>\extensions\AutoCommitMessage\manifest.json`
+
+The extension writes export files to `<DataRootPath>\exports` and keeps the parser contract folders available:
+
+- `<DataRootPath>\exports`
+- `<DataRootPath>\processed`
+- `<DataRootPath>\errors`
+- `<DataRootPath>\structured`
 
 ## Notes
 

@@ -9,6 +9,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <DefaultItemExcludes>$(DefaultItemExcludes);obj-build\**</DefaultItemExcludes>
+    <MendixDataRoot Condition="'$(MendixDataRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\mendix-data'))</MendixDataRoot>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +21,13 @@
     <None Update="manifest.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MendixDataRoot</_Parameter1>
+      <_Parameter2>$(MendixDataRoot)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

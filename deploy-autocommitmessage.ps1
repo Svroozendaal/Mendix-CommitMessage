@@ -3,6 +3,7 @@ param(
     [string]$AppPath = 'C:\MendixWorkers\Smart Expenses app-main',
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Debug',
+    [string]$DataRootPath,
     [switch]$SkipBuild
 )
 
@@ -11,6 +12,16 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectPath = Join-Path $repoRoot 'studio-pro-extension-csharp\AutoCommitMessage.csproj'
 $buildOutput = Join-Path $repoRoot "studio-pro-extension-csharp\bin\$Configuration\net8.0-windows"
+
+if ([string]::IsNullOrWhiteSpace($DataRootPath)) {
+    $DataRootPath = Join-Path $repoRoot 'mendix-data'
+}
+
+$DataRootPath = [System.IO.Path]::GetFullPath($DataRootPath)
+$exportPath = Join-Path $DataRootPath 'exports'
+$processedPath = Join-Path $DataRootPath 'processed'
+$errorsPath = Join-Path $DataRootPath 'errors'
+$structuredPath = Join-Path $DataRootPath 'structured'
 
 $extensionName = 'AutoCommitMessage'
 $dllName = "$extensionName.dll"
@@ -30,12 +41,20 @@ if (-not (Test-Path $projectPath -PathType Leaf)) {
     throw "Extension project not found: $projectPath"
 }
 
+New-Item -ItemType Directory -Force -Path $exportPath | Out-Null
+New-Item -ItemType Directory -Force -Path $processedPath | Out-Null
+New-Item -ItemType Directory -Force -Path $errorsPath | Out-Null
+New-Item -ItemType Directory -Force -Path $structuredPath | Out-Null
+
 if (-not $SkipBuild) {
     Write-Host "Building extension ($Configuration)..." -ForegroundColor Cyan
-    dotnet build $projectPath -c $Configuration
+    Write-Host "Configured Mendix data root: $DataRootPath" -ForegroundColor Cyan
+    dotnet build $projectPath -c $Configuration "/p:MendixDataRoot=$DataRootPath"
     if ($LASTEXITCODE -ne 0) {
         throw "dotnet build failed with exit code $LASTEXITCODE"
     }
+} else {
+    Write-Host "Skipping build. Existing binaries keep their previously compiled Mendix data root." -ForegroundColor Yellow
 }
 
 $sourceDll = Join-Path $buildOutput $dllName
@@ -68,8 +87,14 @@ Write-Host ''
 Write-Host 'Deployment complete.' -ForegroundColor Green
 Write-Host "App path:      $AppPath"
 Write-Host "Target folder: $targetDir"
+Write-Host "Data root:     $DataRootPath"
+Write-Host "Exports:       $exportPath"
+Write-Host "Processed:     $processedPath"
+Write-Host "Errors:        $errorsPath"
+Write-Host "Structured:    $structuredPath"
 Write-Host "DLL:           $targetDll"
 Write-Host "Manifest:      $targetManifest"
 if (Test-Path $targetPdb -PathType Leaf) {
     Write-Host "PDB:           $targetPdb"
 }
+Write-Host "Parser hint:   `$env:MENDIX_GIT_DATA_ROOT = '$DataRootPath'"

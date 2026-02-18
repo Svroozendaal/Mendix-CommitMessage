@@ -21,6 +21,7 @@ internal static class Program
 
         watcherService.Start();
 
+        Console.WriteLine($"Data root: {ParserDataPaths.DataRoot}");
         Console.WriteLine($"Watching folder: {watcherService.ExportFolderPath}");
         Console.WriteLine("Press Ctrl+C to stop.");
 

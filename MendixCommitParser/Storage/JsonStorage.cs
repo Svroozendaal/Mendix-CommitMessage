@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using MendixCommitParser.Models;
+using MendixCommitParser.Services;
 
 namespace MendixCommitParser.Storage;
 
@@ -9,7 +10,7 @@ namespace MendixCommitParser.Storage;
 /// </summary>
 public static class JsonStorage
 {
-    public const string DefaultOutputFolder = @"C:\MendixGitData\structured";
+    public static readonly string DefaultOutputFolder = ParserDataPaths.StructuredFolder;
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {

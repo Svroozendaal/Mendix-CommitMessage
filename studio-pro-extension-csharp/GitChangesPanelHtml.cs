@@ -77,12 +77,27 @@ internal static class GitChangesPanelHtml
       font-weight: 600;
       cursor: pointer;
     }
+    .btn[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      border-color: #1d4ed8;
+      background: #1d4ed8;
+    }
     .subtitle {
       padding: 8px 14px;
       border-bottom: 1px solid #e4e8f2;
       font-size: 12px;
       color: #475569;
       background: #fbfcff;
+    }
+    .status-line {
+      padding: 8px 14px;
+      border-bottom: 1px solid #e4e8f2;
+      font-size: 12px;
+      color: #334155;
+      background: #ffffff;
     }
     .content {
       flex: 1;
@@ -233,6 +248,16 @@ internal static class GitChangesPanelHtml
   <script>
     const payload = {{payloadJson}};
     const projectPath = {{projectPathJson}};
+    const actionQueryKey = "{{ExtensionConstants.ActionQueryKey}}";
+    const exportActionValue = "{{ExtensionConstants.ExportActionValue}}";
+    const projectPathQueryKey = "{{ExtensionConstants.ProjectPathQueryKey}}";
+
+    function buildActionUrl(actionName) {
+      const query = new URLSearchParams();
+      query.set(actionQueryKey, actionName);
+      query.set(projectPathQueryKey, projectPath || "");
+      return `${window.location.pathname}?${query.toString()}`;
+    }
 
     function element(tag, className, textContent) {
       const node = document.createElement(tag);
@@ -447,6 +472,12 @@ internal static class GitChangesPanelHtml
       const meta = element("div", "meta");
       const pathLabel = projectPath && projectPath.length > 0 ? projectPath : "Project path unavailable";
       meta.appendChild(element("span", "badge", pathLabel));
+
+      const exportButton = element("button", "btn btn-secondary", "Export");
+      exportButton.type = "button";
+      exportButton.disabled = !(payload && payload.IsGitRepo === true && Array.isArray(payload.Changes) && payload.Changes.length > 0);
+      meta.appendChild(exportButton);
+
       const refreshButton = element("button", "btn", "Refresh");
       refreshButton.type = "button";
       refreshButton.addEventListener("click", () => window.location.reload());
@@ -456,23 +487,60 @@ internal static class GitChangesPanelHtml
 
       const branchName = payload && payload.BranchName ? payload.BranchName : "-";
       root.appendChild(element("div", "subtitle", `Branch: ${branchName}`));
+      const statusLine = element("div", "status-line", "Ready");
+      root.appendChild(statusLine);
 
       const content = element("div", "content");
       root.appendChild(content);
 
+      exportButton.addEventListener("click", async () => {
+        exportButton.disabled = true;
+        statusLine.textContent = "Exporting changes...";
+
+        try {
+          const response = await fetch(buildActionUrl(exportActionValue), { method: "POST" });
+          let data = null;
+          try {
+            data = await response.json();
+          } catch {
+            data = null;
+          }
+
+          if (!response.ok || !data || data.success !== true) {
+            const message = data && typeof data.message === "string"
+              ? data.message
+              : `Export failed (HTTP ${response.status})`;
+            statusLine.textContent = `Export failed: ${message}`;
+            return;
+          }
+
+          const destination = data.outputPath || "export folder";
+          const count = Number.isInteger(data.changeCount) ? data.changeCount : (Array.isArray(payload.Changes) ? payload.Changes.length : 0);
+          statusLine.textContent = `Exported ${count} file(s) to ${destination}`;
+        } catch (error) {
+          const message = error && error.message ? error.message : "Unexpected error";
+          statusLine.textContent = `Export failed: ${message}`;
+        } finally {
+          exportButton.disabled = !(payload && payload.IsGitRepo === true && Array.isArray(payload.Changes) && payload.Changes.length > 0);
+        }
+      });
+
       if (!payload || payload.IsGitRepo !== true) {
         content.appendChild(renderCard("Not a Git repository"));
+        statusLine.textContent = "No export available.";
         return;
       }
 
       if (payload.Error && payload.Error.trim().length > 0) {
         content.appendChild(renderCard(`Error: ${payload.Error}`));
+        statusLine.textContent = "Cannot export due to load error.";
         return;
       }
 
       const changes = Array.isArray(payload.Changes) ? payload.Changes : [];
       if (changes.length === 0) {
         content.appendChild(renderCard("No uncommitted changes"));
+        statusLine.textContent = "No changes to export.";
         return;
       }
 

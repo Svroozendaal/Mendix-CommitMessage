@@ -9,9 +9,9 @@ namespace MendixCommitParser.Services;
 /// </summary>
 public sealed class FileWatcherService : IDisposable
 {
-    public const string DefaultExportFolder = @"C:\MendixGitData\exports";
-    public const string DefaultProcessedFolder = @"C:\MendixGitData\processed";
-    public const string DefaultErrorsFolder = @"C:\MendixGitData\errors";
+    public static readonly string DefaultExportFolder = ParserDataPaths.ExportFolder;
+    public static readonly string DefaultProcessedFolder = ParserDataPaths.ProcessedFolder;
+    public static readonly string DefaultErrorsFolder = ParserDataPaths.ErrorsFolder;
 
     private readonly string _exportFolderPath;
     private readonly string _processedFolderPath;

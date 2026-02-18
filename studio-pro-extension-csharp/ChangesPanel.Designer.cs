@@ -10,6 +10,7 @@ partial class ChangesPanel
 
     private Panel pnlTop = null!;
     private Label lblBranch = null!;
+    private Button btnExport = null!;
     private Button btnRefresh = null!;
     private SplitContainer splitContainer = null!;
     private SplitContainer splitLeft = null!;
@@ -40,6 +41,7 @@ partial class ChangesPanel
         components = new Container();
         pnlTop = new Panel();
         lblBranch = new Label();
+        btnExport = new Button();
         btnRefresh = new Button();
         splitContainer = new SplitContainer();
         splitLeft = new SplitContainer();
@@ -68,6 +70,7 @@ partial class ChangesPanel
 
         // pnlTop
         pnlTop.Controls.Add(lblBranch);
+        pnlTop.Controls.Add(btnExport);
         pnlTop.Controls.Add(btnRefresh);
         pnlTop.Dock = DockStyle.Top;
         pnlTop.Height = 36;
@@ -88,6 +91,14 @@ partial class ChangesPanel
         btnRefresh.Text = "Refresh";
         btnRefresh.Name = "btnRefresh";
         btnRefresh.Click += btnRefresh_Click;
+
+        // btnExport
+        btnExport.Dock = DockStyle.Right;
+        btnExport.Width = 100;
+        btnExport.Text = "Export";
+        btnExport.Enabled = false;
+        btnExport.Name = "btnExport";
+        btnExport.Click += btnExport_Click;
 
         // splitContainer
         splitContainer.Dock = DockStyle.Fill;
