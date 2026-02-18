@@ -32,6 +32,7 @@ public sealed class GitChangesWebServerExtension : WebServerExtension
         var html = GitChangesPanelHtml.Render(payload, projectPath);
         var content = Encoding.UTF8.GetBytes(html);
 
+        ApplyNoCacheHeaders(response);
         response.ContentType = "text/html; charset=utf-8";
         response.StatusCode = 200;
         response.ContentLength64 = content.Length;
@@ -124,13 +125,14 @@ public sealed class GitChangesWebServerExtension : WebServerExtension
         {
             var separator = pair.IndexOf('=', StringComparison.Ordinal);
             var rawKey = separator >= 0 ? pair[..separator] : pair;
-            if (!string.Equals(Uri.UnescapeDataString(rawKey), key, StringComparison.OrdinalIgnoreCase))
+            var decodedKey = Uri.UnescapeDataString(rawKey.Replace('+', ' '));
+            if (!string.Equals(decodedKey, key, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
 
             var rawValue = separator >= 0 ? pair[(separator + 1)..] : string.Empty;
-            return Uri.UnescapeDataString(rawValue);
+            return Uri.UnescapeDataString(rawValue.Replace('+', ' '));
         }
 
         return null;
@@ -145,9 +147,17 @@ public sealed class GitChangesWebServerExtension : WebServerExtension
         var json = JsonSerializer.Serialize(payload);
         var content = Encoding.UTF8.GetBytes(json);
 
+        ApplyNoCacheHeaders(response);
         response.ContentType = "application/json; charset=utf-8";
         response.StatusCode = statusCode;
         response.ContentLength64 = content.Length;
         await response.OutputStream.WriteAsync(content, cancellationToken);
+    }
+
+    private static void ApplyNoCacheHeaders(HttpListenerResponse response)
+    {
+        response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
+        response.Headers["Pragma"] = "no-cache";
+        response.Headers["Expires"] = "0";
     }
 }

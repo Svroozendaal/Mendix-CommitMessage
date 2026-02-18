@@ -196,15 +196,16 @@ internal static class GitChangesPanelHtml
       background: #ffffff;
       color: #111827;
       font-family: Consolas, "Courier New", monospace;
-      min-height: 80px;
-      max-height: 22%;
+      min-height: 64px;
+      max-height: 120px;
+      flex: 0 0 auto;
       border-bottom: 1px solid #e5eaf5;
     }
     .model-changes {
       padding: 8px 10px 10px 10px;
       overflow: auto;
-      flex: 1;
-      min-height: 0;
+      flex: 1 1 auto;
+      min-height: 320px;
       display: none;
     }
     .model-title {
@@ -235,7 +236,7 @@ internal static class GitChangesPanelHtml
     .model-change-added { color: #228b22; }
     .model-change-modified { color: #236cc0; }
     .model-change-deleted { color: #b22222; }
-    @media (max-width: 960px) {
+    @media (max-width: 760px) {
       .layout {
         grid-template-columns: 1fr;
         grid-template-rows: 1fr 1fr;

@@ -8,9 +8,16 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <DefaultItemExcludes>$(DefaultItemExcludes);obj-build\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj-build*\**;bin-build*\**</DefaultItemExcludes>
     <MendixDataRoot Condition="'$(MendixDataRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\mendix-data'))</MendixDataRoot>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Guard against stale/generated sources under local intermediate folders -->
+    <Compile Remove="obj\**\*.cs;obj-*\**\*.cs;bin\**\*.cs;bin-*\**\*.cs" />
+    <None Remove="obj\**;obj-*\**;bin\**;bin-*\**" />
+    <EmbeddedResource Remove="obj\**;obj-*\**;bin\**;bin-*\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="LibGit2Sharp" Version="0.30.0" />

@@ -93,6 +93,14 @@ public static class MxToolService
             UseShellExecute = false,
             CreateNoWindow = true,
         };
+
+        var mprDirectory = Path.GetDirectoryName(Path.GetFullPath(mprPath));
+        if (!string.IsNullOrWhiteSpace(mprDirectory) && Directory.Exists(mprDirectory))
+        {
+            // Keep mx execution rooted at the model folder so relative mprcontents lookups resolve correctly.
+            startInfo.WorkingDirectory = mprDirectory;
+        }
+
         startInfo.ArgumentList.Add("dump-mpr");
         startInfo.ArgumentList.Add(mprPath);
         startInfo.ArgumentList.Add("--output-file");

@@ -23,3 +23,9 @@ CONTEXT: Data root path must be inside this repository and configurable when bui
 DECISION: Use a repo-local `mendix-data` folder contract and pass `MendixDataRoot` via `deploy-autocommitmessage.ps1` into extension build metadata.
 RATIONALE: Ensures deterministic local paths and aligns extension export location with parser watcher defaults.
 ALTERNATIVES_REJECTED: Keeping hardcoded `C:\MendixGitData` paths.
+
+## DECISION - 003 - 2026-02-18
+CONTEXT: Model diff output missed modified resources because only direct comparisons of `Entity`, `Page`, and `Microflow` objects were evaluated.
+DECISION: Replace the narrow comparer with object-graph snapshot analysis that maps nested object changes back to owning resources.
+RATIONALE: Mendix edits are often represented on nested objects, so ownership-based attribution is required to correctly surface modified microflows/pages/entities and support nanoflows and other document resources.
+ALTERNATIVES_REJECTED: Expanding only the static type allow-list without nested ownership attribution.

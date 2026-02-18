@@ -49,3 +49,4 @@ The extension writes export files to `<DataRootPath>\exports` and keeps the pars
 
 - No localhost UI dependency.
 - No `npm run dev` is required.
+- Model analysis now detects `Added`, `Modified`, and `Deleted` resources beyond only pages/microflows, including nanoflows and domain model resources (`Entity`, `Association`, `Enumeration`) with nested-change attribution.

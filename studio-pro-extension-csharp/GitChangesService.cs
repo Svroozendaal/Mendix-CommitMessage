@@ -204,11 +204,11 @@ public static class GitChangesService
     {
         var workingDumpPath = CreateTempPath(".json");
         var headDumpPath = CreateTempPath(".json");
-        var headMprPath = CreateTempPath(".mpr");
+        var headWorkspacePath = CreateTempDirectoryPath();
+        var workingMprPath = Path.Combine(repositoryRoot, repositoryRelativeMprPath.Replace('/', Path.DirectorySeparatorChar));
 
         try
         {
-            var workingMprPath = Path.Combine(repositoryRoot, repositoryRelativeMprPath.Replace('/', Path.DirectorySeparatorChar));
             if (File.Exists(workingMprPath))
             {
                 MxToolService.DumpMpr(workingMprPath, workingDumpPath);
@@ -218,9 +218,17 @@ public static class GitChangesService
                 WriteEmptyDump(workingDumpPath);
             }
 
-            if (TryWriteHeadMpr(repository, repositoryRelativeMprPath, headMprPath))
+            if (TryWriteHeadMpr(repository, repositoryRelativeMprPath, workingMprPath, headWorkspacePath, out var headMprPath))
             {
-                MxToolService.DumpMpr(headMprPath, headDumpPath);
+                try
+                {
+                    MxToolService.DumpMpr(headMprPath, headDumpPath);
+                }
+                catch (Exception exception) when (LooksLikeHeadDumpEnvironmentIssue(exception))
+                {
+                    // Some repositories cannot be reconstructed for HEAD snapshot analysis.
+                    return new List<MendixModelChange>();
+                }
             }
             else
             {
@@ -233,12 +241,19 @@ public static class GitChangesService
         {
             TryDeleteFile(workingDumpPath);
             TryDeleteFile(headDumpPath);
-            TryDeleteFile(headMprPath);
+            TryDeleteDirectory(headWorkspacePath);
         }
     }
 
-    private static bool TryWriteHeadMpr(Repository repository, string repositoryRelativeMprPath, string destinationPath)
+    private static bool TryWriteHeadMpr(
+        Repository repository,
+        string repositoryRelativeMprPath,
+        string workingMprPath,
+        string headWorkspacePath,
+        out string headMprPath)
     {
+        headMprPath = string.Empty;
+
         var headCommit = repository.Head?.Tip;
         if (headCommit is null)
         {
@@ -251,7 +266,22 @@ public static class GitChangesService
             return false;
         }
 
-        using var outputStream = File.Create(destinationPath);
+        Directory.CreateDirectory(headWorkspacePath);
+        CopyMprContentsIfPresent(workingMprPath, headWorkspacePath);
+
+        var mprFileName = Path.GetFileName(workingMprPath);
+        if (string.IsNullOrWhiteSpace(mprFileName))
+        {
+            mprFileName = Path.GetFileName(repositoryRelativeMprPath);
+        }
+
+        if (string.IsNullOrWhiteSpace(mprFileName))
+        {
+            mprFileName = "App.mpr";
+        }
+
+        headMprPath = Path.Combine(headWorkspacePath, mprFileName);
+        using var outputStream = File.Create(headMprPath);
         using var blobStream = headBlob.GetContentStream();
         blobStream.CopyTo(outputStream);
         return true;
@@ -260,8 +290,24 @@ public static class GitChangesService
     private static string CreateTempPath(string extension) =>
         Path.Combine(Path.GetTempPath(), $"autocommitmessage_{Guid.NewGuid():N}{extension}");
 
+    private static string CreateTempDirectoryPath() =>
+        Path.Combine(Path.GetTempPath(), $"autocommitmessage_mpr_{Guid.NewGuid():N}");
+
     private static string NormalizeRepositoryPath(string path) =>
         path.Replace('\\', '/');
+
+    private static bool LooksLikeHeadDumpEnvironmentIssue(Exception exception)
+    {
+        var message = exception.Message;
+        var missingContents =
+            message.IndexOf("mprcontents", StringComparison.OrdinalIgnoreCase) >= 0 &&
+            message.IndexOf("Could not find a part of the path", StringComparison.OrdinalIgnoreCase) >= 0;
+        var mismatchedMprName =
+            message.IndexOf("Cannot open MPR file", StringComparison.OrdinalIgnoreCase) >= 0 &&
+            message.IndexOf("refer to MPR file", StringComparison.OrdinalIgnoreCase) >= 0;
+
+        return missingContents || mismatchedMprName;
+    }
 
     private static void WriteEmptyDump(string outputPath)
     {
@@ -281,6 +327,57 @@ public static class GitChangesService
         catch
         {
             // Ignore cleanup failures for temp artifacts.
+        }
+    }
+
+    private static void TryDeleteDirectory(string path)
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
+            {
+                Directory.Delete(path, recursive: true);
+            }
+        }
+        catch
+        {
+            // Ignore cleanup failures for temp artifacts.
+        }
+    }
+
+    private static void CopyMprContentsIfPresent(string workingMprPath, string headWorkspacePath)
+    {
+        var workingDirectory = Path.GetDirectoryName(workingMprPath);
+        if (string.IsNullOrWhiteSpace(workingDirectory))
+        {
+            return;
+        }
+
+        var sourceMprContentsPath = Path.Combine(workingDirectory, "mprcontents");
+        if (!Directory.Exists(sourceMprContentsPath))
+        {
+            return;
+        }
+
+        var targetMprContentsPath = Path.Combine(headWorkspacePath, "mprcontents");
+        CopyDirectory(sourceMprContentsPath, targetMprContentsPath);
+    }
+
+    private static void CopyDirectory(string sourcePath, string destinationPath)
+    {
+        Directory.CreateDirectory(destinationPath);
+
+        foreach (var sourceFilePath in Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(sourcePath, sourceFilePath);
+            var destinationFilePath = Path.Combine(destinationPath, relativePath);
+            var destinationDirectory = Path.GetDirectoryName(destinationFilePath);
+            if (!string.IsNullOrWhiteSpace(destinationDirectory))
+            {
+                Directory.CreateDirectory(destinationDirectory);
+            }
+
+            File.Copy(sourceFilePath, destinationFilePath, overwrite: true);
         }
     }
 }
