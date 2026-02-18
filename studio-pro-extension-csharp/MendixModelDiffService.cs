@@ -41,6 +41,11 @@ public static class MendixModelDiffService
         "$QualifiedName",
     };
 
+    private const string MicroflowModelType = "Microflows$Microflow";
+    private const string ActionActivityModelType = "Microflows$ActionActivity";
+    private const string DomainEntityModelType = "DomainModels$Entity";
+    private const string DomainAttributeModelType = "DomainModels$Attribute";
+
     /// <summary>
     /// Compares two model dump JSON files and returns detected resource-level changes.
     /// </summary>
@@ -117,6 +122,8 @@ public static class MendixModelDiffService
             modifiedObjectIds,
             "Modified",
             useWorkingSnapshot: true);
+
+        AddResourceSpecificDetails(changeMap, workingSnapshot, headSnapshot);
 
         return changeMap.Values
             .Select(ToModelChange)
@@ -196,6 +203,517 @@ public static class MendixModelDiffService
             change.Descriptor.ElementType,
             change.Descriptor.ElementName,
             details);
+    }
+
+    private static void AddResourceSpecificDetails(
+        Dictionary<string, MutableResourceChange> changeMap,
+        DumpSnapshot workingSnapshot,
+        DumpSnapshot headSnapshot)
+    {
+        foreach (var (resourceId, resourceChange) in changeMap)
+        {
+            workingSnapshot.ResourcesById.TryGetValue(resourceId, out var workingDescriptor);
+            headSnapshot.ResourcesById.TryGetValue(resourceId, out var headDescriptor);
+
+            var resourceSpecificDetails = BuildResourceSpecificDetails(
+                resourceChange.ChangeType,
+                workingDescriptor,
+                headDescriptor);
+
+            resourceChange.DirectDetails = MergeDetailTexts(resourceChange.DirectDetails, resourceSpecificDetails);
+        }
+    }
+
+    private static string? BuildResourceSpecificDetails(
+        string changeType,
+        ResourceDescriptor? workingDescriptor,
+        ResourceDescriptor? headDescriptor)
+    {
+        var reference = workingDescriptor ?? headDescriptor;
+        if (reference is null)
+        {
+            return null;
+        }
+
+        if (string.Equals(reference.ModelType, MicroflowModelType, StringComparison.OrdinalIgnoreCase))
+        {
+            return BuildMicroflowActionDetails(changeType, workingDescriptor?.Object, headDescriptor?.Object);
+        }
+
+        if (string.Equals(reference.ModelType, DomainEntityModelType, StringComparison.OrdinalIgnoreCase))
+        {
+            return BuildDomainEntityAttributeDetails(changeType, workingDescriptor?.Object, headDescriptor?.Object);
+        }
+
+        return null;
+    }
+
+    private static string? BuildMicroflowActionDetails(
+        string changeType,
+        JsonElement? workingResource,
+        JsonElement? headResource)
+    {
+        var source = string.Equals(changeType, "Deleted", StringComparison.OrdinalIgnoreCase)
+            ? headResource
+            : (workingResource ?? headResource);
+
+        if (source is null)
+        {
+            return null;
+        }
+
+        var actionSummary = CollectMicroflowActionSummary(source.Value);
+        if (actionSummary.ActionCounts.Count == 0)
+        {
+            return null;
+        }
+
+        var total = actionSummary.ActionCounts.Values.Sum();
+        var actionCounterSummary = FormatCounterList(actionSummary.ActionCounts);
+        var actionDetailSummary = FormatActionDetailList(actionSummary.ActionDescriptors, actionSummary.ActionCounts);
+        return string.IsNullOrWhiteSpace(actionDetailSummary)
+            ? $"actions used ({total}): {actionCounterSummary}"
+            : $"actions used ({total}): {actionCounterSummary}; action details: {actionDetailSummary}";
+    }
+
+    private static MicroflowActionSummary CollectMicroflowActionSummary(JsonElement microflowObject)
+    {
+        var actionCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var actionDescriptors = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        var stack = new Stack<JsonElement>();
+        stack.Push(microflowObject);
+
+        while (stack.Count > 0)
+        {
+            var current = stack.Pop();
+
+            switch (current.ValueKind)
+            {
+                case JsonValueKind.Object:
+                {
+                    var modelType = TryReadStringProperty(current, "$Type");
+                    if (string.Equals(modelType, ActionActivityModelType, StringComparison.OrdinalIgnoreCase) &&
+                        TryReadProperty(current, "action", out var actionElement) &&
+                        actionElement.ValueKind == JsonValueKind.Object)
+                    {
+                        var actionType = TryReadStringProperty(actionElement, "$Type");
+                        if (!string.IsNullOrWhiteSpace(actionType))
+                        {
+                            var actionName = ShortTypeName(actionType);
+                            IncrementCount(actionCounts, actionName);
+                            var descriptor = BuildActionDescriptor(actionName, actionElement);
+                            if (!string.IsNullOrWhiteSpace(descriptor))
+                            {
+                                AddActionDescriptor(actionDescriptors, actionName, descriptor);
+                            }
+                        }
+                    }
+
+                    foreach (var property in current.EnumerateObject())
+                    {
+                        stack.Push(property.Value);
+                    }
+
+                    break;
+                }
+
+                case JsonValueKind.Array:
+                    foreach (var item in current.EnumerateArray())
+                    {
+                        stack.Push(item);
+                    }
+
+                    break;
+            }
+        }
+
+        return new MicroflowActionSummary(actionCounts, actionDescriptors);
+    }
+
+    private static string? BuildActionDescriptor(string actionName, JsonElement actionElement) =>
+        actionName switch
+        {
+            "RetrieveAction" => BuildRetrieveActionDescriptor(actionElement),
+            "ChangeObjectAction" => BuildChangeObjectActionDescriptor(actionElement),
+            "CommitAction" => BuildCommitActionDescriptor(actionElement),
+            "CreateObjectAction" => BuildCreateObjectActionDescriptor(actionElement),
+            _ => null,
+        };
+
+    private static string? BuildRetrieveActionDescriptor(JsonElement actionElement)
+    {
+        var outputVariableName = TryReadStringProperty(actionElement, "outputVariableName");
+        var outputLabel = string.IsNullOrWhiteSpace(outputVariableName) ? "object(s)" : outputVariableName;
+
+        if (!TryReadProperty(actionElement, "retrieveSource", out var retrieveSource) ||
+            retrieveSource.ValueKind != JsonValueKind.Object)
+        {
+            return string.IsNullOrWhiteSpace(outputVariableName)
+                ? null
+                : $"retrieve {outputVariableName}";
+        }
+
+        var sourceType = ShortTypeName(TryReadStringProperty(retrieveSource, "$Type") ?? string.Empty);
+        if (string.Equals(sourceType, "AssociationRetrieveSource", StringComparison.OrdinalIgnoreCase))
+        {
+            var association = ShortMemberName(TryReadStringProperty(retrieveSource, "association")) ?? "<association>";
+            var startVariable = TryReadStringProperty(retrieveSource, "startVariableName");
+            var startLabel = string.IsNullOrWhiteSpace(startVariable) ? "<object>" : startVariable;
+            return $"retrieve {outputLabel} over association {association} from {startLabel}";
+        }
+
+        if (string.Equals(sourceType, "DatabaseRetrieveSource", StringComparison.OrdinalIgnoreCase))
+        {
+            var entity = TryReadStringProperty(retrieveSource, "entity");
+            var entityLabel = string.IsNullOrWhiteSpace(entity) ? "<entity>" : entity;
+            return $"retrieve {outputLabel} from {entityLabel}";
+        }
+
+        var sourceLabel = string.IsNullOrWhiteSpace(sourceType) ? "source" : sourceType;
+        return $"retrieve {outputLabel} via {sourceLabel}";
+    }
+
+    private static string BuildChangeObjectActionDescriptor(JsonElement actionElement)
+    {
+        var variableName = TryReadStringProperty(actionElement, "changeVariableName");
+        var variableLabel = string.IsNullOrWhiteSpace(variableName) ? "object" : variableName;
+        var memberSummary = FormatChangedMemberSummary(actionElement);
+        return string.IsNullOrWhiteSpace(memberSummary)
+            ? $"change {variableLabel}"
+            : $"change {variableLabel} ({memberSummary})";
+    }
+
+    private static string BuildCommitActionDescriptor(JsonElement actionElement)
+    {
+        var variableName = TryReadStringProperty(actionElement, "commitVariableName");
+        return string.IsNullOrWhiteSpace(variableName)
+            ? "commit object(s)"
+            : $"commit {variableName}";
+    }
+
+    private static string BuildCreateObjectActionDescriptor(JsonElement actionElement)
+    {
+        var entityName = TryReadStringProperty(actionElement, "entity");
+        var outputVariableName = TryReadStringProperty(actionElement, "outputVariableName");
+        var entityLabel = string.IsNullOrWhiteSpace(entityName) ? "object" : entityName;
+
+        var baseDescriptor = string.IsNullOrWhiteSpace(outputVariableName)
+            ? $"create {entityLabel}"
+            : $"create {entityLabel} as {outputVariableName}";
+
+        var memberSummary = FormatChangedMemberSummary(actionElement);
+        return string.IsNullOrWhiteSpace(memberSummary)
+            ? baseDescriptor
+            : $"{baseDescriptor} ({memberSummary})";
+    }
+
+    private static string? FormatChangedMemberSummary(JsonElement actionElement, int maxMembers = 4)
+    {
+        if (!TryReadProperty(actionElement, "items", out var items) || items.ValueKind != JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        var uniqueMemberNames = new List<string>();
+        var seenMembers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var item in items.EnumerateArray())
+        {
+            if (item.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var attribute = ShortMemberName(TryReadStringProperty(item, "attribute"));
+            var association = ShortMemberName(TryReadStringProperty(item, "association"));
+            var memberName = string.IsNullOrWhiteSpace(attribute) ? association : attribute;
+            if (string.IsNullOrWhiteSpace(memberName) || !seenMembers.Add(memberName))
+            {
+                continue;
+            }
+
+            uniqueMemberNames.Add(memberName);
+        }
+
+        if (uniqueMemberNames.Count == 0)
+        {
+            return null;
+        }
+
+        var visibleMembers = uniqueMemberNames.Take(maxMembers).ToList();
+        var remaining = uniqueMemberNames.Count - visibleMembers.Count;
+        if (remaining > 0)
+        {
+            visibleMembers.Add($"+{remaining} more");
+        }
+
+        return string.Join(", ", visibleMembers);
+    }
+
+    private static string? ShortMemberName(string? qualifiedName)
+    {
+        if (string.IsNullOrWhiteSpace(qualifiedName))
+        {
+            return null;
+        }
+
+        var trimmed = qualifiedName.Trim();
+        var slashIndex = trimmed.LastIndexOf('/');
+        if (slashIndex >= 0 && slashIndex < trimmed.Length - 1)
+        {
+            trimmed = trimmed[(slashIndex + 1)..];
+        }
+
+        var dotIndex = trimmed.LastIndexOf('.');
+        if (dotIndex >= 0 && dotIndex < trimmed.Length - 1)
+        {
+            return trimmed[(dotIndex + 1)..];
+        }
+
+        return trimmed;
+    }
+
+    private static void AddActionDescriptor(
+        Dictionary<string, HashSet<string>> actionDescriptors,
+        string actionName,
+        string descriptor)
+    {
+        if (!actionDescriptors.TryGetValue(actionName, out var descriptorSet))
+        {
+            descriptorSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            actionDescriptors[actionName] = descriptorSet;
+        }
+
+        descriptorSet.Add(descriptor.Trim());
+    }
+
+    private static string? FormatActionDetailList(
+        Dictionary<string, HashSet<string>> actionDescriptors,
+        Dictionary<string, int> actionCounts,
+        int maxActionTypes = 4,
+        int maxDescriptorsPerType = 2)
+    {
+        if (actionDescriptors.Count == 0)
+        {
+            return null;
+        }
+
+        var actionTypes = actionCounts
+            .Keys
+            .Where(actionDescriptors.ContainsKey)
+            .OrderByDescending(actionName => actionCounts.TryGetValue(actionName, out var count) ? count : 0)
+            .ThenBy(actionName => actionName, StringComparer.OrdinalIgnoreCase)
+            .Take(maxActionTypes)
+            .ToArray();
+
+        if (actionTypes.Length == 0)
+        {
+            return null;
+        }
+
+        var details = new List<string>();
+        foreach (var actionType in actionTypes)
+        {
+            if (!actionDescriptors.TryGetValue(actionType, out var descriptorSet) || descriptorSet.Count == 0)
+            {
+                continue;
+            }
+
+            var orderedDescriptors = descriptorSet
+                .OrderBy(descriptor => descriptor, StringComparer.OrdinalIgnoreCase)
+                .Take(maxDescriptorsPerType)
+                .ToArray();
+
+            if (orderedDescriptors.Length == 0)
+            {
+                continue;
+            }
+
+            var descriptorText = string.Join(" | ", orderedDescriptors);
+            var remainingDescriptors = descriptorSet.Count - orderedDescriptors.Length;
+            if (remainingDescriptors > 0)
+            {
+                descriptorText = $"{descriptorText} (+{remainingDescriptors} more)";
+            }
+
+            details.Add($"{actionType}: {descriptorText}");
+        }
+
+        var remainingActionTypes = actionDescriptors.Keys
+            .Except(actionTypes, StringComparer.OrdinalIgnoreCase)
+            .Count();
+        if (remainingActionTypes > 0)
+        {
+            details.Add($"+{remainingActionTypes} more action type{(remainingActionTypes == 1 ? string.Empty : "s")}");
+        }
+
+        return details.Count == 0 ? null : string.Join("; ", details);
+    }
+
+    private static string? BuildDomainEntityAttributeDetails(
+        string changeType,
+        JsonElement? workingResource,
+        JsonElement? headResource)
+    {
+        var workingAttributes = workingResource is null
+            ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            : CollectDomainAttributes(workingResource.Value);
+        var headAttributes = headResource is null
+            ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            : CollectDomainAttributes(headResource.Value);
+
+        if (string.Equals(changeType, "Added", StringComparison.OrdinalIgnoreCase))
+        {
+            if (workingAttributes.Count == 0)
+            {
+                return null;
+            }
+
+            var allNames = workingAttributes.Values.OrderBy(name => name, StringComparer.OrdinalIgnoreCase);
+            return $"attributes added ({workingAttributes.Count}): {FormatNameList(allNames)}";
+        }
+
+        if (string.Equals(changeType, "Deleted", StringComparison.OrdinalIgnoreCase))
+        {
+            if (headAttributes.Count == 0)
+            {
+                return null;
+            }
+
+            var removedNames = headAttributes.Values.OrderBy(name => name, StringComparer.OrdinalIgnoreCase);
+            return $"attributes before deletion ({headAttributes.Count}): {FormatNameList(removedNames)}";
+        }
+
+        var addedAttributeNames = workingAttributes
+            .Where(pair => !headAttributes.ContainsKey(pair.Key))
+            .Select(pair => pair.Value)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (addedAttributeNames.Length == 0)
+        {
+            return null;
+        }
+
+        return $"attributes added ({addedAttributeNames.Length}): {FormatNameList(addedAttributeNames)}";
+    }
+
+    private static Dictionary<string, string> CollectDomainAttributes(JsonElement entityObject)
+    {
+        var attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (!TryReadProperty(entityObject, "attributes", out var attributesElement) ||
+            attributesElement.ValueKind != JsonValueKind.Array)
+        {
+            return attributes;
+        }
+
+        foreach (var attribute in attributesElement.EnumerateArray())
+        {
+            if (attribute.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var modelType = TryReadStringProperty(attribute, "$Type");
+            if (!string.Equals(modelType, DomainAttributeModelType, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var key =
+                TryReadStringProperty(attribute, "$ID") ??
+                TryReadStringProperty(attribute, "$QualifiedName") ??
+                Guid.NewGuid().ToString("N");
+
+            var name =
+                TryReadStringProperty(attribute, "name") ??
+                TryReadStringProperty(attribute, "$QualifiedName") ??
+                key;
+
+            attributes[key] = name;
+        }
+
+        return attributes;
+    }
+
+    private static string FormatCounterList(Dictionary<string, int> counts, int maxEntries = 8)
+    {
+        var ordered = counts
+            .OrderByDescending(pair => pair.Value)
+            .ThenBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var visible = ordered.Take(maxEntries).Select(pair => $"{pair.Key} x{pair.Value}").ToList();
+        var remaining = ordered.Length - visible.Count;
+        if (remaining > 0)
+        {
+            visible.Add($"+{remaining} more");
+        }
+
+        return string.Join(", ", visible);
+    }
+
+    private static string FormatNameList(IEnumerable<string> names, int maxEntries = 10)
+    {
+        var ordered = names
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (ordered.Length == 0)
+        {
+            return "<none>";
+        }
+
+        var visible = ordered.Take(maxEntries).ToList();
+        var remaining = ordered.Length - visible.Count;
+        if (remaining > 0)
+        {
+            visible.Add($"+{remaining} more");
+        }
+
+        return string.Join(", ", visible);
+    }
+
+    private static string ShortTypeName(string modelType)
+    {
+        if (string.IsNullOrWhiteSpace(modelType))
+        {
+            return "<unknown>";
+        }
+
+        var separatorIndex = modelType.IndexOf('$');
+        return separatorIndex >= 0 && separatorIndex < modelType.Length - 1
+            ? modelType[(separatorIndex + 1)..]
+            : modelType;
+    }
+
+    private static bool TryReadProperty(JsonElement element, string propertyName, out JsonElement value)
+    {
+        foreach (var property in element.EnumerateObject())
+        {
+            if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                value = property.Value;
+                return true;
+            }
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static void IncrementCount(Dictionary<string, int> counts, string key)
+    {
+        if (counts.TryGetValue(key, out var existing))
+        {
+            counts[key] = existing + 1;
+            return;
+        }
+
+        counts[key] = 1;
     }
 
     private static string? ResolveOwningResourceId(DumpSnapshot snapshot, string objectId)
@@ -689,6 +1207,10 @@ public static class MendixModelDiffService
             return $"{total} nested change{(total == 1 ? string.Empty : "s")} ({string.Join(", ", parts)})";
         }
     }
+
+    private sealed record MicroflowActionSummary(
+        Dictionary<string, int> ActionCounts,
+        Dictionary<string, HashSet<string>> ActionDescriptors);
 
     private sealed record ResourceDescriptor(
         string ResourceId,

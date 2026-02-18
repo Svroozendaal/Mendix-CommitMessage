@@ -11,7 +11,9 @@ public sealed record StructuredCommitData(
     string UserName,
     ExtractedEntity[] Entities,
     string[] AffectedFiles,
-    CommitMetrics Metrics
+    CommitMetrics Metrics,
+    StructuredModelChange[] ModelChanges,
+    StructuredModelDumpArtifact[] ModelDumpArtifacts
 );
 
 /// <summary>
@@ -21,6 +23,27 @@ public sealed record ExtractedEntity(
     string Type,
     string Name,
     string Action
+);
+
+/// <summary>
+/// One model-level change flattened from raw export files.
+/// </summary>
+public sealed record StructuredModelChange(
+    string FilePath,
+    string ChangeType,
+    string ElementType,
+    string ElementName,
+    string? Details
+);
+
+/// <summary>
+/// Stored full dump artifact paths for a model file.
+/// </summary>
+public sealed record StructuredModelDumpArtifact(
+    string FilePath,
+    string FolderPath,
+    string WorkingDumpPath,
+    string HeadDumpPath
 );
 
 /// <summary>

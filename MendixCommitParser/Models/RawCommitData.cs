@@ -22,7 +22,8 @@ public sealed record RawFileChange(
     [property: JsonPropertyName("status")] string Status,
     [property: JsonPropertyName("isStaged")] bool IsStaged,
     [property: JsonPropertyName("diffText")] string DiffText,
-    [property: JsonPropertyName("modelChanges")] RawModelChange[]? ModelChanges = null
+    [property: JsonPropertyName("modelChanges")] RawModelChange[]? ModelChanges = null,
+    [property: JsonPropertyName("modelDumpArtifact")] RawModelDumpArtifact? ModelDumpArtifact = null
 );
 
 /// <summary>
@@ -33,4 +34,13 @@ public sealed record RawModelChange(
     [property: JsonPropertyName("elementType")] string ElementType,
     [property: JsonPropertyName("elementName")] string ElementName,
     [property: JsonPropertyName("details")] string? Details
+);
+
+/// <summary>
+/// Optional persisted dump artifact paths for one model file.
+/// </summary>
+public sealed record RawModelDumpArtifact(
+    [property: JsonPropertyName("folderPath")] string FolderPath,
+    [property: JsonPropertyName("workingDumpPath")] string WorkingDumpPath,
+    [property: JsonPropertyName("headDumpPath")] string HeadDumpPath
 );

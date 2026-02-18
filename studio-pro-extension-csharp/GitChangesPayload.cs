@@ -31,6 +31,11 @@ public sealed record GitFileChange
     /// Gets optional model-level change details for .mpr files.
     /// </summary>
     public IReadOnlyList<MendixModelChange>? ModelChanges { get; init; }
+
+    /// <summary>
+    /// Gets optional persisted dump artifact paths for model analysis.
+    /// </summary>
+    public ModelDumpArtifact? ModelDumpArtifact { get; init; }
 }
 
 /// <summary>
@@ -58,4 +63,13 @@ public sealed record GitChangesPayload
     /// </summary>
     public string? Error { get; init; }
 }
+
+/// <summary>
+/// Paths to persisted model dump artifacts for a single changed model file.
+/// </summary>
+public sealed record ModelDumpArtifact(
+    string FolderPath,
+    string WorkingDumpPath,
+    string HeadDumpPath
+);
 

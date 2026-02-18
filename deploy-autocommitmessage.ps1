@@ -1,6 +1,6 @@
 ﻿[CmdletBinding()]
 param(
-    [string]$AppPath = 'C:\MendixWorkers\Smart Expenses app-main',
+    [string]$AppPath = 'C:\Workspaces\Mendix\Smart Expenses app-main',
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Debug',
     [string]$DataRootPath,
@@ -25,6 +25,7 @@ $exportPath = Join-Path $DataRootPath 'exports'
 $processedPath = Join-Path $DataRootPath 'processed'
 $errorsPath = Join-Path $DataRootPath 'errors'
 $structuredPath = Join-Path $DataRootPath 'structured'
+$dumpsPath = Join-Path $DataRootPath 'dumps'
 
 $extensionName = 'AutoCommitMessage'
 $dllName = "$extensionName.dll"
@@ -48,6 +49,7 @@ New-Item -ItemType Directory -Force -Path $exportPath | Out-Null
 New-Item -ItemType Directory -Force -Path $processedPath | Out-Null
 New-Item -ItemType Directory -Force -Path $errorsPath | Out-Null
 New-Item -ItemType Directory -Force -Path $structuredPath | Out-Null
+New-Item -ItemType Directory -Force -Path $dumpsPath | Out-Null
 New-Item -ItemType Directory -Force -Path $buildBaseOutputPath | Out-Null
 New-Item -ItemType Directory -Force -Path $buildBaseIntermediatePath | Out-Null
 
@@ -109,6 +111,7 @@ Write-Host "Exports:       $exportPath"
 Write-Host "Processed:     $processedPath"
 Write-Host "Errors:        $errorsPath"
 Write-Host "Structured:    $structuredPath"
+Write-Host "Dumps:         $dumpsPath"
 Write-Host "DLL:           $targetDll"
 Write-Host "Manifest:      $targetManifest"
 Write-Host "Build output:  $buildOutput"

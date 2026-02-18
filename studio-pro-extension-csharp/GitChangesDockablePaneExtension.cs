@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Windows.Forms;
 using Mendix.StudioPro.ExtensionsAPI.UI.DockablePane;
 
 namespace AutoCommitMessage;
@@ -20,20 +18,19 @@ public sealed class GitChangesDockablePaneExtension : DockablePaneExtension
         return new GitChangesDockablePaneViewModel(panelAddress);
     }
 
-    public IEnumerable<(string PaneId, string Title, Func<UserControl> Factory)> GetDockablePanes()
-    {
-        var currentProjectPath = CurrentApp?.Root?.DirectoryPath ?? string.Empty;
-        yield return (ExtensionConstants.PaneId, ExtensionConstants.PaneTitle, () => new ChangesPanel(currentProjectPath));
-    }
-
     private Uri BuildPanelAddress(string projectPath)
     {
         var routeAddress = new Uri(WebServerBaseUrl, $"{ExtensionConstants.WebServerRoutePrefix}/");
-        if (string.IsNullOrWhiteSpace(projectPath))
+        var query = new List<string>
         {
-            return routeAddress;
+            $"_v={DateTimeOffset.UtcNow.Ticks}",
+        };
+
+        if (!string.IsNullOrWhiteSpace(projectPath))
+        {
+            query.Add($"{ExtensionConstants.ProjectPathQueryKey}={Uri.EscapeDataString(projectPath)}");
         }
 
-        return new Uri($"{routeAddress}?{ExtensionConstants.ProjectPathQueryKey}={Uri.EscapeDataString(projectPath)}");
+        return new Uri($"{routeAddress}?{string.Join("&", query)}");
     }
 }

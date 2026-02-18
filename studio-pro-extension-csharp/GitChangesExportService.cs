@@ -69,7 +69,13 @@ internal static class GitChangesExportService
                             modelChange.ElementType,
                             modelChange.ElementName,
                             modelChange.Details))
-                        .ToArray()))
+                        .ToArray(),
+                    change.ModelDumpArtifact is null
+                        ? null
+                        : new ExportModelDumpArtifact(
+                            change.ModelDumpArtifact.FolderPath,
+                            change.ModelDumpArtifact.WorkingDumpPath,
+                            change.ModelDumpArtifact.HeadDumpPath)))
                 .ToArray());
 
         EnsureFoldersExist();
@@ -101,6 +107,7 @@ internal static class GitChangesExportService
         Directory.CreateDirectory(ExtensionDataPaths.ProcessedFolder);
         Directory.CreateDirectory(ExtensionDataPaths.ErrorsFolder);
         Directory.CreateDirectory(ExtensionDataPaths.StructuredFolder);
+        Directory.CreateDirectory(ExtensionDataPaths.DumpsFolder);
     }
 
     private static string ResolveProjectName(string projectPath, string repositoryRoot)
@@ -210,11 +217,17 @@ internal static class GitChangesExportService
         [property: JsonPropertyName("status")] string Status,
         [property: JsonPropertyName("isStaged")] bool IsStaged,
         [property: JsonPropertyName("diffText")] string DiffText,
-        [property: JsonPropertyName("modelChanges")] ExportModelChange[]? ModelChanges = null);
+        [property: JsonPropertyName("modelChanges")] ExportModelChange[]? ModelChanges = null,
+        [property: JsonPropertyName("modelDumpArtifact")] ExportModelDumpArtifact? ModelDumpArtifact = null);
 
     private sealed record ExportModelChange(
         [property: JsonPropertyName("changeType")] string ChangeType,
         [property: JsonPropertyName("elementType")] string ElementType,
         [property: JsonPropertyName("elementName")] string ElementName,
         [property: JsonPropertyName("details")] string? Details = null);
+
+    private sealed record ExportModelDumpArtifact(
+        [property: JsonPropertyName("folderPath")] string FolderPath,
+        [property: JsonPropertyName("workingDumpPath")] string WorkingDumpPath,
+        [property: JsonPropertyName("headDumpPath")] string HeadDumpPath);
 }

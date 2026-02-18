@@ -41,6 +41,25 @@ public static class CommitParserService
             .Where(path => !string.IsNullOrWhiteSpace(path))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var modelChanges = changes
+            .Where(change => change.ModelChanges is { Length: > 0 })
+            .SelectMany(change =>
+                (change.ModelChanges ?? Array.Empty<RawModelChange>())
+                .Select(modelChange => new StructuredModelChange(
+                    change.FilePath,
+                    modelChange.ChangeType,
+                    modelChange.ElementType,
+                    modelChange.ElementName,
+                    modelChange.Details)))
+            .ToArray();
+        var modelDumpArtifacts = changes
+            .Where(change => change.ModelDumpArtifact is not null)
+            .Select(change => new StructuredModelDumpArtifact(
+                change.FilePath,
+                change.ModelDumpArtifact!.FolderPath,
+                change.ModelDumpArtifact.WorkingDumpPath,
+                change.ModelDumpArtifact.HeadDumpPath))
+            .ToArray();
 
         var commitId = BuildCommitId(raw.Timestamp, raw.ProjectName, raw.BranchName);
 
@@ -52,7 +71,9 @@ public static class CommitParserService
             raw.UserName,
             entities,
             affectedFiles,
-            metrics);
+            metrics,
+            modelChanges,
+            modelDumpArtifacts);
     }
 
     private static CommitMetrics BuildMetrics(RawFileChange[] changes)

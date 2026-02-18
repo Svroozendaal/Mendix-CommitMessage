@@ -116,7 +116,7 @@ internal static class GitChangesPanelHtml
     }
     .layout {
       display: grid;
-      grid-template-columns: 0.8fr 1.2fr;
+      grid-template-columns: 1.3fr 0.7fr;
       gap: 12px;
       height: 100%;
       min-height: 0;
@@ -142,6 +142,11 @@ internal static class GitChangesPanelHtml
       overflow: auto;
       min-height: 0;
       flex: 1;
+    }
+    .table-wrap.compact {
+      flex: 0 0 auto;
+      max-height: 230px;
+      border-bottom: 1px solid #e5eaf5;
     }
     table {
       width: 100%;
@@ -186,6 +191,14 @@ internal static class GitChangesPanelHtml
       min-height: 0;
       flex: 1;
     }
+    .section-label {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e5eaf5;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      background: #fbfdff;
+    }
     pre {
       margin: 0;
       padding: 10px;
@@ -196,17 +209,14 @@ internal static class GitChangesPanelHtml
       background: #ffffff;
       color: #111827;
       font-family: Consolas, "Courier New", monospace;
-      min-height: 64px;
-      max-height: 120px;
-      flex: 0 0 auto;
-      border-bottom: 1px solid #e5eaf5;
+      min-height: 120px;
+      flex: 1 1 auto;
     }
     .model-changes {
       padding: 8px 10px 10px 10px;
       overflow: auto;
       flex: 1 1 auto;
       min-height: 320px;
-      display: none;
     }
     .model-title {
       font-size: 12px;
@@ -236,10 +246,16 @@ internal static class GitChangesPanelHtml
     .model-change-added { color: #228b22; }
     .model-change-modified { color: #236cc0; }
     .model-change-deleted { color: #b22222; }
+    .model-file-label {
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #475569;
+      font-weight: 600;
+    }
     @media (max-width: 760px) {
       .layout {
         grid-template-columns: 1fr;
-        grid-template-rows: 1fr 1fr;
+        grid-template-rows: 1.3fr 0.7fr;
       }
     }
   </style>
@@ -247,11 +263,14 @@ internal static class GitChangesPanelHtml
 <body>
   <div id="root"></div>
   <script>
-    const payload = {{payloadJson}};
+    const initialPayload = {{payloadJson}};
     const projectPath = {{projectPathJson}};
     const actionQueryKey = "{{ExtensionConstants.ActionQueryKey}}";
     const exportActionValue = "{{ExtensionConstants.ExportActionValue}}";
+    const refreshActionValue = "{{ExtensionConstants.RefreshActionValue}}";
     const projectPathQueryKey = "{{ExtensionConstants.ProjectPathQueryKey}}";
+    let currentPayload = initialPayload;
+    let refreshInProgress = false;
 
     function buildActionUrl(actionName) {
       const query = new URLSearchParams();
@@ -308,10 +327,17 @@ internal static class GitChangesPanelHtml
     function renderChanges(changes) {
       const layout = element("div", "layout");
 
-      const listPanel = element("section", "panel");
-      listPanel.appendChild(element("div", "panel-title", "Changed Files"));
-      const tableWrap = element("div", "table-wrap");
+      const modelPanel = element("section", "panel");
+      modelPanel.appendChild(element("div", "panel-title", "Model changes (.mpr)"));
+      const modelChangesContainer = element("div", "model-changes");
+      modelPanel.appendChild(modelChangesContainer);
 
+      const detailsPanel = element("section", "panel");
+      detailsPanel.appendChild(element("div", "panel-title", "Changed files and diff"));
+
+      const rightContent = element("div", "right-content");
+      rightContent.appendChild(element("div", "section-label", "Changed Files"));
+      const tableWrap = element("div", "table-wrap compact");
       const table = element("table");
       const thead = element("thead");
       const headerRow = element("tr");
@@ -324,18 +350,11 @@ internal static class GitChangesPanelHtml
       const tbody = element("tbody");
       table.appendChild(tbody);
       tableWrap.appendChild(table);
-      listPanel.appendChild(tableWrap);
-
-      const detailsPanel = element("section", "panel");
-      detailsPanel.appendChild(element("div", "panel-title", "Diff"));
-
-      const rightContent = element("div", "right-content");
+      rightContent.appendChild(tableWrap);
+      rightContent.appendChild(element("div", "section-label", "Diff"));
       const diffText = element("pre");
       diffText.textContent = "Select a file to view diff.";
       rightContent.appendChild(diffText);
-
-      const modelChangesContainer = element("div", "model-changes");
-      rightContent.appendChild(modelChangesContainer);
       detailsPanel.appendChild(rightContent);
 
       function renderModelChanges(selectedChange) {
@@ -347,13 +366,33 @@ internal static class GitChangesPanelHtml
           selectedChange.FilePath.toLowerCase().endsWith(".mpr");
 
         modelChangesContainer.replaceChildren();
-        if (!isMpr && modelChanges.length === 0) {
-          modelChangesContainer.style.display = "none";
+        modelChangesContainer.appendChild(element("div", "model-title", "Model changes"));
+        const sourceFile = selectedChange && selectedChange.FilePath
+          ? selectedChange.FilePath
+          : "No file selected";
+        modelChangesContainer.appendChild(element("div", "model-file-label", `Source: ${sourceFile}`));
+
+        if (!selectedChange) {
+          const emptyGroup = element("div", "model-group");
+          const emptyMessage = element("div", null, "Select a file to view model changes.");
+          emptyMessage.style.padding = "8px";
+          emptyMessage.style.fontSize = "12px";
+          emptyMessage.style.color = "#475569";
+          emptyGroup.appendChild(emptyMessage);
+          modelChangesContainer.appendChild(emptyGroup);
           return;
         }
 
-        modelChangesContainer.style.display = "block";
-        modelChangesContainer.appendChild(element("div", "model-title", "Model changes (.mpr)"));
+        if (!isMpr) {
+          const emptyGroup = element("div", "model-group");
+          const emptyMessage = element("div", null, "Model changes are available for .mpr files.");
+          emptyMessage.style.padding = "8px";
+          emptyMessage.style.fontSize = "12px";
+          emptyMessage.style.color = "#475569";
+          emptyGroup.appendChild(emptyMessage);
+          modelChangesContainer.appendChild(emptyGroup);
+          return;
+        }
 
         if (modelChanges.length === 0) {
           const emptyGroup = element("div", "model-group");
@@ -459,12 +498,13 @@ internal static class GitChangesPanelHtml
         selectRow(0);
       }
 
-      layout.appendChild(listPanel);
+      layout.appendChild(modelPanel);
       layout.appendChild(detailsPanel);
       return layout;
     }
 
-    function render() {
+    function render(statusOverride) {
+      const payload = currentPayload || {};
       const root = document.getElementById("root");
       root.replaceChildren();
 
@@ -481,18 +521,72 @@ internal static class GitChangesPanelHtml
 
       const refreshButton = element("button", "btn", "Refresh");
       refreshButton.type = "button";
-      refreshButton.addEventListener("click", () => window.location.reload());
+      refreshButton.disabled = refreshInProgress;
       meta.appendChild(refreshButton);
       topbar.appendChild(meta);
       root.appendChild(topbar);
 
       const branchName = payload && payload.BranchName ? payload.BranchName : "-";
       root.appendChild(element("div", "subtitle", `Branch: ${branchName}`));
-      const statusLine = element("div", "status-line", "Ready");
+      const statusLine = element(
+        "div",
+        "status-line",
+        statusOverride || "Ready. Refresh re-runs Git + model analysis.");
       root.appendChild(statusLine);
 
       const content = element("div", "content");
       root.appendChild(content);
+
+      function setExportAvailability() {
+        exportButton.disabled = !(payload && payload.IsGitRepo === true && Array.isArray(payload.Changes) && payload.Changes.length > 0);
+      }
+
+      refreshButton.addEventListener("click", async () => {
+        if (refreshInProgress) {
+          return;
+        }
+
+        refreshInProgress = true;
+        refreshButton.disabled = true;
+        exportButton.disabled = true;
+        statusLine.textContent = "Reloading Git + model changes...";
+
+        try {
+          const refreshUrl = `${buildActionUrl(refreshActionValue)}&_t=${Date.now()}`;
+          const response = await fetch(refreshUrl, { cache: "no-store" });
+
+          let refreshedPayload = null;
+          try {
+            refreshedPayload = await response.json();
+          } catch {
+            refreshedPayload = null;
+          }
+
+          if (!response.ok || !refreshedPayload) {
+            const message =
+              refreshedPayload && typeof refreshedPayload.Error === "string" && refreshedPayload.Error.length > 0
+                ? refreshedPayload.Error
+                : `Refresh failed (HTTP ${response.status})`;
+            statusLine.textContent = `Refresh failed: ${message}`;
+            refreshInProgress = false;
+            refreshButton.disabled = false;
+            setExportAvailability();
+            return;
+          }
+
+          currentPayload = refreshedPayload;
+          refreshInProgress = false;
+          const refreshedAt = new Date().toLocaleTimeString();
+          render(`Reloaded Git + model changes at ${refreshedAt}`);
+          return;
+        } catch (error) {
+          const message = error && error.message ? error.message : "Unexpected error";
+          statusLine.textContent = `Refresh failed: ${message}`;
+          refreshInProgress = false;
+          refreshButton.disabled = false;
+          setExportAvailability();
+        }
+      });
 
       exportButton.addEventListener("click", async () => {
         exportButton.disabled = true;
@@ -522,7 +616,7 @@ internal static class GitChangesPanelHtml
           const message = error && error.message ? error.message : "Unexpected error";
           statusLine.textContent = `Export failed: ${message}`;
         } finally {
-          exportButton.disabled = !(payload && payload.IsGitRepo === true && Array.isArray(payload.Changes) && payload.Changes.length > 0);
+          setExportAvailability();
         }
       });
 

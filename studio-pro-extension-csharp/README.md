@@ -44,9 +44,13 @@ The extension writes export files to `<DataRootPath>\exports` and keeps the pars
 - `<DataRootPath>\processed`
 - `<DataRootPath>\errors`
 - `<DataRootPath>\structured`
+- `<DataRootPath>\dumps`
 
 ## Notes
 
 - No localhost UI dependency.
 - No `npm run dev` is required.
 - Model analysis now detects `Added`, `Modified`, and `Deleted` resources beyond only pages/microflows, including nanoflows and domain model resources (`Entity`, `Association`, `Enumeration`) with nested-change attribution.
+- Microflow model details now include action usage summaries (for example, `CreateObjectAction x1, ChangeObjectAction x2`).
+- Domain model entity details now include attribute names added in the change set.
+- Export operations persist full HEAD/working model dumps for changed `.mpr` files under `mendix-data\dumps`.

@@ -23,7 +23,7 @@ public static class GitChangesService
     /// </summary>
     /// <param name="projectPath">The path to the project root.</param>
     /// <returns>A payload containing repository state, change items, and optional errors.</returns>
-    public static GitChangesPayload ReadChanges(string projectPath)
+    public static GitChangesPayload ReadChanges(string projectPath, bool persistModelDumps = false)
     {
         try
         {
@@ -84,12 +84,17 @@ public static class GitChangesService
                 {
                     try
                     {
-                        var modelChanges = AnalyzeMprChanges(
+                        var modelAnalysis = AnalyzeMprChanges(
                             repository,
                             repositoryRoot,
-                            NormalizeRepositoryPath(entry.FilePath));
+                            NormalizeRepositoryPath(entry.FilePath),
+                            persistModelDumps);
 
-                        fileChange = fileChange with { ModelChanges = modelChanges };
+                        fileChange = fileChange with
+                        {
+                            ModelChanges = modelAnalysis.ModelChanges,
+                            ModelDumpArtifact = modelAnalysis.ModelDumpArtifact,
+                        };
                     }
                     catch (Exception exception)
                     {
@@ -197,10 +202,11 @@ public static class GitChangesService
         }
     }
 
-    private static List<MendixModelChange> AnalyzeMprChanges(
+    private static ModelAnalysisResult AnalyzeMprChanges(
         Repository repository,
         string repositoryRoot,
-        string repositoryRelativeMprPath)
+        string repositoryRelativeMprPath,
+        bool persistModelDumps)
     {
         var workingDumpPath = CreateTempPath(".json");
         var headDumpPath = CreateTempPath(".json");
@@ -211,7 +217,15 @@ public static class GitChangesService
         {
             if (File.Exists(workingMprPath))
             {
-                MxToolService.DumpMpr(workingMprPath, workingDumpPath);
+                try
+                {
+                    MxToolService.DumpMpr(workingMprPath, workingDumpPath);
+                }
+                catch (Exception exception) when (LooksLikeDumpEnvironmentIssue(exception))
+                {
+                    // In some Studio Pro states the local mprcontents workspace is temporarily inconsistent.
+                    return new ModelAnalysisResult(new List<MendixModelChange>(), null);
+                }
             }
             else
             {
@@ -224,10 +238,10 @@ public static class GitChangesService
                 {
                     MxToolService.DumpMpr(headMprPath, headDumpPath);
                 }
-                catch (Exception exception) when (LooksLikeHeadDumpEnvironmentIssue(exception))
+                catch (Exception exception) when (LooksLikeDumpEnvironmentIssue(exception))
                 {
                     // Some repositories cannot be reconstructed for HEAD snapshot analysis.
-                    return new List<MendixModelChange>();
+                    return new ModelAnalysisResult(new List<MendixModelChange>(), null);
                 }
             }
             else
@@ -235,7 +249,12 @@ public static class GitChangesService
                 WriteEmptyDump(headDumpPath);
             }
 
-            return MendixModelDiffService.CompareDumps(workingDumpPath, headDumpPath);
+            var modelChanges = MendixModelDiffService.CompareDumps(workingDumpPath, headDumpPath);
+            var modelDumpArtifact = persistModelDumps
+                ? PersistModelDumpArtifacts(repositoryRelativeMprPath, workingDumpPath, headDumpPath)
+                : null;
+
+            return new ModelAnalysisResult(modelChanges, modelDumpArtifact);
         }
         finally
         {
@@ -267,7 +286,10 @@ public static class GitChangesService
         }
 
         Directory.CreateDirectory(headWorkspacePath);
-        CopyMprContentsIfPresent(workingMprPath, headWorkspacePath);
+        if (!TryCopyMprContentsFromHeadCommit(headCommit, repositoryRelativeMprPath, headWorkspacePath))
+        {
+            CopyMprContentsIfPresent(workingMprPath, headWorkspacePath);
+        }
 
         var mprFileName = Path.GetFileName(workingMprPath);
         if (string.IsNullOrWhiteSpace(mprFileName))
@@ -287,6 +309,61 @@ public static class GitChangesService
         return true;
     }
 
+    private static bool TryCopyMprContentsFromHeadCommit(
+        Commit headCommit,
+        string repositoryRelativeMprPath,
+        string headWorkspacePath)
+    {
+        var mprDirectoryPath = Path.GetDirectoryName(repositoryRelativeMprPath)?.Replace('\\', '/');
+        var normalizedMprDirectory = string.IsNullOrWhiteSpace(mprDirectoryPath) || string.Equals(mprDirectoryPath, ".", StringComparison.Ordinal)
+            ? string.Empty
+            : mprDirectoryPath.TrimEnd('/');
+
+        var mprContentsPath = string.IsNullOrWhiteSpace(normalizedMprDirectory)
+            ? "mprcontents"
+            : $"{normalizedMprDirectory}/mprcontents";
+
+        var mprContentsEntry = headCommit[mprContentsPath];
+        if (mprContentsEntry?.Target is not Tree mprContentsTree)
+        {
+            return false;
+        }
+
+        var destinationRoot = Path.Combine(headWorkspacePath, "mprcontents");
+        CopyTreeToDirectory(mprContentsTree, destinationRoot);
+        return true;
+    }
+
+    private static void CopyTreeToDirectory(Tree tree, string destinationPath)
+    {
+        Directory.CreateDirectory(destinationPath);
+
+        foreach (var entry in tree)
+        {
+            var targetPath = Path.Combine(destinationPath, entry.Name);
+            switch (entry.TargetType)
+            {
+                case TreeEntryTargetType.Blob when entry.Target is Blob blob:
+                {
+                    var targetDirectory = Path.GetDirectoryName(targetPath);
+                    if (!string.IsNullOrWhiteSpace(targetDirectory))
+                    {
+                        Directory.CreateDirectory(targetDirectory);
+                    }
+
+                    using var output = File.Create(targetPath);
+                    using var input = blob.GetContentStream();
+                    input.CopyTo(output);
+                    break;
+                }
+
+                case TreeEntryTargetType.Tree when entry.Target is Tree childTree:
+                    CopyTreeToDirectory(childTree, targetPath);
+                    break;
+            }
+        }
+    }
+
     private static string CreateTempPath(string extension) =>
         Path.Combine(Path.GetTempPath(), $"autocommitmessage_{Guid.NewGuid():N}{extension}");
 
@@ -296,7 +373,48 @@ public static class GitChangesService
     private static string NormalizeRepositoryPath(string path) =>
         path.Replace('\\', '/');
 
-    private static bool LooksLikeHeadDumpEnvironmentIssue(Exception exception)
+    private static ModelDumpArtifact PersistModelDumpArtifacts(
+        string repositoryRelativeMprPath,
+        string workingDumpPath,
+        string headDumpPath)
+    {
+        Directory.CreateDirectory(ExtensionDataPaths.DumpsFolder);
+
+        var timestamp = DateTimeOffset.UtcNow.ToString("yyyy-MM-ddTHH-mm-ss.fffZ");
+        var mprToken = SanitizePathToken(repositoryRelativeMprPath);
+        var folderName = $"{timestamp}_{mprToken}_{Guid.NewGuid():N}";
+        var destinationFolder = Path.Combine(ExtensionDataPaths.DumpsFolder, folderName);
+        Directory.CreateDirectory(destinationFolder);
+
+        var destinationWorkingDumpPath = Path.Combine(destinationFolder, "working-dump.json");
+        var destinationHeadDumpPath = Path.Combine(destinationFolder, "head-dump.json");
+
+        File.Copy(workingDumpPath, destinationWorkingDumpPath, overwrite: true);
+        File.Copy(headDumpPath, destinationHeadDumpPath, overwrite: true);
+
+        return new ModelDumpArtifact(destinationFolder, destinationWorkingDumpPath, destinationHeadDumpPath);
+    }
+
+    private static string SanitizePathToken(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "model";
+        }
+
+        var token = value.Replace('\\', '_').Replace('/', '_').Trim();
+        var invalidFileNameChars = Path.GetInvalidFileNameChars();
+        var sanitized = new StringBuilder(token.Length);
+
+        foreach (var character in token)
+        {
+            sanitized.Append(invalidFileNameChars.Contains(character) ? '_' : character);
+        }
+
+        return sanitized.Length == 0 ? "model" : sanitized.ToString();
+    }
+
+    private static bool LooksLikeDumpEnvironmentIssue(Exception exception)
     {
         var message = exception.Message;
         var missingContents =
@@ -305,8 +423,11 @@ public static class GitChangesService
         var mismatchedMprName =
             message.IndexOf("Cannot open MPR file", StringComparison.OrdinalIgnoreCase) >= 0 &&
             message.IndexOf("refer to MPR file", StringComparison.OrdinalIgnoreCase) >= 0;
+        var tempWorkspaceMissingPath =
+            message.IndexOf("Exception during exporting the model to JSON", StringComparison.OrdinalIgnoreCase) >= 0 &&
+            message.IndexOf("Could not find a part of the path", StringComparison.OrdinalIgnoreCase) >= 0;
 
-        return missingContents || mismatchedMprName;
+        return missingContents || mismatchedMprName || tempWorkspaceMissingPath;
     }
 
     private static void WriteEmptyDump(string outputPath)
@@ -380,4 +501,8 @@ public static class GitChangesService
             File.Copy(sourceFilePath, destinationFilePath, overwrite: true);
         }
     }
+
+    private sealed record ModelAnalysisResult(
+        List<MendixModelChange> ModelChanges,
+        ModelDumpArtifact? ModelDumpArtifact);
 }

@@ -8,4 +8,5 @@ internal static class ExtensionConstants
     public const string ProjectPathQueryKey = "projectPath";
     public const string ActionQueryKey = "action";
     public const string ExportActionValue = "export";
+    public const string RefreshActionValue = "refresh";
 }

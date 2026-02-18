@@ -28,6 +28,12 @@ public sealed class GitChangesWebServerExtension : WebServerExtension
             return;
         }
 
+        if (string.Equals(action, ExtensionConstants.RefreshActionValue, StringComparison.OrdinalIgnoreCase))
+        {
+            await HandleRefreshRequestAsync(projectPath, response, cancellationToken);
+            return;
+        }
+
         var payload = await Task.Run(() => GitChangesService.ReadChanges(projectPath), cancellationToken);
         var html = GitChangesPanelHtml.Render(payload, projectPath);
         var content = Encoding.UTF8.GetBytes(html);
@@ -39,12 +45,21 @@ public sealed class GitChangesWebServerExtension : WebServerExtension
         await response.OutputStream.WriteAsync(content, cancellationToken);
     }
 
-    private static async Task HandleExportRequestAsync(
+    private static async Task HandleRefreshRequestAsync(
         string projectPath,
         HttpListenerResponse response,
         CancellationToken cancellationToken)
     {
         var payload = await Task.Run(() => GitChangesService.ReadChanges(projectPath), cancellationToken);
+        await WriteJsonResponseAsync(response, 200, payload, cancellationToken);
+    }
+
+    private static async Task HandleExportRequestAsync(
+        string projectPath,
+        HttpListenerResponse response,
+        CancellationToken cancellationToken)
+    {
+        var payload = await Task.Run(() => GitChangesService.ReadChanges(projectPath, persistModelDumps: true), cancellationToken);
         if (!payload.IsGitRepo)
         {
             await WriteJsonResponseAsync(

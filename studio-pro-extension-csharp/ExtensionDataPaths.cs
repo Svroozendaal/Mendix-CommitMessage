@@ -12,6 +12,7 @@ internal static class ExtensionDataPaths
     public static readonly string ProcessedFolder = Path.Combine(DataRoot, "processed");
     public static readonly string ErrorsFolder = Path.Combine(DataRoot, "errors");
     public static readonly string StructuredFolder = Path.Combine(DataRoot, "structured");
+    public static readonly string DumpsFolder = Path.Combine(DataRoot, "dumps");
 
     private static string ResolveDataRoot()
     {
