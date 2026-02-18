@@ -1,22 +1,22 @@
----
-description: Werk alle documentatie bij volgens de documentatiestandaard. Scan de volledige codebase, vul info_*.md aan, valideer skills-taken en ruim verouderde docs op.
-argument-hint: <optioneel: specifieke folder>
----
+# DOCUMENT
+## Purpose
 
-## Documentatie Update
+Update or create documentation that matches current implementation.
 
-Gebruik de `documenter` agent om alle documentatie bij te werken.
+## Steps
 
-**Scope**: `$ARGUMENTS` (als leeg: scan het hele project)
+1. Read `development/AGENTS.md`.
+2. Ask clarifying questions first.
+3. Confirm target audience and scope.
+4. Update docs in UK English with friendly technical tone.
+5. Remove stale or contradictory instructions.
 
-### Stappen
+## Output Template
 
-1. Scan alle codefolders (`src/`, `web-ui/`, `studio-pro-extension/`, `studio-pro-extension-csharp/`, `tests/`) op ontbrekende `info_*.md`.
-2. Controleer skills in `.claude/skills/*/SKILL.md` op aanwezigheid van `## Taken` met concrete stappen.
-3. Werk verouderde docs bij (`README.md`, `docs/*.md`) op basis van actuele code.
-4. Verwijder ongebruikte of verouderde documentatie en tijdelijke artefacten waar veilig.
-5. Valideer dat paden, scripts en componentnamen kloppen met de code.
-6. Rapporteer:
-   - wat is aangepast,
-   - welke documentatie nu volledig is,
-   - welke hiaten nog openstaan.
+```markdown
+## DOCUMENTATION
+UPDATED_FILES: [...]
+KEY_CHANGES: [...]
+OPEN_GAPS: [...]
+```
+

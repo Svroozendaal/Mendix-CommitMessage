@@ -1,31 +1,15 @@
 ---
 name: documentation
-description: Standaardworkflow voor documentatie-audits in dit project. Gebruik bij repo-brede opschoning, ontbrekende info_*.md, docs-consistentiechecks en het opstellen van projectoverzichten.
+description: Documentation quality workflow for this repository. Use when docs must be created, updated, aligned to AGENTS, or translated into consistent UK English with a friendly technical style.
 ---
 
-# Documentation Skill
+# DOCUMENTATION
 
-## Doel
+## TASKS
 
-Maak documentatie volledig, consistent en direct bruikbaar voor ontwikkeling en onderhoud.
+1. Read `development/AGENTS.md` first.
+2. Ask clarifying questions before rewriting.
+3. Keep wording concise, friendly, and technical.
+4. Ensure file paths and references match real files.
+5. Remove stale statements and conflicting guidance.
 
-## Taken
-
-1. Scan alle codefolders op ontbrekende `info_*.md`.
-2. Controleer `README.md` en `docs/*.md` op verouderde paden, scripts en componentnamen.
-3. Controleer alle skills op:
-   - geldige frontmatter,
-   - aanwezigheid van `## Taken`,
-   - concrete, uitvoerbare stappen.
-4. Verwijder verouderde of ongebruikte documentatie/tijdelijke artefacten waar veilig.
-5. Werk datums en secties bij volgens de documentatiestandaard.
-6. Lever een projectoverzicht op met:
-   - mapstructuur,
-   - verantwoordelijkheden per map,
-   - kernfunctionaliteiten per component.
-
-## Outputformat
-
-- Korte samenvatting van wijzigingen.
-- Lijst van nieuw toegevoegde of geupdate docs.
-- Restpunten/risico's die nog handmatig aandacht vragen.

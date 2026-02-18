@@ -1,35 +1,23 @@
----
-description: Plan en implementeer een nieuwe feature. Gebruik de architect voor planning en de implementer voor code.
-argument-hint: <feature naam of beschrijving>
----
+# IMPLEMENT
+## Purpose
 
-## Feature Implementatie Workflow
+Guide implementation execution after planning is approved.
 
-Je gaat de volgende feature implementeren: $ARGUMENTS
+## Steps
 
-### Stap 1: Planning (Architect Agent)
-Gebruik de `architect` agent om:
-1. Lees `docs/DECISIONS.md` en relevante `info_*.md` bestanden
-2. Bepaal welke bestanden aangemaakt/gewijzigd moeten worden
-3. Maak een concreet implementatieplan
-4. Documenteer eventuele nieuwe beslissingen in DECISIONS.md
+1. Read `development/AGENTS.md`.
+2. Ask clarifying questions first.
+3. Confirm file scope and acceptance criteria.
+4. Implement in small steps with verification.
+5. Update `development/agent-memory/PROGRESS.md`.
 
-### Stap 2: Implementatie (Implementer Agent)
-Gebruik de `implementer` agent om het plan uit te voeren:
-1. Schrijf eerst tests
-2. Implementeer de code
-3. Draai tests: `npm test`
-4. Fix tot alles groen is
+## Output Template
 
-### Stap 3: Documentatie (Documenter Agent)
-Gebruik de `documenter` agent om:
-1. Alle geraakte `info_*.md` bestanden bij te werken
-2. DECISIONS.md bij te werken indien nodig
+```markdown
+## IMPLEMENTATION
+SCOPE: [...]
+CHANGES: [...]
+VALIDATION: [...]
+OPEN_ITEMS: [...]
+```
 
-### Stap 4: Review (Reviewer Agent)
-Gebruik de `reviewer` agent om:
-1. Alle nieuwe/gewijzigde code te reviewen
-2. Rapporteer bevindingen
-
-### Stap 5: Status Update
-Update de "Huidige Status" sectie in CLAUDE.md.

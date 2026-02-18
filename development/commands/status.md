@@ -1,38 +1,25 @@
----
-description: Toon de huidige projectstatus, wat af is, wat in progress is, en wat de volgende stap is.
----
+# STATUS
+## Purpose
 
-## Project Status Check
+Provide a quick, structured snapshot of current work status.
 
-Geef een volledig statusoverzicht van het Mendix Copilot project.
+## Steps
 
-### Controleer:
-1. **Projectstructuur**: Welke folders/bestanden bestaan al?
-2. **Geïmplementeerde tools**: Welke MCP tools zijn al geregistreerd in src/index.ts?
-3. **Test coverage**: Hoeveel tests zijn er? Slagen ze allemaal? (`npm test`)
-4. **Documentatie**: Hebben alle code-folders een info_*.md?
-5. **Dependencies**: Zijn alle packages geïnstalleerd? Is er een werkende build? (`npx tsc --noEmit`)
+1. Read `development/AGENTS.md`.
+2. Ask clarifying questions first if scope is unclear.
+3. Summarise:
+   - Current goal
+   - Progress to date
+   - Open blockers
+   - Suggested next action
 
-### Output format:
-```
-## 📊 Mendix Copilot Status
+## Output Template
 
-### ✅ Afgerond
-- [lijst van voltooide features/componenten]
-
-### 🚧 In Progress
-- [lijst van features waar aan gewerkt wordt]
-
-### 📋 Volgende Stap
-- [eerstvolgende feature om te implementeren]
-
-### ⚠️ Issues
-- [bekende problemen of missende zaken]
-
-### 📝 Documentatie Status
-- [x] info_*.md: X van Y folders gedocumenteerd
-- [x] DECISIONS.md: X beslissingen gelogd
-- [x] Tests: X tests, Y slagend
+```markdown
+## STATUS
+CURRENT_GOAL: [...]
+PROGRESS: [...]
+BLOCKERS: [...]
+NEXT_ACTION: [...]
 ```
 
-Update ook de "Huidige Status" sectie in CLAUDE.md.

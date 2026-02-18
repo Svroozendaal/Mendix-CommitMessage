@@ -1,45 +1,14 @@
 ---
 name: mendix-sdk
-description: Praktische kennis voor Mendix Platform SDK en Model SDK gebruik in dit project. Gebruik bij modeltoegang, working copy lifecycle, serialisatie en SDK-gerelateerde bugfixes.
+description: Mendix SDK usage guidance for model operations and repository integration. Use when SDK-specific APIs, model metadata, or Mendix model access patterns are involved.
 ---
 
-# Mendix SDK Skill
+# MENDIX_SDK
 
-## Doel
+## TASKS
 
-Consistente en veilige omgang met Mendix SDK-operaties in `src/mendix/` en alle aanroepende lagen.
+1. Confirm SDK capability before assuming behaviour.
+2. Keep API usage explicit and traceable.
+3. Capture SDK limitations and workarounds in docs.
+4. Validate model access and error paths.
 
-## Taken
-
-1. Bevestig welke SDK-laag geraakt wordt:
-   - platform/working copy lifecycle,
-   - modelnavigatie,
-   - serialisatie.
-2. Controleer lazy loading en null-safety op alle modelobjecten.
-3. Verifieer dat PAT/token alleen via env loopt en nergens in logs/documentatie terechtkomt.
-4. Werk serializer/core-output bij zodat responses compact en stabiel blijven.
-5. Voeg of update tests in `tests/unit/mendix` en/of `tests/unit/serializers`.
-6. Werk `info_*.md` bij in `src/mendix` en relevante bovenliggende folders.
-
-## Patronen
-
-### Platform client
-
-```typescript
-import { MendixPlatformClient } from "mendixplatformsdk";
-const client = new MendixPlatformClient();
-```
-
-### Working copy flow
-
-```typescript
-const app = client.getApp(appId);
-const workingCopy = await app.createTemporaryWorkingCopy(branch);
-const model = await workingCopy.openModel();
-```
-
-### Belangrijke aandachtspunten
-
-- Gebruik `qualifiedName` voor stabiele referenties.
-- Vermijd bulk-load van grote modellen.
-- Gebruik defensieve checks voor metadata die per modelversie kan verschillen.

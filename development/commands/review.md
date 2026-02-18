@@ -1,17 +1,23 @@
----
-description: Review code kwaliteit en documentatie. Controleert patronen, tests, en info_*.md bestanden.
-argument-hint: <optioneel: specifiek pad of bestand>
----
+# REVIEW
+## Purpose
 
-## Code Review
+Run a structured review before approval.
 
-Gebruik de `reviewer` agent om een grondige review te doen.
+## Steps
 
-**Scope**: $ARGUMENTS (als leeg: review alle recente wijzigingen)
+1. Read `development/AGENTS.md`.
+2. Ask clarifying questions first.
+3. Review by severity and risk.
+4. Include exact file references for findings.
+5. Write verdict and required actions.
 
-### Review stappen:
-1. Identificeer welke bestanden recent gewijzigd zijn (gebruik `git diff` of scan de src/ folder)
-2. Review elke gewijzigde file volgens de checklist in de reviewer agent
-3. Check of alle `info_*.md` bestanden up-to-date zijn
-4. Check of tests bestaan en slagen
-5. Geef een samenvatting met ✅ ⚠️ 🔴 ratings
+## Output Template
+
+```markdown
+## REVIEW
+MUST_FIX: [...]
+SHOULD_FIX: [...]
+NICE_TO_HAVE: [...]
+VERDICT: APPROVED / CHANGES REQUIRED
+```
+

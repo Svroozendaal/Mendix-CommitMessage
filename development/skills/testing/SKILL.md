@@ -1,30 +1,15 @@
 ---
 name: testing
-description: Teststrategie en patronen voor deze codebase. Gebruik bij toevoegen of wijzigen van tests, bij regressie-analyse en bij valideren van codewijzigingen.
+description: Test planning and validation workflow. Use when defining acceptance criteria, building test matrices, running checks, and reporting PASS/FAIL with reproducible findings.
 ---
 
-# Testing Skill
+# TESTING
 
-## Doel
+## TASKS
 
-Zorg dat wijzigingen aantoonbaar correct blijven via consistente unit tests en snelle regressiechecks.
+1. Confirm expected behaviour before testing.
+2. Cover normal, edge, and regression paths.
+3. Capture reproducible failure steps.
+4. Classify findings by severity and impact.
+5. Produce an explicit PASS/FAIL verdict.
 
-## Taken
-
-1. Bepaal testscope:
-   - unit tests,
-   - contractvalidatie,
-   - regressie op bestaande features.
-2. Voeg tests toe in de juiste map onder `tests/unit/*`.
-3. Test zowel succespad als foutpad.
-4. Voorkom over-mocking: mock op servicegrenzen, niet op elk intern detail.
-5. Run minimaal:
-   - `npm run typecheck`
-   - `npm run test:ci`
-6. Werk testdocumentatie (`tests/info_tests.md` of relevante `info_*.md`) bij.
-
-## Richtlijnen
-
-- Gebruik Vitest (`vitest.config.ts`).
-- Houd testnamen beschrijvend en gedraggericht.
-- Test nieuwe gedeelde contracten expliciet (zoals `shared/studio-context.ts`).
