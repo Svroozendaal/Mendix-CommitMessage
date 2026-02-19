@@ -21,7 +21,16 @@ Use the root deploy script:
 .\deploy-autocommitmessage.ps1
 ```
 
-Or specify a custom app path:
+Set shared local defaults in a repo-root `.env` file (copy from `.env.example`):
+
+```dotenv
+MENDIX_APP_PATH=C:\MendixWorkers\Smart Expenses app-main
+MENDIX_DATA_ROOT=C:\Workspace\Mendix-AutoCommitMessage\mendix-data
+```
+
+The deploy script uses `MENDIX_APP_PATH` and `MENDIX_DATA_ROOT` automatically when parameters are not provided.
+
+Or specify a custom app path directly:
 
 ```powershell
 .\deploy-autocommitmessage.ps1 -AppPath "C:\Workspaces\Mendix\YourApp"
@@ -45,6 +54,27 @@ The extension writes export files to `<DataRootPath>\exports` and keeps the pars
 - `<DataRootPath>\errors`
 - `<DataRootPath>\structured`
 - `<DataRootPath>\dumps`
+
+## Start the Mendix app quickly
+
+Use the root launcher script:
+
+```powershell
+.\start-mendix-app.ps1
+```
+
+It reads `MENDIX_APP_PATH` from `.env`, locates `studiopro.exe`, and starts Studio Pro with extension development enabled using `--enable-extension-development`.  
+You can still override the path:
+
+```powershell
+.\start-mendix-app.ps1 -AppPath "C:\Workspaces\Mendix\YourApp"
+```
+
+Optional: pin a specific Studio Pro executable:
+
+```powershell
+.\start-mendix-app.ps1 -StudioProPath "C:\Program Files\Mendix\10.x.x.x\modeler\studiopro.exe"
+```
 
 ## Notes
 

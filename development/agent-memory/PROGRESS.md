@@ -24,6 +24,24 @@ FILES_CHANGED: studio-pro-extension-csharp/MendixModelDiffService.cs, studio-pro
 VALIDATION: `dotnet build .\\studio-pro-extension-csharp\\AutoCommitMessage.csproj -c Debug -t:Compile` passed with 0 warnings and 0 errors; `deploy-autocommitmessage.ps1 -DataRootPath "C:\\Workspace\\Mendix-AutoCommitMessage\\mendix-data"` built successfully and failed only at the final copy step due target DLL access denial.
 NOTES: Code-level validation and deployment build pass are confirmed; deployment requires releasing lock/access on the target extension DLL in the Mendix app folder.
 
+## PROGRESS_ENTRY - 2026-02-19
+SCOPE: Improve local developer workflow by centralising Mendix app path configuration and adding a launcher script.
+FILES_CHANGED: deploy-autocommitmessage.ps1, start-mendix-app.ps1, .env.example, .gitignore, studio-pro-extension-csharp/README.md, development/agent-memory/DECISIONS_LOG.md, development/agent-memory/PROGRESS.md
+VALIDATION: Script syntax checks passed for both PowerShell scripts; `deploy-autocommitmessage.ps1` builds successfully using `.env` defaults and then fails at target DLL copy due lock/permission; launcher error path validated with a non-existent app path.
+NOTES: `.env` is now ignored from source control; `.env.example` documents required keys.
+
+## PROGRESS_ENTRY - 2026-02-19
+SCOPE: Ensure launcher starts Studio Pro with extension development enabled.
+FILES_CHANGED: start-mendix-app.ps1, .env.example, studio-pro-extension-csharp/README.md, development/agent-memory/DECISIONS_LOG.md, development/agent-memory/PROGRESS.md
+VALIDATION: PowerShell syntax check passed for `start-mendix-app.ps1`; static verification confirms startup argument `--enable-extension-development` and `.env` override `MENDIX_STUDIOPRO_EXE` are wired.
+NOTES: Launcher now resolves `studiopro.exe` from explicit parameter, `.env`, PATH/`mx.exe`, registry install locations, and Program Files fallback.
+
+## PROGRESS_ENTRY - 2026-02-19
+SCOPE: Fix Studio Pro startup argument parsing for paths with spaces and set explicit local Studio Pro path in `.env`.
+FILES_CHANGED: start-mendix-app.ps1, development/agent-memory/DECISIONS_LOG.md, development/agent-memory/PROGRESS.md
+VALIDATION: Script syntax check passed; argument composition now emits a single quoted CLI string for `--enable-extension-development "<mpr path>"`.
+NOTES: Local `.env` now includes `MENDIX_STUDIOPRO_EXE=C:\Program Files\Mendix\10.24.14.90436\modeler\studiopro.exe`.
+
 ## PROGRESS_ENTRY - 2026-02-18
 SCOPE: Add deep model-change detail extraction (microflow actions, entity added attributes), persist full model dumps, and retain model details in structured parser output.
 FILES_CHANGED: studio-pro-extension-csharp/MendixModelDiffService.cs, studio-pro-extension-csharp/GitChangesService.cs, studio-pro-extension-csharp/GitChangesPayload.cs, studio-pro-extension-csharp/GitChangesExportService.cs, studio-pro-extension-csharp/GitChangesWebServerExtension.cs, studio-pro-extension-csharp/ExtensionDataPaths.cs, deploy-autocommitmessage.ps1, MendixCommitParser/Models/RawCommitData.cs, MendixCommitParser/Models/StructuredCommitData.cs, MendixCommitParser/Services/CommitParserService.cs, studio-pro-extension-csharp/README.md, mendix-data/README.md, development/agent-memory/DECISIONS_LOG.md, development/agent-memory/PROGRESS.md

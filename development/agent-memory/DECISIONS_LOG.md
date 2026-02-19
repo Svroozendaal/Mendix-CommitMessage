@@ -30,6 +30,24 @@ DECISION: Replace the narrow comparer with object-graph snapshot analysis that m
 RATIONALE: Mendix edits are often represented on nested objects, so ownership-based attribution is required to correctly surface modified microflows/pages/entities and support nanoflows and other document resources.
 ALTERNATIVES_REJECTED: Expanding only the static type allow-list without nested ownership attribution.
 
+## DECISION - 004 - 2026-02-19
+CONTEXT: Deploy and launch workflows required repeatedly retyping the Mendix app path.
+DECISION: Add shared `.env`-based configuration (`MENDIX_APP_PATH`, optional `MENDIX_DATA_ROOT`) and use it in both `deploy-autocommitmessage.ps1` and a new `start-mendix-app.ps1` launcher.
+RATIONALE: Keeps local workflow fast and consistent while preserving parameter overrides for one-off runs.
+ALTERNATIVES_REJECTED: Keeping hardcoded path defaults only inside each script.
+
+## DECISION - 005 - 2026-02-19
+CONTEXT: Launcher should start Studio Pro with extension development mode enabled.
+DECISION: Update `start-mendix-app.ps1` to launch `studiopro.exe` explicitly with `--enable-extension-development <app.mpr>`, including auto-discovery of Studio Pro and optional `.env` override (`MENDIX_STUDIOPRO_EXE`).
+RATIONALE: Ensures extension development mode is active on startup without requiring manual launch arguments.
+ALTERNATIVES_REJECTED: Opening the `.mpr` directly via file association, which cannot enforce extension-development startup flags.
+
+## DECISION - 006 - 2026-02-19
+CONTEXT: Studio Pro showed CLI usage error because the app filepath argument was not being interpreted correctly.
+DECISION: Pass startup arguments as one explicitly quoted string: `--enable-extension-development "<full-mpr-path>"`.
+RATIONALE: Avoids tokenisation issues with spaces in app paths when invoking `Start-Process`.
+ALTERNATIVES_REJECTED: Unquoted split argument array, which proved unreliable in this PowerShell invocation path.
+
 ## DECISION - 004 - 2026-02-18
 CONTEXT: Model-change output lacked actionable details for microflow internals and domain model attribute additions.
 DECISION: Enrich resource-level details with microflow action usage summaries and explicit domain-entity added attribute names.

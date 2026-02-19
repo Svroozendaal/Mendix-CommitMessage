@@ -1,6 +1,6 @@
 ﻿[CmdletBinding()]
 param(
-    [string]$AppPath = 'C:\Workspaces\Mendix\Smart Expenses app-main',
+    [string]$AppPath,
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Debug',
     [string]$DataRootPath,
@@ -16,10 +16,66 @@ $buildBaseOutputPath = Join-Path $buildArtifactsRoot 'bin\'
 $buildBaseIntermediatePath = Join-Path $buildArtifactsRoot 'obj\'
 $buildOutput = Join-Path $buildBaseOutputPath "$Configuration\net8.0-windows"
 
+function Read-DotEnv {
+    param([string]$Path)
+
+    $result = @{}
+    if (-not (Test-Path $Path -PathType Leaf)) {
+        return $result
+    }
+
+    foreach ($rawLine in Get-Content -Path $Path) {
+        $line = $rawLine.Trim()
+        if ([string]::IsNullOrWhiteSpace($line) -or $line.StartsWith('#')) {
+            continue
+        }
+
+        $separatorIndex = $line.IndexOf('=')
+        if ($separatorIndex -lt 1) {
+            continue
+        }
+
+        $key = $line.Substring(0, $separatorIndex).Trim()
+        if ([string]::IsNullOrWhiteSpace($key)) {
+            continue
+        }
+
+        $value = $line.Substring($separatorIndex + 1).Trim()
+        if (
+            $value.Length -ge 2 -and (
+                ($value.StartsWith('"') -and $value.EndsWith('"')) -or
+                ($value.StartsWith("'") -and $value.EndsWith("'"))
+            )
+        ) {
+            $value = $value.Substring(1, $value.Length - 2)
+        }
+
+        $result[$key] = $value
+    }
+
+    return $result
+}
+
+$dotEnvPath = Join-Path $repoRoot '.env'
+$dotEnv = Read-DotEnv -Path $dotEnvPath
+
+if (-not $PSBoundParameters.ContainsKey('AppPath') -and $dotEnv.ContainsKey('MENDIX_APP_PATH')) {
+    $AppPath = $dotEnv['MENDIX_APP_PATH']
+}
+
+if ([string]::IsNullOrWhiteSpace($AppPath)) {
+    $AppPath = 'C:\MendixWorkers\Smart Expenses app-main'
+}
+
+if (-not $PSBoundParameters.ContainsKey('DataRootPath') -and $dotEnv.ContainsKey('MENDIX_DATA_ROOT')) {
+    $DataRootPath = $dotEnv['MENDIX_DATA_ROOT']
+}
+
 if ([string]::IsNullOrWhiteSpace($DataRootPath)) {
     $DataRootPath = Join-Path $repoRoot 'mendix-data'
 }
 
+$AppPath = [System.IO.Path]::GetFullPath($AppPath)
 $DataRootPath = [System.IO.Path]::GetFullPath($DataRootPath)
 $exportPath = Join-Path $DataRootPath 'exports'
 $processedPath = Join-Path $DataRootPath 'processed'
