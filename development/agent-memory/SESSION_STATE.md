@@ -29,6 +29,24 @@ NEXT_AGENT: Tester
 SUMMARY: Model-diff analysis now performs resource ownership attribution for nested `.mpr` changes, enabling modified microflow/page/entity detection and added coverage for nanoflows and other document resources.
 BLOCKERS: Deployment copy to the target Mendix app path failed due DLL access denial; build itself succeeded.
 
+## HANDOFF - Implementer - 2026-02-19
+STATUS: COMPLETE
+NEXT_AGENT: Tester
+SUMMARY: Added shared `.env` configuration for Mendix app/data paths, updated deploy script to consume it, and added a new `start-mendix-app.ps1` launcher using the same app path.
+BLOCKERS: Deployment to the Mendix app folder still requires unlocking `AutoCommitMessage.dll` in the target extension directory.
+
+## HANDOFF - Implementer - 2026-02-19
+STATUS: COMPLETE
+NEXT_AGENT: Tester
+SUMMARY: Launcher now starts Studio Pro with `--enable-extension-development` and supports explicit or auto-detected `studiopro.exe` with optional `.env` override.
+BLOCKERS: None for launcher script changes; deploy DLL lock issue remains unrelated.
+
+## HANDOFF - Implementer - 2026-02-19
+STATUS: COMPLETE
+NEXT_AGENT: Tester
+SUMMARY: Launcher argument passing corrected to a quoted single-string format so Studio Pro receives both `--enable-extension-development` and the `.mpr` filepath reliably; local `.env` pinned to Studio Pro `10.24.14.90436`.
+BLOCKERS: None.
+
 ## HANDOFF - Implementer - 2026-02-18
 STATUS: COMPLETE
 NEXT_AGENT: Tester

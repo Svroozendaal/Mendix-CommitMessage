@@ -30,7 +30,16 @@ Default target app path:
 .\deploy-autocommitmessage.ps1
 ```
 
-Custom app path:
+Set shared local defaults in a repo-root `.env` file (copy from `.env.example`):
+
+```dotenv
+MENDIX_APP_PATH=C:\MendixWorkers\Smart Expenses app-main
+MENDIX_DATA_ROOT=C:\Workspace\Mendix-AutoCommitMessage\mendix-data
+```
+
+The deploy script uses `MENDIX_APP_PATH` and `MENDIX_DATA_ROOT` automatically when parameters are not provided.
+
+Or specify a custom app path directly:
 
 ```powershell
 .\deploy-autocommitmessage.ps1 -AppPath "C:\Workspaces\Mendix\YourApp"
@@ -47,28 +56,34 @@ Deployment target:
 - `<AppPath>\extensions\AutoCommitMessage\AutoCommitMessage.dll`
 - `<AppPath>\extensions\AutoCommitMessage\manifest.json`
 
-## Data contract folders
+The extension writes export files to `<DataRootPath>\exports` and keeps the parser contract folders available:
 
-The deploy script ensures these folders exist under `<DataRootPath>`:
+- `<DataRootPath>\exports`
+- `<DataRootPath>\processed`
+- `<DataRootPath>\errors`
+- `<DataRootPath>\structured`
+- `<DataRootPath>\dumps`
 
-- `exports`
-- `processed`
-- `errors`
-- `structured`
-- `dumps`
+## Start the Mendix app quickly
 
-## Model analysis detail level
+Use the root launcher script:
 
-- Resource-level change detection covers added/modified/deleted model resources.
-- Microflow details include action counts and second-level descriptors (for example retrieve source, changed member assignments, commit flags, call targets).
-- Domain entity details include added attribute names.
-- `.mpr` textual diff remains binary fallback; semantic model diff comes from `mx.exe dump-mpr` comparison.
+```powershell
+.\start-mendix-app.ps1
+```
 
-## Refresh and reload feedback
+It reads `MENDIX_APP_PATH` from `.env`, locates `studiopro.exe`, and starts Studio Pro with extension development enabled using `--enable-extension-development`.  
+You can still override the path:
 
-- Status line default: `Ready. Refresh re-runs Git + model analysis.`
-- While refreshing: `Reloading Git + model changes...`
-- After completion: `Reloaded Git + model changes at <time>`
+```powershell
+.\start-mendix-app.ps1 -AppPath "C:\Workspaces\Mendix\YourApp"
+```
+
+Optional: pin a specific Studio Pro executable:
+
+```powershell
+.\start-mendix-app.ps1 -StudioProPath "C:\Program Files\Mendix\10.x.x.x\modeler\studiopro.exe"
+```
 
 ## Notes
 
