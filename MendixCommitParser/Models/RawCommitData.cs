@@ -6,6 +6,7 @@ namespace MendixCommitParser.Models;
 /// Represents the raw commit export created by the Studio Pro extension.
 /// </summary>
 public sealed record RawCommitData(
+    [property: JsonPropertyName("schemaVersion")] string? SchemaVersion,
     [property: JsonPropertyName("timestamp")] string Timestamp,
     [property: JsonPropertyName("projectName")] string ProjectName,
     [property: JsonPropertyName("branchName")] string BranchName,

@@ -70,6 +70,7 @@ General skills:
 - `development/skills/mendix-sdk/SKILL.md`
 - `development/skills/mcp-server/SKILL.md`
 - `development/skills/mendix-model-dump-inspection/SKILL.md`
+- `development/skills/mendix-commit-structuring/SKILL.md`
 
 Project-specific constraints skill:
 

@@ -1,6 +1,15 @@
 # AutoCommitMessage Extension (Studio Pro 10)
 
-Mendix Studio Pro extension that shows uncommitted Git changes for Mendix project files (`.mpr`, `.mprops`) in a dockable pane.
+Studio Pro 10 dockable-pane extension for Mendix Git changes (`.mpr`, `.mprops`) with model-level `.mpr` analysis and export-ready data.
+
+## Current behaviour
+
+1. Filters Git status to Mendix model/config files only (`*.mpr`, `*.mprops`).
+2. Renders a WebView UI with:
+   - left pane: `Model changes (.mpr)` (primary, larger pane)
+   - right pane: `Changed files` table and `Diff`
+3. `Refresh` calls the extension refresh route and re-runs Git plus model analysis.
+4. `Export` writes raw payload JSON and also persists full model dumps (`working/head`) for changed `.mpr` files.
 
 ## Build
 
@@ -8,49 +17,61 @@ Mendix Studio Pro extension that shows uncommitted Git changes for Mendix projec
 dotnet build .\studio-pro-extension-csharp\AutoCommitMessage.csproj -c Debug
 ```
 
-Output:
+Build output:
 
 - `studio-pro-extension-csharp\bin\Debug\net8.0-windows\AutoCommitMessage.dll`
 - `studio-pro-extension-csharp\bin\Debug\net8.0-windows\manifest.json`
 
-## Deploy to a Mendix app
+## Deploy to Mendix app
 
-Use the root deploy script:
+Default target app path:
 
 ```powershell
 .\deploy-autocommitmessage.ps1
 ```
 
-Or specify a custom app path:
+Custom app path:
 
 ```powershell
 .\deploy-autocommitmessage.ps1 -AppPath "C:\Workspaces\Mendix\YourApp"
 ```
 
-Set a custom data root for Phase 6 exports:
+Custom shared data root:
 
 ```powershell
-.\deploy-autocommitmessage.ps1 -DataRootPath "C:\Path\To\Mendix-AutoCommitMessage\mendix-data"
+.\deploy-autocommitmessage.ps1 -DataRootPath "C:\Path\To\Mendix-CommitMessage\mendix-data"
 ```
 
-This deploys to:
+Deployment target:
 
 - `<AppPath>\extensions\AutoCommitMessage\AutoCommitMessage.dll`
 - `<AppPath>\extensions\AutoCommitMessage\manifest.json`
 
-The extension writes export files to `<DataRootPath>\exports` and keeps the parser contract folders available:
+## Data contract folders
 
-- `<DataRootPath>\exports`
-- `<DataRootPath>\processed`
-- `<DataRootPath>\errors`
-- `<DataRootPath>\structured`
-- `<DataRootPath>\dumps`
+The deploy script ensures these folders exist under `<DataRootPath>`:
+
+- `exports`
+- `processed`
+- `errors`
+- `structured`
+- `dumps`
+
+## Model analysis detail level
+
+- Resource-level change detection covers added/modified/deleted model resources.
+- Microflow details include action counts and second-level descriptors (for example retrieve source, changed member assignments, commit flags, call targets).
+- Domain entity details include added attribute names.
+- `.mpr` textual diff remains binary fallback; semantic model diff comes from `mx.exe dump-mpr` comparison.
+
+## Refresh and reload feedback
+
+- Status line default: `Ready. Refresh re-runs Git + model analysis.`
+- While refreshing: `Reloading Git + model changes...`
+- After completion: `Reloaded Git + model changes at <time>`
 
 ## Notes
 
-- No localhost UI dependency.
-- No `npm run dev` is required.
-- Model analysis now detects `Added`, `Modified`, and `Deleted` resources beyond only pages/microflows, including nanoflows and domain model resources (`Entity`, `Association`, `Enumeration`) with nested-change attribution.
-- Microflow model details now include action usage summaries (for example, `CreateObjectAction x1, ChangeObjectAction x2`).
-- Domain model entity details now include attribute names added in the change set.
-- Export operations persist full HEAD/working model dumps for changed `.mpr` files under `mendix-data\dumps`.
+- No localhost web server or `npm` workflow is required.
+- Pane URL contains a cache-buster token per open to avoid stale UI rendering.
+- Export mode persists dump artifacts in `mendix-data\dumps` for deeper offline inspection.

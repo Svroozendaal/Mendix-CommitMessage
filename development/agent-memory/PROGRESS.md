@@ -41,3 +41,21 @@ SCOPE: Make refresh explicitly reload model analysis, enrich microflow action de
 FILES_CHANGED: studio-pro-extension-csharp/ExtensionConstants.cs, studio-pro-extension-csharp/GitChangesWebServerExtension.cs, studio-pro-extension-csharp/GitChangesPanelHtml.cs, studio-pro-extension-csharp/MendixModelDiffService.cs, development/skills/mendix-model-dump-inspection/SKILL.md, development/AGENTS.md, development/agent-memory/DECISIONS_LOG.md, development/agent-memory/PROGRESS.md
 VALIDATION: `dotnet build .\\studio-pro-extension-csharp\\AutoCommitMessage.csproj -c Debug` passed with 0 warnings/errors; `deploy-autocommitmessage.ps1` deployed successfully to `C:\\Workspaces\\Mendix\\Smart Expenses app-main`.
 NOTES: Refresh now shows `Reloading Git + model changes...` and action detail strings include context such as association-based retrieves and changed member names.
+
+## PROGRESS_ENTRY - 2026-02-18
+SCOPE: Implement second-level microflow action detail extraction with value expressions and richer metadata.
+FILES_CHANGED: studio-pro-extension-csharp/MendixModelDiffService.cs, development/skills/mendix-model-dump-inspection/SKILL.md, development/agent-memory/DECISIONS_LOG.md, development/agent-memory/PROGRESS.md
+VALIDATION: `dotnet build .\\studio-pro-extension-csharp\\AutoCommitMessage.csproj -c Debug` passed with 0 warnings/errors; `deploy-autocommitmessage.ps1` deployed successfully to `C:\\Workspaces\\Mendix\\Smart Expenses app-main`.
+NOTES: Action detail output now includes assignment-style summaries (`Attribute=$Expression`), retrieve `xPath/range/sort` details, and broader action coverage (`ChangeVariableAction`, `CreateVariableAction`, `DeleteAction`, and action-call descriptors).
+
+## PROGRESS_ENTRY - 2026-02-18
+SCOPE: Upgrade Phase 7 parser structure/process for commit-message-ready outputs based on latest export payloads.
+FILES_CHANGED: MendixCommitParser/Models/RawCommitData.cs, MendixCommitParser/Models/StructuredCommitData.cs, MendixCommitParser/Services/CommitParserService.cs, MendixCommitParser/Services/EntityExtractorService.cs, MendixCommitParser/Services/FileWatcherService.cs, MendixCommitParser/Program.cs, mendix-data/README.md, development/agent-memory/DECISIONS_LOG.md, development/agent-memory/PROGRESS.md
+VALIDATION: `dotnet build .\\MendixCommitParser\\MendixCommitParser.csproj -c Debug` passed with 0 warnings/errors; parser runtime replay confirmed startup backlog processing and generated schema `2.0` structured output with `files`, `modelSummary`, and `commitMessageContext`.
+NOTES: Export backlog in `mendix-data/exports` is now processed on startup, and `.mpr` entities are derived from model changes instead of fallback `Unknown/App.mpr`.
+
+## PROGRESS_ENTRY - 2026-02-18
+SCOPE: Refresh informational documentation and skills for latest extension UI/refresh flow and parser schema/process changes.
+FILES_CHANGED: studio-pro-extension-csharp/README.md, studio-pro-extension-csharp/info_studio-pro-extension-csharp.md, MendixCommitParser/README.md, mendix-data/README.md, development/skills/mendix-model-dump-inspection/SKILL.md, development/skills/mendix-studio-pro-10/SKILL.md, development/skills/mendix-commit-structuring/SKILL.md, development/AGENTS.md, development/prompts/PHASE_6_DATA_COLLECTION.md, development/prompts/PHASE_7_COMMIT_PARSER_AGENT.md, development/agent-memory/DECISIONS_LOG.md, development/agent-memory/PROGRESS.md
+VALIDATION: Manual markdown and diff verification completed; `skill-creator` quick validator could not run because `PyYAML` is not installed in the local Python environment (`ModuleNotFoundError: No module named 'yaml'`).
+NOTES: Added a new Phase 7 skill focused on structured output contracts and ensured prompts reference both commit structuring and model dump inspection workflows.

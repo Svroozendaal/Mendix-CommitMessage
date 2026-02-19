@@ -34,7 +34,13 @@ internal static class Program
     private static void OnFileProcessed(string filePath, StructuredCommitData data)
     {
         JsonStorage.Save(data, JsonStorage.DefaultOutputFolder);
-        Console.WriteLine($"Processed {Path.GetFileName(filePath)}: {data.Entities.Length} entities extracted, {data.Metrics.TotalFiles} files changed");
+        var scopes = data.CommitMessageContext.SuggestedScopes.Length == 0
+            ? "<none>"
+            : string.Join(", ", data.CommitMessageContext.SuggestedScopes);
+        Console.WriteLine(
+            $"Processed {Path.GetFileName(filePath)}: " +
+            $"{data.Entities.Length} entities, {data.Metrics.TotalFiles} files, {data.ModelSummary.TotalModelChanges} model changes, " +
+            $"suggested commit '{data.CommitMessageContext.SuggestedType}' scopes [{scopes}]");
     }
 
     private static void OnFileFailed(string filePath, Exception ex)

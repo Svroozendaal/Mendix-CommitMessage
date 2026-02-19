@@ -1,7 +1,7 @@
 # PHASE_7_COMMIT_PARSER_AGENT
 ## Goal
 
-Build and operate the receiving parser workflow for exported change data.
+Build and operate the receiving parser workflow for exported change data, producing commit-message-ready structured outputs.
 
 ## Entry Criteria
 
@@ -11,21 +11,28 @@ Build and operate the receiving parser workflow for exported change data.
 ## Required First Action
 
 1. Read `development/AGENTS.md`.
-2. Ask workflow questions first.
-3. Ask which skills should be used and suggest relevant defaults.
-4. Load relevant skills, including `development/skills/mendix-studio-pro-10/SKILL.md`.
+2. Read `development/AI_WORKFLOW.md`.
+3. Ask workflow questions first.
+4. Ask which skills should be used and suggest relevant defaults.
+5. Load relevant skills, including:
+   - `development/skills/mendix-studio-pro-10/SKILL.md`
+   - `development/skills/mendix-commit-structuring/SKILL.md`
+   - `development/skills/mendix-model-dump-inspection/SKILL.md`
 
 ## Tasks
 
 1. Pause at `WAIT_FOR_APPROVAL` before implementation changes, unless `AUTO_APPROVE` is explicit.
 2. Watch export input folder for new files.
-3. Parse and enrich raw change data.
-4. Persist structured outputs safely.
-5. Route malformed files to error handling.
-6. Document pipeline behaviour and hand-off contracts.
+3. Process existing export backlog on startup before watcher events.
+4. Parse and enrich raw change data into structured schema output.
+5. Populate commit-oriented sections (`files`, `modelSummary`, `commitMessageContext`).
+6. Persist structured outputs safely.
+7. Route malformed files to error handling.
+8. Document pipeline behaviour and hand-off contracts.
 
 ## Exit Criteria
 
 1. Watch/parse/store/error pipeline is operational.
-2. Hand-off contracts are documented.
-3. Validation outcomes are recorded.
+2. Structured output contract is documented (`schemaVersion` and key sections).
+3. Hand-off contracts are documented.
+4. Validation outcomes are recorded.

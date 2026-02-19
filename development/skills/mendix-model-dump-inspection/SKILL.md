@@ -39,9 +39,13 @@ description: Retrieve detailed Mendix model changes from `mx dump-mpr` JSON arti
   - Count action types by `$Type` short name (for example `RetrieveAction`, `ChangeObjectAction`).
   - Build action descriptors from action fields:
     - `RetrieveAction`: `retrieveSource.$Type`, `startVariableName`, `association`, `entity`, `outputVariableName`.
-    - `ChangeObjectAction`: `changeVariableName` plus changed member names from `items[*].attribute|association`.
+    - `RetrieveAction` (second level): add `retrieveType`, `retrieveOverAssociations`, `xPathConstraint`, `range`, `sortExpression`.
+    - `ChangeObjectAction`: `changeVariableName` plus changed member assignments from `items[*].attribute|association` and `items[*].value`.
+    - `ChangeObjectAction` (second level): include `refreshInClient`, `withEvents`.
     - `CommitAction`: `commitVariableName`.
-    - `CreateObjectAction`: `entity`, `outputVariableName`, and changed members from `items`.
+    - `CommitAction` (second level): include `refreshInClient`, `withEvents`.
+    - `CreateObjectAction`: `entity`, `outputVariableName`, and changed member assignments from `items`.
+    - Extra actions: `ChangeVariableAction`, `CreateVariableAction`, `DeleteAction`, `MicroflowCallAction`, `JavaActionCallAction`, `JavaScriptActionCallAction`.
 - Domain entities (`DomainModels$Entity`):
   - Inspect `attributes` array for `DomainModels$Attribute`.
   - Compare attribute keys between `working` and `head`.
@@ -51,6 +55,24 @@ description: Retrieve detailed Mendix model changes from `mx dump-mpr` JSON arti
 - Include `changeType`, `elementType`, `elementName`, and merged detail text.
 - Sort by `elementType`, `elementName`, then `changeType`.
 
+## DETAIL STRING CONTRACT (PARSER COUPLING)
+
+Keep emitted detail text parseable by `MendixCommitParser/Services/CommitParserService.cs`.
+
+Required pattern for microflow summary:
+
+- `actions used (<n>): ActionType x#, ActionType x#`
+
+Required pattern for descriptors:
+
+- `action details: ActionType: detail text; ActionType: detail text`
+
+Required pattern for domain attributes:
+
+- `attributes added (<n>): AttributeA, AttributeB`
+
+Do not rename these anchors (`actions used`, `action details`, `attributes added`) unless parser regexes are updated in the same change.
+
 ## FIELD MAP FOR ACTION DETAILS
 
 - `Microflows$RetrieveAction`
@@ -59,15 +81,24 @@ description: Retrieve detailed Mendix model changes from `mx dump-mpr` JSON arti
   - `retrieveSource.startVariableName`
   - `retrieveSource.association`
   - `retrieveSource.entity`
+  - `retrieveType`
+  - `retrieveOverAssociations`
+  - `xPathConstraint`
+  - `range`
+  - `sortExpression`
 
 - `Microflows$ChangeObjectAction`
   - `changeVariableName`
   - `items[*].attribute`
   - `items[*].association`
-  - `items[*].value` (expression text if needed)
+  - `items[*].value` (expression text)
+  - `refreshInClient`
+  - `withEvents`
 
 - `Microflows$CommitAction`
   - `commitVariableName`
+  - `refreshInClient`
+  - `withEvents`
 
 - `Microflows$CreateObjectAction`
   - `entity`
@@ -79,8 +110,10 @@ description: Retrieve detailed Mendix model changes from `mx dump-mpr` JSON arti
 - Use `studio-pro-extension-csharp/MendixModelDiffService.cs`:
   - `CompareDumps(...)` is the main entry point.
   - `BuildMicroflowActionDetails(...)` and `BuildDomainEntityAttributeDetails(...)` implement the specialised detail extraction.
+- Use `MendixCommitParser/Services/CommitParserService.cs`:
+  - `BuildMicroflowActionSummary(...)` parses `actions used` and `action details`.
+  - `BuildDomainModelSummary(...)` parses `attributes added`.
 
 ## OUTPUT EXAMPLE STYLE
 
-- `SmartExpenses.NEW_MICROFLOW_test (Added) - actions used (3): ChangeObjectAction x1, CommitAction x1, RetrieveAction x1; action details: RetrieveAction: retrieve CurrentSession over association User_Session from Account; ChangeObjectAction: change CurrentSession (SessionId); CommitAction: commit CurrentSession`
-
+- `SmartExpenses.NEW_MICROFLOW_test (Added) - actions used (3): ChangeObjectAction x1, CommitAction x1, RetrieveAction x1; action details: RetrieveAction: retrieve CurrentSession over association User_Session from Account (xPath=[%CurrentUser%]); ChangeObjectAction: change CurrentSession (SessionId=$SessionToken); CommitAction: commit CurrentSession (withEvents=true)`

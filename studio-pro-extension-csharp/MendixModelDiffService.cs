@@ -337,6 +337,12 @@ public static class MendixModelDiffService
             "ChangeObjectAction" => BuildChangeObjectActionDescriptor(actionElement),
             "CommitAction" => BuildCommitActionDescriptor(actionElement),
             "CreateObjectAction" => BuildCreateObjectActionDescriptor(actionElement),
+            "ChangeVariableAction" => BuildChangeVariableActionDescriptor(actionElement),
+            "CreateVariableAction" => BuildCreateVariableActionDescriptor(actionElement),
+            "DeleteAction" => BuildDeleteActionDescriptor(actionElement),
+            "MicroflowCallAction" => BuildMicroflowCallActionDescriptor(actionElement),
+            "JavaActionCallAction" => BuildNamedCallActionDescriptor(actionElement, "java action", "javaAction", "actionName"),
+            "JavaScriptActionCallAction" => BuildNamedCallActionDescriptor(actionElement, "javascript action", "javaScriptAction", "actionName"),
             _ => null,
         };
 
@@ -344,51 +350,99 @@ public static class MendixModelDiffService
     {
         var outputVariableName = TryReadStringProperty(actionElement, "outputVariableName");
         var outputLabel = string.IsNullOrWhiteSpace(outputVariableName) ? "object(s)" : outputVariableName;
+        var details = new List<string>();
+        AppendOption(details, "retrieveType", TryReadStringProperty(actionElement, "retrieveType"));
+        AppendOption(details, "overAssociations", TryReadStringProperty(actionElement, "retrieveOverAssociations"));
+        AppendOption(details, "xPath", TryReadStringProperty(actionElement, "xPathConstraint"), 220);
+
+        if (TryReadProperty(actionElement, "range", out var rangeElement) && rangeElement.ValueKind == JsonValueKind.Object)
+        {
+            var rangeDetails = BuildRetrieveRangeDetails(rangeElement);
+            if (!string.IsNullOrWhiteSpace(rangeDetails))
+            {
+                details.Add($"range={rangeDetails}");
+            }
+        }
+
+        if (TryReadProperty(actionElement, "sortExpression", out var sortExpressionElement) && sortExpressionElement.ValueKind == JsonValueKind.Array)
+        {
+            var sortDetails = BuildRetrieveSortDetails(sortExpressionElement);
+            if (!string.IsNullOrWhiteSpace(sortDetails))
+            {
+                details.Add($"sort={sortDetails}");
+            }
+        }
 
         if (!TryReadProperty(actionElement, "retrieveSource", out var retrieveSource) ||
             retrieveSource.ValueKind != JsonValueKind.Object)
         {
-            return string.IsNullOrWhiteSpace(outputVariableName)
+            var baseDescriptor = string.IsNullOrWhiteSpace(outputVariableName)
                 ? null
                 : $"retrieve {outputVariableName}";
+
+            if (string.IsNullOrWhiteSpace(baseDescriptor))
+            {
+                return null;
+            }
+
+            return details.Count == 0
+                ? baseDescriptor
+                : $"{baseDescriptor} ({string.Join(", ", details)})";
         }
 
         var sourceType = ShortTypeName(TryReadStringProperty(retrieveSource, "$Type") ?? string.Empty);
+        string sourceDescriptor;
         if (string.Equals(sourceType, "AssociationRetrieveSource", StringComparison.OrdinalIgnoreCase))
         {
             var association = ShortMemberName(TryReadStringProperty(retrieveSource, "association")) ?? "<association>";
             var startVariable = TryReadStringProperty(retrieveSource, "startVariableName");
             var startLabel = string.IsNullOrWhiteSpace(startVariable) ? "<object>" : startVariable;
-            return $"retrieve {outputLabel} over association {association} from {startLabel}";
+            sourceDescriptor = $"retrieve {outputLabel} over association {association} from {startLabel}";
         }
-
-        if (string.Equals(sourceType, "DatabaseRetrieveSource", StringComparison.OrdinalIgnoreCase))
+        else if (string.Equals(sourceType, "DatabaseRetrieveSource", StringComparison.OrdinalIgnoreCase))
         {
             var entity = TryReadStringProperty(retrieveSource, "entity");
             var entityLabel = string.IsNullOrWhiteSpace(entity) ? "<entity>" : entity;
-            return $"retrieve {outputLabel} from {entityLabel}";
+            sourceDescriptor = $"retrieve {outputLabel} from {entityLabel}";
+        }
+        else
+        {
+            var sourceLabel = string.IsNullOrWhiteSpace(sourceType) ? "source" : sourceType;
+            sourceDescriptor = $"retrieve {outputLabel} via {sourceLabel}";
         }
 
-        var sourceLabel = string.IsNullOrWhiteSpace(sourceType) ? "source" : sourceType;
-        return $"retrieve {outputLabel} via {sourceLabel}";
+        return details.Count == 0
+            ? sourceDescriptor
+            : $"{sourceDescriptor} ({string.Join(", ", details)})";
     }
 
     private static string BuildChangeObjectActionDescriptor(JsonElement actionElement)
     {
         var variableName = TryReadStringProperty(actionElement, "changeVariableName");
         var variableLabel = string.IsNullOrWhiteSpace(variableName) ? "object" : variableName;
+        var details = new List<string>();
         var memberSummary = FormatChangedMemberSummary(actionElement);
-        return string.IsNullOrWhiteSpace(memberSummary)
-            ? $"change {variableLabel}"
-            : $"change {variableLabel} ({memberSummary})";
+        if (!string.IsNullOrWhiteSpace(memberSummary))
+        {
+            details.Add(memberSummary);
+        }
+
+        AppendOption(details, "refreshInClient", TryReadStringProperty(actionElement, "refreshInClient"));
+        AppendOption(details, "withEvents", TryReadStringProperty(actionElement, "withEvents"));
+        return details.Count == 0 ? $"change {variableLabel}" : $"change {variableLabel} ({string.Join("; ", details)})";
     }
 
     private static string BuildCommitActionDescriptor(JsonElement actionElement)
     {
         var variableName = TryReadStringProperty(actionElement, "commitVariableName");
-        return string.IsNullOrWhiteSpace(variableName)
+        var baseDescriptor = string.IsNullOrWhiteSpace(variableName)
             ? "commit object(s)"
             : $"commit {variableName}";
+
+        var details = new List<string>();
+        AppendOption(details, "refreshInClient", TryReadStringProperty(actionElement, "refreshInClient"));
+        AppendOption(details, "withEvents", TryReadStringProperty(actionElement, "withEvents"));
+        return details.Count == 0 ? baseDescriptor : $"{baseDescriptor} ({string.Join(", ", details)})";
     }
 
     private static string BuildCreateObjectActionDescriptor(JsonElement actionElement)
@@ -401,21 +455,119 @@ public static class MendixModelDiffService
             ? $"create {entityLabel}"
             : $"create {entityLabel} as {outputVariableName}";
 
+        var details = new List<string>();
         var memberSummary = FormatChangedMemberSummary(actionElement);
-        return string.IsNullOrWhiteSpace(memberSummary)
-            ? baseDescriptor
-            : $"{baseDescriptor} ({memberSummary})";
+        if (!string.IsNullOrWhiteSpace(memberSummary))
+        {
+            details.Add(memberSummary);
+        }
+
+        return details.Count == 0 ? baseDescriptor : $"{baseDescriptor} ({string.Join("; ", details)})";
     }
 
-    private static string? FormatChangedMemberSummary(JsonElement actionElement, int maxMembers = 4)
+    private static string? BuildChangeVariableActionDescriptor(JsonElement actionElement)
+    {
+        var variableName = TryReadAnyStringProperty(actionElement, "changeVariableName", "variableName");
+        if (string.IsNullOrWhiteSpace(variableName))
+        {
+            return null;
+        }
+
+        var expression = TryReadActionExpression(actionElement, "value", "newValue", "expression");
+        return string.IsNullOrWhiteSpace(expression)
+            ? $"change variable {variableName}"
+            : $"change variable {variableName}={expression}";
+    }
+
+    private static string? BuildCreateVariableActionDescriptor(JsonElement actionElement)
+    {
+        var variableName = TryReadAnyStringProperty(actionElement, "outputVariableName", "variableName");
+        if (string.IsNullOrWhiteSpace(variableName))
+        {
+            return null;
+        }
+
+        var variableType = TryReadAnyStringProperty(actionElement, "variableType", "type");
+        var expression = TryReadActionExpression(actionElement, "value", "initialValue", "initialValueExpression", "defaultValue");
+        var baseDescriptor = string.IsNullOrWhiteSpace(variableType)
+            ? $"create variable {variableName}"
+            : $"create variable {variableName}:{variableType}";
+
+        return string.IsNullOrWhiteSpace(expression)
+            ? baseDescriptor
+            : $"{baseDescriptor}={expression}";
+    }
+
+    private static string? BuildDeleteActionDescriptor(JsonElement actionElement)
+    {
+        var variableName = TryReadAnyStringProperty(actionElement, "deleteVariableName", "inputVariableName", "variableName");
+        if (string.IsNullOrWhiteSpace(variableName))
+        {
+            return null;
+        }
+
+        var details = new List<string>();
+        AppendOption(details, "refreshInClient", TryReadStringProperty(actionElement, "refreshInClient"));
+        return details.Count == 0
+            ? $"delete {variableName}"
+            : $"delete {variableName} ({string.Join(", ", details)})";
+    }
+
+    private static string? BuildMicroflowCallActionDescriptor(JsonElement actionElement)
+    {
+        var microflowName = TryReadStringProperty(actionElement, "microflow");
+        var outputVariableName = TryReadStringProperty(actionElement, "outputVariableName");
+
+        if (string.IsNullOrWhiteSpace(microflowName) && string.IsNullOrWhiteSpace(outputVariableName))
+        {
+            return null;
+        }
+
+        var baseDescriptor = string.IsNullOrWhiteSpace(microflowName)
+            ? "call microflow"
+            : $"call microflow {microflowName}";
+
+        if (!string.IsNullOrWhiteSpace(outputVariableName))
+        {
+            baseDescriptor = $"{baseDescriptor} -> {outputVariableName}";
+        }
+
+        return baseDescriptor;
+    }
+
+    private static string? BuildNamedCallActionDescriptor(
+        JsonElement actionElement,
+        string actionLabel,
+        params string[] actionNamePropertyCandidates)
+    {
+        var actionName = TryReadAnyStringProperty(actionElement, actionNamePropertyCandidates);
+        var outputVariableName = TryReadStringProperty(actionElement, "outputVariableName");
+        if (string.IsNullOrWhiteSpace(actionName) && string.IsNullOrWhiteSpace(outputVariableName))
+        {
+            return null;
+        }
+
+        var baseDescriptor = string.IsNullOrWhiteSpace(actionName)
+            ? $"call {actionLabel}"
+            : $"call {actionLabel} {actionName}";
+
+        if (!string.IsNullOrWhiteSpace(outputVariableName))
+        {
+            baseDescriptor = $"{baseDescriptor} -> {outputVariableName}";
+        }
+
+        return baseDescriptor;
+    }
+
+    private static string? FormatChangedMemberSummary(JsonElement actionElement, int maxMembers = 8)
     {
         if (!TryReadProperty(actionElement, "items", out var items) || items.ValueKind != JsonValueKind.Array)
         {
             return null;
         }
 
-        var uniqueMemberNames = new List<string>();
-        var seenMembers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var uniqueMemberAssignments = new List<string>();
+        var seenMembers = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var item in items.EnumerateArray())
         {
@@ -427,21 +579,27 @@ public static class MendixModelDiffService
             var attribute = ShortMemberName(TryReadStringProperty(item, "attribute"));
             var association = ShortMemberName(TryReadStringProperty(item, "association"));
             var memberName = string.IsNullOrWhiteSpace(attribute) ? association : attribute;
-            if (string.IsNullOrWhiteSpace(memberName) || !seenMembers.Add(memberName))
+            memberName ??= "<member>";
+            var valueExpression = TryReadPropertyAsText(item, "value", 180);
+            var memberAssignment = string.IsNullOrWhiteSpace(valueExpression)
+                ? memberName
+                : $"{memberName}={valueExpression}";
+
+            if (!seenMembers.Add(memberAssignment))
             {
                 continue;
             }
 
-            uniqueMemberNames.Add(memberName);
+            uniqueMemberAssignments.Add(memberAssignment);
         }
 
-        if (uniqueMemberNames.Count == 0)
+        if (uniqueMemberAssignments.Count == 0)
         {
             return null;
         }
 
-        var visibleMembers = uniqueMemberNames.Take(maxMembers).ToList();
-        var remaining = uniqueMemberNames.Count - visibleMembers.Count;
+        var visibleMembers = uniqueMemberAssignments.Take(maxMembers).ToList();
+        var remaining = uniqueMemberAssignments.Count - visibleMembers.Count;
         if (remaining > 0)
         {
             visibleMembers.Add($"+{remaining} more");
@@ -490,8 +648,8 @@ public static class MendixModelDiffService
     private static string? FormatActionDetailList(
         Dictionary<string, HashSet<string>> actionDescriptors,
         Dictionary<string, int> actionCounts,
-        int maxActionTypes = 4,
-        int maxDescriptorsPerType = 2)
+        int maxActionTypes = 12,
+        int maxDescriptorsPerType = 6)
     {
         if (actionDescriptors.Count == 0)
         {
@@ -548,6 +706,186 @@ public static class MendixModelDiffService
         }
 
         return details.Count == 0 ? null : string.Join("; ", details);
+    }
+
+    private static string? BuildRetrieveRangeDetails(JsonElement rangeElement)
+    {
+        var parts = new List<string>();
+        var rangeType = ShortTypeName(TryReadStringProperty(rangeElement, "$Type") ?? string.Empty);
+        if (!string.IsNullOrWhiteSpace(rangeType) && !string.Equals(rangeType, "<unknown>", StringComparison.Ordinal))
+        {
+            parts.Add(rangeType);
+        }
+
+        AppendOption(parts, "amount", TryReadStringProperty(rangeElement, "amount"));
+        AppendOption(parts, "offset", TryReadStringProperty(rangeElement, "offset"));
+        AppendOption(parts, "begin", TryReadStringProperty(rangeElement, "begin"));
+        AppendOption(parts, "end", TryReadStringProperty(rangeElement, "end"));
+        AppendOption(parts, "limit", TryReadStringProperty(rangeElement, "limit"));
+
+        return parts.Count == 0 ? null : string.Join(", ", parts);
+    }
+
+    private static string? BuildRetrieveSortDetails(JsonElement sortExpressionElement, int maxSortEntries = 5)
+    {
+        var sortEntries = new List<string>();
+        foreach (var sortExpression in sortExpressionElement.EnumerateArray())
+        {
+            if (sortExpression.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var attribute = ShortMemberName(TryReadStringProperty(sortExpression, "attribute")) ?? "<attribute>";
+            var sortOrder = TryReadStringProperty(sortExpression, "sortOrder");
+            sortEntries.Add(string.IsNullOrWhiteSpace(sortOrder) ? attribute : $"{attribute}:{sortOrder}");
+        }
+
+        if (sortEntries.Count == 0)
+        {
+            return null;
+        }
+
+        var visibleEntries = sortEntries.Take(maxSortEntries).ToList();
+        var remainingEntries = sortEntries.Count - visibleEntries.Count;
+        if (remainingEntries > 0)
+        {
+            visibleEntries.Add($"+{remainingEntries} more");
+        }
+
+        return string.Join(", ", visibleEntries);
+    }
+
+    private static void AppendOption(
+        ICollection<string> options,
+        string key,
+        string? value,
+        int maxLength = 140)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        var normalizedValue = NormalizeInlineText(value, maxLength);
+        if (normalizedValue.Length == 0)
+        {
+            return;
+        }
+
+        options.Add($"{key}={normalizedValue}");
+    }
+
+    private static string? TryReadAnyStringProperty(JsonElement element, params string[] propertyNameCandidates)
+    {
+        foreach (var propertyName in propertyNameCandidates)
+        {
+            var value = TryReadStringProperty(element, propertyName);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    private static string? TryReadActionExpression(JsonElement actionElement, params string[] propertyNameCandidates)
+    {
+        foreach (var propertyName in propertyNameCandidates)
+        {
+            var expression = TryReadPropertyAsText(actionElement, propertyName, 220);
+            if (!string.IsNullOrWhiteSpace(expression))
+            {
+                return expression;
+            }
+        }
+
+        return null;
+    }
+
+    private static string? TryReadPropertyAsText(JsonElement element, string propertyName, int maxLength)
+    {
+        if (!TryReadProperty(element, propertyName, out var propertyValue))
+        {
+            return null;
+        }
+
+        var valueText = FormatElementValueForDisplay(propertyValue, maxLength);
+        return string.IsNullOrWhiteSpace(valueText) ? null : valueText;
+    }
+
+    private static string? FormatElementValueForDisplay(JsonElement element, int maxLength)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.String => NormalizeInlineText(element.GetString() ?? string.Empty, maxLength),
+            JsonValueKind.Number => element.GetRawText(),
+            JsonValueKind.True => "true",
+            JsonValueKind.False => "false",
+            JsonValueKind.Null => "null",
+            JsonValueKind.Array => $"[{element.GetArrayLength()} item(s)]",
+            JsonValueKind.Object => FormatObjectValueForDisplay(element, maxLength),
+            _ => NormalizeInlineText(element.GetRawText(), maxLength),
+        };
+    }
+
+    private static string FormatObjectValueForDisplay(JsonElement element, int maxLength)
+    {
+        var summaryParts = new List<string>();
+        var fieldCandidates = new[]
+        {
+            "value",
+            "variableName",
+            "text",
+            "entity",
+            "microflow",
+            "page",
+            "association",
+            "attribute",
+        };
+
+        foreach (var fieldName in fieldCandidates)
+        {
+            var fieldValue = TryReadStringProperty(element, fieldName);
+            if (string.IsNullOrWhiteSpace(fieldValue))
+            {
+                continue;
+            }
+
+            summaryParts.Add($"{fieldName}={NormalizeInlineText(fieldValue, maxLength / 2)}");
+        }
+
+        var type = TryReadStringProperty(element, "$Type");
+        var typeLabel = string.IsNullOrWhiteSpace(type) ? null : ShortTypeName(type);
+        if (summaryParts.Count == 0)
+        {
+            return string.IsNullOrWhiteSpace(typeLabel) ? "<object>" : typeLabel;
+        }
+
+        var summaryText = string.Join(", ", summaryParts);
+        if (!string.IsNullOrWhiteSpace(typeLabel))
+        {
+            summaryText = $"{typeLabel}({summaryText})";
+        }
+
+        return NormalizeInlineText(summaryText, maxLength);
+    }
+
+    private static string NormalizeInlineText(string text, int maxLength = 140)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return string.Empty;
+        }
+
+        var normalized = string.Join(" ", text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)).Trim();
+        if (normalized.Length > maxLength)
+        {
+            normalized = $"{normalized[..maxLength]}...";
+        }
+
+        return normalized;
     }
 
     private static string? BuildDomainEntityAttributeDetails(

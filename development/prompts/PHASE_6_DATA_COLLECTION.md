@@ -16,7 +16,7 @@ Collect and export structured change data for reliable downstream parsing.
 3. Ask workflow questions first.
 4. Confirm scope and non-goals.
 5. Ask which skills should be used and suggest relevant defaults.
-6. Load relevant skills, including `development/skills/mendix-studio-pro-10/SKILL.md`, `development/skills/mendix-sdk/SKILL.md`, `development/skills/testing/SKILL.md`, and `development/skills/documentation/SKILL.md`.
+6. Load relevant skills, including `development/skills/mendix-studio-pro-10/SKILL.md`, `development/skills/mendix-sdk/SKILL.md`, `development/skills/mendix-model-dump-inspection/SKILL.md`, `development/skills/testing/SKILL.md`, and `development/skills/documentation/SKILL.md`.
 
 ## Tasks
 
@@ -25,9 +25,10 @@ Collect and export structured change data for reliable downstream parsing.
 3. Define and version the export schema (required fields, optional fields, enums, and timestamps).
 4. Define folder and file contract for parser ingestion (naming, atomic writes, and error routing).
 5. Implement export behaviour and user feedback in small verifiable steps.
-6. Validate success and failure paths, including empty change sets, malformed data, binary-model handling, and permission issues.
-7. Record decisions and implementation progress in `development/agent-memory/DECISIONS_LOG.md` and `development/agent-memory/PROGRESS.md`.
-8. Document parser consumer expectations, known limitations, and hand-off notes for phase 7.
+6. Ensure `.mpr` export payload can carry model dump artifact locations when deep inspection is needed.
+7. Validate success and failure paths, including empty change sets, malformed data, binary-model handling, and permission issues.
+8. Record decisions and implementation progress in `development/agent-memory/DECISIONS_LOG.md` and `development/agent-memory/PROGRESS.md`.
+9. Document parser consumer expectations, known limitations, and hand-off notes for phase 7.
 
 ## Exit Criteria
 

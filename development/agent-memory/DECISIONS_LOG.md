@@ -65,3 +65,27 @@ CONTEXT: Microflow model details only provided action counts, missing meaningful
 DECISION: Extend microflow detail extraction to include action descriptors for Retrieve, Change Object, Commit, and Create Object actions, and add a reusable skill document for dump inspection.
 RATIONALE: Commit reviews require actionable semantics (what was retrieved/changed/committed), not only aggregate counts.
 ALTERNATIVES_REJECTED: Preserving count-only microflow detail output.
+
+## DECISION - 010 - 2026-02-18
+CONTEXT: Users requested second-level detail with explicit action text (for example member assignments and retrieve constraints) and maximum practical detail output.
+DECISION: Expand action descriptors to include member-level assignments (`member=value`), retrieve metadata (`xPath`, range, sort, retrieve mode), and additional action families (variable actions, delete, microflow/java calls), while raising detail list limits.
+RATIONALE: This yields materially richer and directly reviewable microflow change summaries without requiring manual dump inspection for common cases.
+ALTERNATIVES_REJECTED: Keeping first-level descriptors limited to action names and member names only.
+
+## DECISION - 011 - 2026-02-18
+CONTEXT: Phase 7 structured outputs were still too flat for robust commit-message generation despite richer Phase 6 exports.
+DECISION: Introduce structured schema version `2.0` in parser output with explicit `files`, `modelSummary`, and `commitMessageContext` sections while preserving existing core fields (`entities`, `affectedFiles`, `metrics`, `modelChanges`, `modelDumpArtifacts`).
+RATIONALE: Commit intelligence requires normalized aggregations and pre-computed drafting context, not only flattened raw rows.
+ALTERNATIVES_REJECTED: Keeping only flat arrays and leaving all semantic aggregation to downstream agents.
+
+## DECISION - 012 - 2026-02-18
+CONTEXT: Watcher previously processed only newly created files, so parser restarts could miss unprocessed exports already present in `mendix-data/exports`.
+DECISION: Queue existing export files on startup before enabling watcher events.
+RATIONALE: Makes processing deterministic and restart-safe for operational workflows.
+ALTERNATIVES_REJECTED: Requiring manual file re-drop to trigger parsing.
+
+## DECISION - 013 - 2026-02-18
+CONTEXT: Informational documentation and agent skills lagged behind implemented refresh/UI/model-detail/parser-structuring behaviour.
+DECISION: Align extension docs, data-contract docs, and phase prompts with the current implementation, and add a dedicated `mendix-commit-structuring` skill for Phase 7 schema/process changes.
+RATIONALE: Keeps future agent runs and human operators aligned to the real system contract, reducing regressions caused by stale guidance.
+ALTERNATIVES_REJECTED: Keeping only code-level truth without updating operational and workflow documentation.

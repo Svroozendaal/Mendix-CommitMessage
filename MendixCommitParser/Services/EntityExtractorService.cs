@@ -18,9 +18,28 @@ public static class EntityExtractorService
         }
 
         var entities = new List<ExtractedEntity>(changes.Length);
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var change in changes)
         {
+            if (change.ModelChanges is { Length: > 0 })
+            {
+                foreach (var modelChange in change.ModelChanges)
+                {
+                    var entityType = string.IsNullOrWhiteSpace(modelChange.ElementType)
+                        ? "Model"
+                        : modelChange.ElementType;
+                    var entityName = string.IsNullOrWhiteSpace(modelChange.ElementName)
+                        ? "Unknown"
+                        : modelChange.ElementName;
+                    var entityAction = NormalizeAction(modelChange.ChangeType ?? change.Status);
+
+                    AddEntity(entities, seen, entityType, entityName, entityAction);
+                }
+
+                continue;
+            }
+
             var filePath = change.FilePath ?? string.Empty;
             var normalizedPath = filePath.Replace('\\', '/');
             var segments = normalizedPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
@@ -28,25 +47,25 @@ public static class EntityExtractorService
 
             if (TryExtractByFolder(segments, "Domain", includeExtension: false, out var domainName))
             {
-                entities.Add(new ExtractedEntity("Domain", domainName, action));
+                AddEntity(entities, seen, "Domain", domainName, action);
                 continue;
             }
 
             if (TryExtractByFolder(segments, "Pages", includeExtension: false, out var pageName))
             {
-                entities.Add(new ExtractedEntity("Page", pageName, action));
+                AddEntity(entities, seen, "Page", pageName, action);
                 continue;
             }
 
             if (TryExtractByFolder(segments, "Microflows", includeExtension: false, out var microflowName))
             {
-                entities.Add(new ExtractedEntity("Microflow", microflowName, action));
+                AddEntity(entities, seen, "Microflow", microflowName, action);
                 continue;
             }
 
             if (TryExtractByFolder(segments, "Resources", includeExtension: true, out var resourceName))
             {
-                entities.Add(new ExtractedEntity("Resource", resourceName, action));
+                AddEntity(entities, seen, "Resource", resourceName, action);
                 continue;
             }
 
@@ -56,10 +75,29 @@ public static class EntityExtractorService
                 fallbackName = "Unknown";
             }
 
-            entities.Add(new ExtractedEntity("Unknown", fallbackName, action));
+            AddEntity(entities, seen, "Unknown", fallbackName, action);
         }
 
         return entities.ToArray();
+    }
+
+    private static void AddEntity(
+        ICollection<ExtractedEntity> target,
+        ISet<string> seen,
+        string type,
+        string name,
+        string action)
+    {
+        var normalizedType = string.IsNullOrWhiteSpace(type) ? "Unknown" : type.Trim();
+        var normalizedName = string.IsNullOrWhiteSpace(name) ? "Unknown" : name.Trim();
+        var normalizedAction = string.IsNullOrWhiteSpace(action) ? "Modified" : action.Trim();
+        var key = $"{normalizedType}|{normalizedName}|{normalizedAction}";
+        if (!seen.Add(key))
+        {
+            return;
+        }
+
+        target.Add(new ExtractedEntity(normalizedType, normalizedName, normalizedAction));
     }
 
     private static bool TryExtractByFolder(string[] segments, string folderName, bool includeExtension, out string entityName)

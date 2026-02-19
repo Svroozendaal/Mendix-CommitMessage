@@ -70,6 +70,7 @@ public sealed class FileWatcherService : IDisposable
         ThrowIfDisposed();
         EnsureFoldersExist();
 
+        QueueExistingFiles();
         _watcher.EnableRaisingEvents = true;
     }
 
@@ -111,6 +112,22 @@ public sealed class FileWatcherService : IDisposable
                 _inFlight.TryRemove(filePath, out _);
             }
         });
+    }
+
+    private void QueueExistingFiles()
+    {
+        var existingFiles = Directory
+            .EnumerateFiles(_exportFolderPath, "*.json", SearchOption.TopDirectoryOnly)
+            .Select(path => new FileInfo(path))
+            .OrderBy(info => info.LastWriteTimeUtc)
+            .ThenBy(info => info.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(info => info.FullName)
+            .ToArray();
+
+        foreach (var existingFilePath in existingFiles)
+        {
+            QueueProcessing(existingFilePath);
+        }
     }
 
     private async Task ProcessFileAsync(string filePath)
