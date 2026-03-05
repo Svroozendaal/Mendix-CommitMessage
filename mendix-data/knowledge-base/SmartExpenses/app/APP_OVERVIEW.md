@@ -1,22 +1,32 @@
-# Application Overview
+﻿# Application Overview
 
 ## Identity
-- Source: mendix-data/dumps/2026-03-02T15-20-39.802Z_App.mpr_086e2d7045254049b65ab730faa2bd4c/working-dump.json
-- Generated: 2026-03-03T20:58:20Z
-- Schema version: 2.0
+
+- App: SmartExpenses
+- Run folder: cli_2026-03-04T20-44-47.917Z
+- Generated at: 2026-03-04T20:44:58.4671065+00:00
+- Confidence: Export-backed
 
 ## Summary
-- Modules: 18 (Custom: 3, Marketplace: 13, System: 1, Unknown: 1)
-- Entities: 109, Associations: 97, Enumerations: 54
-- Flows: 379 (Microflows: 333, Nanoflows: 42, Rules: 3, Workflows: 1)
-- Flow nodes: 3,477; Flow edges: 2,599; Call edges: 214
+
+- Modules: 18
+- Entities: 109
+- Associations: 97
+- Enumerations: 53
+- Flows: 376 (microflows: 332, nanoflows: 41, rules: 3, workflows: 0)
+- Flow graph size: nodes 3465, edges 2588, call edges 214
 
 ## Security
-- Security level: CheckEverything
-- Admin user: MxAdmin
-- Guest access: yes (role: Anonymous)
 
-## Key Observations
-- This is a **personal finance / expense management application** ("SmartExpenses") with budget tracking, balance management, and transaction processing as core functionality.
-- The app uses a multi-role access model with role-based data isolation via XPath constraints — users only see their own data through FBGProfile ownership chains.
-- Heavy reliance on marketplace modules (13 of 18) including ExcelImporter for data import and WorkflowCommons (186 flows) for process automation.
+- Security level: CheckEverything
+- Guest access enabled: True
+- Guest role: Anonymous
+- Admin username: MxAdmin
+
+## Key observations
+
+- Export-backed: Highest flow-count modules are ExcelImporter (81), FeedbackModule (16), MxModelReflection (33), SmartExpenses (39), WorkflowCommons (186).
+- Export-backed: Highest entity-count modules are ExcelImporter (7), MxModelReflection (15), SmartExpenses (10), System (36), WorkflowCommons (26).
+- Inferred: Custom modules likely hold core business behaviour.
+- Unknown: Runtime usage patterns are not present in static export.
+

@@ -1,4 +1,4 @@
-# ROUTING
+﻿# ROUTING
 ## .app-info Master Routing
 
 This file is the entry point for navigating all app-specific content in this repository.
@@ -9,38 +9,40 @@ Read this file after `.agents/AGENTS.md` and `.agents/FRAMEWORK.md` to understan
 
 | Folder | Purpose | Key files |
 |---|---|---|
-| `agents/` | App-specific agent extensions | Per-agent `<AGENT>.md` extension files |
-| `app/` | Application identity and vision | `PRODUCT_PLAN.md` |
-| `development/` | Development resources | `prompts/`, `commands/` |
-| `skills/` | App-specific skills and rules | `OVERVIEW.md`, per-skill `SKILL.md` |
-| `docs/` | Documentation produced during development | Per-topic `.md` files |
-| `features/` | Feature registry — what the app does | `FEATURES.md`, per-feature `.md` |
-| `memory/` | Live agent memory logs | `SESSION_STATE.md`, `DECISIONS_LOG.md`, etc. |
-| `config/` | App configuration context | Environment, stack, tool versions |
+| `agents/` | KB pipeline agents | `KNOWLEDGEBASE_CREATOR.md`, `OVERVIEW_KB_BUILDER.md`, `OVERVIEW_KB_READER.md` |
+| `skills/` | Mendix-specific interpretation skills | `OVERVIEW.md`, per-skill `SKILL.md` |
+| `features/` | Product direction and feature registry | `FEATURES.md`, `knowledgebase-creator-artifact.md` |
 
 ## Navigation Rules
 
 1. Start here, then follow the path to the relevant subfolder.
 2. Each subfolder has an `OVERVIEW.md` that explains its contents and local structure.
-3. Write all session progress and decisions to `memory/`.
-4. Write produced documentation to `docs/`.
-5. Register completed features in `features/FEATURES.md`.
-
-## Agent Extensions
-
-When an agent from `.agents/agents/` needs app-specific behaviour, place an extension file at:
-
-```
-.app-info/agents/<AGENT>.md
-```
-
-See `.agents/FRAMEWORK.md` for the extension model and `.agents/skills/agent-extender/SKILL.md` for the procedure.
 
 ## Quick Reference
 
-- **Find a prompt**: `development/prompts/OVERVIEW.md`
-- **Find a skill**: `skills/OVERVIEW.md`
-- **Find an agent extension**: `agents/OVERVIEW.md`
-- **Find app context**: `app/PRODUCT_PLAN.md`
-- **Write session state**: `memory/SESSION_STATE.md`
-- **Track features**: `features/FEATURES.md`
+- Generate a KB: `agents/KNOWLEDGEBASE_CREATOR.md`
+- Build KB content: `agents/OVERVIEW_KB_BUILDER.md`
+- Query a KB: `agents/OVERVIEW_KB_READER.md`
+- Find a skill: `skills/OVERVIEW.md`
+- Run portable drop-in package: `../KnowledgeBase-Creator/run-dump-parser.ps1`
+- Build downloadable artifact package: `../.github/workflows/build-knowledgebase-creator-artifact.yml` (`workflow_dispatch`)
+
+## Pipeline Overview
+
+```text
+Mendix .mpr file
+  -> (mx dump-mpr + MendixModelOverviewParser)
+Model Overview Export (v2.0) -> mendix-data/app-overview/<run>/
+  -> (KNOWLEDGEBASE_CREATOR)
+AI-Navigable Knowledge Base -> mendix-data/knowledge-base/<app-name>/
+
+Portable package output -> KnowledgeBase-Creator/
+```
+
+## Scripts
+
+| Script | Purpose |
+|---|---|
+| `KnowledgeBase-Creator/run-dump-parser.ps1` | Run dump + parser + KB scaffold + template seeding + validation |
+| `KnowledgeBase-Creator/run-kb-scaffold.ps1` | Scaffold KB folder structure or validate completeness |
+| `KnowledgeBase-Creator/run-kb-quality-gate.ps1` | Validate KB content contract (required headings, links, and quality markers) |

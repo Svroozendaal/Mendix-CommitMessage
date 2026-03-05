@@ -1,10 +1,20 @@
-# Resources: SmartExpenses
+﻿# Resources: SmartExpenses
 
 ## Constants
-None.
+
+| Constant | Type | Default | Exposed to Client |
+|---|---|---|---|
+| none | none | none | no |
 
 ## Scheduled Events
-None.
+
+| Event | Schedule | Target Flow |
+|---|---|---|
+| none | none | none |
 
 ## Other Resources
-None.
+
+| Resource | Type |
+|---|---|
+| none | none |
+

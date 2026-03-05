@@ -1,17 +1,14 @@
 # FEATURES
-## Feature Registry - Mendix Studio Pro 10 Git Changes Extension
+## Feature Registry - Mendix KnowledgeBase Builder
 
 This file is the index of all implemented features in this application.
 
-| Feature | Status | File | Phase |
-|---|---|---|---|
-| Git changes pane and in-IDE review | DONE | `git-changes-panel.md` | 3 |
-| Model dump diff analysis (`.mpr`) | DONE | `model-diff-analysis.md` | 5.5 |
-| Structured export pipeline (`schemaVersion: 1.0`) | DONE | `data-export-pipeline.md` | 6 |
-| Full model overview export (app + modules) | DONE | `model-overview-export-pipeline.md` | 8 |
-| Commit parser handoff contract | DONE | `commit-parser-agent.md` | 7 |
-| `.env`-based developer workflow | DONE | `developer-workflow-env.md` | 3 |
-| Model overview CLI test harness | DONE | `model-overview-cli.md` | 8+ |
+| Feature | Status | File |
+|---|---|---|
+| Structured export pipeline (`schemaVersion: 1.0`) | DONE | `data-export-pipeline.md` |
+| Full model overview export (app + modules, v2.0) | DONE | `model-overview-export-pipeline.md` |
+| Model overview CLI test harness | DONE | `model-overview-cli.md` |
+| Portable KnowledgeBase Creator drop-in artifact | DONE | `knowledgebase-creator-artifact.md` |
 
 ## Status values
 
@@ -24,8 +21,5 @@ This file is the index of all implemented features in this application.
 
 For implementation details, use:
 
-- `studio-pro-extension-csharp/Docs/ARCHITECTURE.md`
-- `studio-pro-extension-csharp/Docs/PROCESSING_PIPELINE.md`
-- `studio-pro-extension-csharp/Docs/EXPORT_CONTRACT.md`
-- `studio-pro-extension-csharp/Docs/MODEL_OVERVIEW_EXPORT_CONTRACT.md`
-- `studio-pro-extension-csharp/Docs/REPOSITORY_WORKFLOWS.md`
+- `.app-info/docs/PARSER_ARCHITECTURE.md`
+- `.app-info/docs/MODEL_OVERVIEW_EXPORT_CONTRACT.md`

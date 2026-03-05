@@ -29,7 +29,19 @@
       "Bash(dotnet build model-overview-cli/ModelOverviewCli.csproj)",
       "Bash(dotnet build studio-pro-extension-csharp/AutoCommitMessage.csproj)",
       "Bash(powershell -ExecutionPolicy Bypass -File run-kb-scaffold.ps1 -RunFolder mendix-data/app-overview/cli-test-v2 -AppName SmartExpenses)",
-      "Bash(powershell -ExecutionPolicy Bypass -File run-kb-scaffold.ps1 -Validate -OutputRoot mendix-data/knowledge-base -AppName SmartExpenses)"
+      "Bash(powershell -ExecutionPolicy Bypass -File run-kb-scaffold.ps1 -Validate -OutputRoot mendix-data/knowledge-base -AppName SmartExpenses)",
+      "Bash(du -sh /c/Workspaces/Mendix-CommitMessage/*)",
+      "Bash(\"C:/Program Files/Mendix/10.24.15.93102/modeler/mx.exe\" --help)",
+      "Bash(\"C:/Program Files/Mendix/10.24.15.93102/modeler/mx.exe\" dump-mpr --help)",
+      "Bash(ls studio-pro-extension-csharp-tests/*.cs)",
+      "Bash(dotnet build MendixKnowledgeBaseBuilder.sln)",
+      "Bash(ls \"/c/Workspaces/Mendix/Smart Expenses app-main/\"*.mpr)",
+      "Bash(\"/c/Program Files/Mendix/10.24.15.93102/modeler/mx.exe\" dump-mpr \"/c/Workspaces/Mendix/Smart Expenses app-main/App.mpr\")",
+      "Bash(dotnet build model-overview-cli/ModelOverviewCli.csproj --configuration Debug --verbosity quiet)",
+      "Bash(DUMP=\"c:/Workspaces/Mendix-KnowledgeBase-Builder/mendix-data/dumps/2026-03-04T16-38-26_smart-expenses/working-dump.json\")",
+      "Bash(OUTPUT=\"c:/Workspaces/Mendix-KnowledgeBase-Builder/mendix-data/app-overview/smart-expenses-full\")",
+      "Bash(dotnet run --project model-overview-cli/ModelOverviewCli.csproj --no-build -- --dump \"$DUMP\" --output \"$OUTPUT\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File run-kb-scaffold.ps1 -RunFolder \"mendix-data/app-overview/smart-expenses-full\" -AppName \"SmartExpenses\")"
     ]
   }
 }

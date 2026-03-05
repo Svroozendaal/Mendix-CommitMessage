@@ -1,14 +1,14 @@
 # skills/
 ## App-Specific Skills
 
-This folder contains skills that are specific to this application. These complement the generic skills in `.agents/skills/`.
+This folder contains skills specific to the Mendix KnowledgeBase Builder pipeline. These complement the generic skills in `.agents/skills/`.
 
 ## When to Use App-Specific Skills
 
 App-specific skills are used when:
-- The task requires knowledge of this application's domain, stack, or conventions.
-- The task involves platform-specific procedures (e.g. Mendix SDK operations).
-- The task requires applying project-specific rules (e.g. styling guidelines, data contracts).
+- The task requires knowledge of Mendix application structure, domain models, or flow patterns.
+- The task involves interpreting model overview exports into human/AI-readable documentation.
+- The task requires Mendix platform-specific procedures (e.g. SDK operations, Studio Pro constraints).
 
 ## Contents
 
@@ -16,13 +16,21 @@ App-specific skills are used when:
 |---|---|---|
 | Mendix SDK | `mendix-sdk/` | Mendix SDK usage and model manipulation |
 | Mendix Studio Pro 10 | `mendix-studio-pro-10/` | Studio Pro 10 extension development constraints |
-| Mendix Model Dump Inspection | `mendix-model-dump-inspection/` | Inspecting dump outputs, maintaining diff parser contracts, and evolving deterministic diff rules (`Dxxx`) |
-| Mendix Model Overview Export | `mendix-model-overview-export/` | Building full-model overview exports (app + modules) from single dumps, including deterministic flow execution ordering and pseudocode output |
-| Mendix Overview General Interpretation | `mendix-overview-general-interpretation/` | Converting app-level overview artefacts into readable top-level Markdown (architecture, module landscape, call graph, run context) |
-| Mendix Overview Module Interpretation | `mendix-overview-module-interpretation/` | Converting module overview artefacts into domain/flow/page Markdown documentation with explicit inferred-page markers |
-| Mendix Overview Routing Synthesis | `mendix-overview-routing-synthesis/` | Combining app and module interpretation outputs into a routing layer with functional explanations and stable document pointers |
-| Mendix Commit Structuring | `mendix-commit-structuring/` | Structuring commit data for the parser pipeline |
-| Mendix Technical Commit Message | `mendix-technical-commit-message/` | Rule-driven conversion of module-grouped export data into technical commit message lines |
+| Mendix Model Overview Export | `mendix-model-overview-export/` | Building full-model overview exports (v2.0 structured format) from single dumps |
+| Mendix Model Dump Inspection | `mendix-model-dump-inspection/` | Inspecting raw `mx dump-mpr` output: parser library and rule library for extraction |
+| Mendix Overview General Interpretation | `mendix-overview-general-interpretation/` | Converting app-level export artefacts into KB Markdown (app overview, module landscape, security, call graph) |
+| Mendix Overview Module Interpretation | `mendix-overview-module-interpretation/` | Converting per-module export artefacts into KB Markdown (domain, flows, pages, resources) |
+| Mendix Overview Routing Synthesis | `mendix-overview-routing-synthesis/` | Building cross-reference routing layer (by-entity, by-page, by-flow, cross-module) |
+
+## Pipeline Role
+
+```
+Model Overview Export (v2.0)
+  ↓
+general-interpretation  →  app/APP_OVERVIEW.md, MODULE_LANDSCAPE.md, SECURITY.md, CALL_GRAPH.md
+module-interpretation   →  modules/<Module>/README.md, DOMAIN.md, FLOWS.md, PAGES.md, RESOURCES.md
+routing-synthesis       →  ROUTING.md, routes/by-entity.md, by-page.md, by-flow.md, cross-module.md
+```
 
 ## Adding a New App-Specific Skill
 

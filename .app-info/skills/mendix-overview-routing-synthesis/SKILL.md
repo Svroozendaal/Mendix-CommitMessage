@@ -1,4 +1,4 @@
----
+﻿---
 name: mendix-overview-routing-synthesis
 description: Synthesize app-level and module-level KB interpretations into a routing layer with cross-reference indexes for entity, page, flow, and dependency lookups.
 ---
@@ -15,7 +15,7 @@ Use this skill to combine interpreted app and module KB documents into a routing
    - `APP_OVERVIEW.md`, `MODULE_LANDSCAPE.md`, `SECURITY.md`, `CALL_GRAPH.md`
 2. Completed `<kb-root>/modules/<Module>/` documents (from `mendix-overview-module-interpretation`):
    - `README.md`, `DOMAIN.md`, `FLOWS.md`, `PAGES.md`, `RESOURCES.md` per module
-3. `<kb-root>/_sources/manifest.json` — artifact inventory for validation
+3. `<kb-root>/_sources/manifest.json` â€” artifact inventory for validation
 
 ## Workflow
 
@@ -78,10 +78,10 @@ Generate routing structure:
 | What modules exist? | [app/MODULE_LANDSCAPE.md](app/MODULE_LANDSCAPE.md) |
 | Who can access what? | [app/SECURITY.md](app/SECURITY.md) |
 | How do modules connect? | [app/CALL_GRAPH.md](app/CALL_GRAPH.md) |
-| What does module X do? | [modules/X/README.md](modules/X/README.md) |
-| What entities exist in module X? | [modules/X/DOMAIN.md](modules/X/DOMAIN.md) |
-| What flows exist in module X? | [modules/X/FLOWS.md](modules/X/FLOWS.md) |
-| What pages exist in module X? | [modules/X/PAGES.md](modules/X/PAGES.md) |
+| What does module `<ModuleName>` do? | [modules/<ModuleName>/README.md](modules/<ModuleName>/README.md) |
+| What entities exist in module `<ModuleName>`? | [modules/<ModuleName>/DOMAIN.md](modules/<ModuleName>/DOMAIN.md) |
+| What flows exist in module `<ModuleName>`? | [modules/<ModuleName>/FLOWS.md](modules/<ModuleName>/FLOWS.md) |
+| What pages exist in module `<ModuleName>`? | [modules/<ModuleName>/PAGES.md](modules/<ModuleName>/PAGES.md) |
 | Find all flows that use entity Y | [routes/by-entity.md](routes/by-entity.md) |
 | Find all flows that show page Z | [routes/by-page.md](routes/by-page.md) |
 | Find what flow X calls and who calls it | [routes/by-flow.md](routes/by-flow.md) |
@@ -142,7 +142,7 @@ Generate routing structure:
 
 ## Dependency Matrix
 
-| Source → Target | [Module1] | [Module2] | ... |
+| Source â†’ Target | [Module1] | [Module2] | ... |
 |-----------------|-----------|-----------|-----|
 | [Module1] | - | [n calls] | ... |
 
@@ -159,9 +159,18 @@ Generate routing structure:
 
 ## Guardrails
 
-1. Always explain purpose before linking pointers — never present naked link lists.
-2. Keep pointer paths relative to `<kb-root>` — all links must work from KB root.
+1. Always explain purpose before linking pointers â€” never present naked link lists.
+2. Keep pointer paths relative to `<kb-root>` â€” all links must work from KB root.
 3. Mark missing or inferred sections explicitly instead of silently omitting them.
-4. Keep routing concise — it serves as first-context for an LLM, not a full reference.
+4. Keep routing concise â€” it serves as first-context for an LLM, not a full reference.
 5. Sort all indexes alphabetically for deterministic output.
 6. Cross-validate: every entity, page, and flow mentioned in route indexes must trace back to a module document.
+
+## Contract Enforcement
+
+1. Never leave placeholder module links in final output (for example `modules/X/README.md`).
+2. Every relative link written to `ROUTING.md` and `routes/*.md` must resolve on disk.
+3. `Known gaps: none` is only valid when no required-field values are marked `Unknown` in generated KB outputs.
+4. `by-flow.md` must include `Shows Pages` and `Touches Entities` columns as defined in the output contract.
+5. Routing outputs must satisfy `KnowledgeBase-Creator/run-kb-quality-gate.ps1` before handoff.
+

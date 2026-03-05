@@ -1,56 +1,55 @@
-# agents/
-## App-Specific Agent Extensions and Agents
+﻿# agents/
+## App-Specific Agents
 
-This folder contains app-specific extensions for generic agents defined in `.agents/agents/`, as well as standalone app-specific agents that have no generic base.
+This folder contains standalone app-specific agents for the Mendix KnowledgeBase Builder pipeline.
 
 ## How Extensions Work
 
 An extension file supplements or overrides behaviour from the base agent without modifying it.
 
-- **Sections without a marker** → add to the base section (default).
-- **Sections marked `[OVERRIDE]`** → fully replace the base section.
-- **Sections absent from the extension** → inherited unchanged from the base.
+- **Sections without a marker** -> add to the base section (default).
+- **Sections marked `[OVERRIDE]`** -> fully replace the base section.
+- **Sections absent from the extension** -> inherited unchanged from the base.
 
 Read `.agents/FRAMEWORK.md` for the full extension model.
-Use `.agents/skills/agent-extender/SKILL.md` to write a new extension correctly.
 
 ## Contents
 
-### Extensions (have a matching base agent in `.agents/agents/`)
-
-| Agent | File | What the extension adds |
-|---|---|---|
-| Designer | `DESIGNER.md` | App token system skill reference, Elementor guardrails, WellBased breakpoints, container widths, column defaults, JS file routing |
-| Developer | `DEVELOPER.md` | WordPress/PHP skill reference, CONTEXT.MD and plugin map inputs, WP API preference, `constants.php` sensitivity, migration scope |
-| Deployment | `DEPLOYMENT.md` | WellBased branch policy (development/docs/staging/main), CI/CD workflows, js-loader version bump rule, Cloudways, plugin-only hygiene |
-| Documenter | `DOCUMENTER.md` | WellBased `core/*/info_*.MD` indexing convention, `templates/*/info_*.MD` convention, WordPress entry-point checklist |
-| Light | `LIGHT.md` | App-specific escalation triggers (ACF, constants.php, webhooks), agent handoff map |
-| Prompt Refiner | `PROMPT_REFINER.md` | Deterministic prompt linting and refinement workflow with hard-pointer rules, blockers, and skill mapping defaults |
-
-### Standalone App-Specific Agents (no generic base in `.agents/agents/`)
+### Standalone App-Specific Agents
 
 | Agent | File | Responsibility |
 |---|---|---|
-| Commit Message Writer | `COMMIT_MESSAGE_WRITER.md` | Mendix export to technical commit text workflow with rule-gap capture and iterative rule growth |
-| GAPSMITH | `GAPSMITH.md` | End-to-end gap loop for dump diff rules (`Dxxx`) and display-text/commit rules (`Cxxx`/`Axxx`) with implementation mapping |
-| OVERVIEWSMITH | `OVERVIEWSMITH.md` | Full-model overview export workflow for single-dump parsing, flow ordering, and app/module pseudocode artefacts |
-| OVERVIEW_KB_BUILDER | `OVERVIEW_KB_BUILDER.md` | Orchestrates app/module interpretation and routing synthesis to build an LLM-ready application knowledge base |
-| OVERVIEW_KB_READER | `OVERVIEW_KB_READER.md` | Reads the generated knowledge base and answers architecture/functionality questions with pointer-backed evidence |
+| KnowledgeBase Creator | `KNOWLEDGEBASE_CREATOR.md` | Top-level orchestrator: validates export, scaffolds KB folder, delegates to KB Builder, embeds reader, and enforces completeness + quality gate validation |
+| Overview KB Builder | `OVERVIEW_KB_BUILDER.md` | Orchestrates app/module interpretation and routing synthesis to build an AI-navigable application knowledge base |
+| Overview KB Reader | `OVERVIEW_KB_READER.md` | Reads the generated knowledge base and answers architecture/functionality questions with pointer-backed evidence |
+| GapSmith | `GAPSMITH.md` | Close rule and implementation gaps between dump diff extraction and display text conversion |
+| OverviewSmith | `OVERVIEWSMITH.md` | Own the full-model overview exporter lifecycle: parsing, flow ordering, exports, and pseudocode readability |
 
-## Notes
+## Pipeline
 
-This folder contains a mix of extensions from the original WellBased WordPress plugin project and Mendix-specific agents. The base agents (`.agents/agents/`) are generic and reusable in any project. The heavy app-specific detail belongs in `.app-info/skills/` — the agents and extensions here reference those skills rather than duplicating them.
+```
+Model Export:
+  OVERVIEWSMITH  (parser improvement)
+  GAPSMITH       (gap analysis + rule growth)
 
-## Adding a New Extension
+Knowledge Base:
+  KNOWLEDGEBASE_CREATOR  (orchestrator)
+    -> OVERVIEW_KB_BUILDER  (interpretation + writing)
+       -> mendix-overview-general-interpretation   (app-level docs)
+       -> mendix-overview-module-interpretation    (per-module docs)
+       -> mendix-overview-routing-synthesis        (cross-reference layer)
+    -> READER.md embedding
+    -> KnowledgeBase-Creator/run-kb-scaffold.ps1 -Validate
+    -> KnowledgeBase-Creator/run-kb-quality-gate.ps1
+```
 
-1. Use the `agent-extender` skill (`.agents/skills/agent-extender/SKILL.md`).
-2. Create `<AGENT>.md` in this folder using the required preamble format.
-3. Add a row to the Contents table above.
-4. Run the Structure Guardian to validate.
-
-## Adding a Standalone App-Specific Agent
+## Adding a New Agent
 
 1. Create `<AGENT>.md` in this folder.
 2. Include `This is an app-specific agent for this project. It does not have a generic base in .agents/agents/.` in the Role section.
-3. Add a row to the Standalone App-Specific Agents table above.
-4. Run the Structure Guardian to validate.
+3. Add a row to the Contents table above.
+
+## Portable Product Direction
+
+The repository now also ships a portable `KnowledgeBase-Creator/` package.
+That package contains a curated subset of these KB-generation agents and skills, plus parser binaries, for use on other laptops.

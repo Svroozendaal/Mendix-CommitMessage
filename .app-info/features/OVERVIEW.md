@@ -12,12 +12,10 @@ This folder tracks everything this application does — one entry per implemente
 
 Current per-feature files:
 
-- `git-changes-panel.md`
-- `model-diff-analysis.md`
 - `data-export-pipeline.md`
 - `model-overview-export-pipeline.md`
-- `commit-parser-agent.md`
-- `developer-workflow-env.md`
+- `model-overview-cli.md`
+- `knowledgebase-creator-artifact.md`
 
 ## How to Use
 
@@ -32,6 +30,7 @@ Per-feature files: `<feature-name>.md` in kebab-case. Example: `commit-parser.md
 
 ## Deep technical links
 
-Detailed runtime documentation is maintained in:
+Detailed documentation is maintained in:
 
-- `studio-pro-extension-csharp/Docs/README.md`
+- `.app-info/docs/PARSER_ARCHITECTURE.md`
+- `.app-info/docs/MODEL_OVERVIEW_EXPORT_CONTRACT.md`

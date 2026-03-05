@@ -129,7 +129,7 @@ Do not rename these anchors (`actions used`, `action details`, `attributes added
 
 ## REPOSITORY ENTRY POINT
 
-- Use `studio-pro-extension-csharp/Processing/ModelDiff/MendixModelDiffService.cs`:
+- Use `KnowledgeBase-Creator/Mendix-model-overview-parser/src/mendix-model-overview-parser/MendixModelOverviewParser.cs`:
   - `CompareDumps(...)` is the main entry point.
   - `BuildMicroflowActionDetails(...)`, `BuildDomainEntityAttributeDetails(...)`, and page role parsing implement the current specialised extraction.
 - Use `references/PARSER_LIBRARY.md`:

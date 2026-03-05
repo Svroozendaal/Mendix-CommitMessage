@@ -1,4 +1,4 @@
-# OVERVIEW_KB_BUILDER
+﻿# OVERVIEW_KB_BUILDER
 ## Role
 
 Build the application knowledge base from Mendix v2.0 app-overview exports by executing interpretation skills across app-level and module-level artefacts. Produces structured Markdown documentation and cross-reference indexes.
@@ -17,15 +17,16 @@ This agent is called by `KNOWLEDGEBASE_CREATOR` and should not be invoked direct
    - `<run-folder>/general/` (app-info, user-roles, all-modules, marketplace-modules)
    - `<run-folder>/modules/<Module>/` (domain-model, flows, pages, resources)
 7. KB output root path (provided by KNOWLEDGEBASE_CREATOR)
+8. Quality gate contract in `KnowledgeBase-Creator/run-kb-quality-gate.ps1`
 
 ## Core Workflow
 
 ### Phase 1: Validate export artefacts
 
-1. Read `<run-folder>/manifest.json` — confirm `schemaVersion` is `"2.0"`.
+1. Read `<run-folder>/manifest.json` - confirm `schemaVersion` is `"2.0"`.
 2. Verify `<run-folder>/general/` contains all 4 file pairs (app-info, user-roles, all-modules, marketplace-modules).
-3. For each module in the manifest's artifact list, verify `<run-folder>/modules/<Module>/` contains all 4 file pairs (domain-model, flows, pages, resources).
-4. Report any missing files before proceeding. If critical files are missing, stop and report to KNOWLEDGEBASE_CREATOR.
+3. For each module in the manifest artifact list, verify `<run-folder>/modules/<Module>/` contains all 4 file pairs (domain-model, flows, pages, resources).
+4. Report missing files before proceeding. If critical files are missing, stop and report to KNOWLEDGEBASE_CREATOR.
 
 ### Phase 2: Build app-level documentation
 
@@ -67,20 +68,25 @@ Execute the `mendix-overview-routing-synthesis` skill:
    - `routes/by-flow.md`
    - `routes/cross-module.md`
 
-### Phase 5: Completeness check
+### Phase 5: Completeness and contract check
 
-1. Verify all expected files exist (use the expected file list from run-kb-scaffold.ps1 as reference).
-2. Check that all module pointers in ROUTING.md resolve to existing files.
-3. Check that entity/flow/page counts in route indexes match module documents.
-4. Report completeness status back to KNOWLEDGEBASE_CREATOR.
+1. Verify all expected files exist (use the expected file list from `KnowledgeBase-Creator/run-kb-scaffold.ps1`).
+2. Verify all generated markdown documents satisfy the quality contract used by `KnowledgeBase-Creator/run-kb-quality-gate.ps1`:
+   - Required headings/sections per file type.
+   - No placeholder links (for example `modules/X/README.md`).
+   - All internal relative links resolve.
+3. If checks fail, repair the generated files and re-check before handoff.
+4. Report status back to KNOWLEDGEBASE_CREATOR.
 
 ## Guardrails
 
 1. Ask clarifying questions before writing if export data is ambiguous.
-2. Keep the knowledge base deterministic — same export input must produce equivalent output.
+2. Keep the knowledge base deterministic - same export input must produce equivalent output.
 3. Preserve raw exported names and identifiers; only add explanatory context.
 4. Separate facts (export-backed), inferred insights (naming conventions, patterns), and unknowns (missing data).
-5. Do not modify source export files — read only.
+5. Do not modify source export files - read only.
+6. Never skip required sections when data is empty; write explicit no-data markers instead.
+7. Do not emit placeholder route links in final documents.
 
 ## Output Template
 
@@ -98,7 +104,8 @@ Outputs produced:
 - Routing: [5 files]
 
 Validation:
-- [pass/fail per check]
+- Completeness: [pass/fail]
+- Contract checks: [pass/fail]
 
 Known gaps:
 - [list or "none"]

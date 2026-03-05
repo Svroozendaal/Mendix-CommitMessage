@@ -1,63 +1,76 @@
-# Pages: SmartExpenses
-
-Pages: 29, Snippets: 1
+﻿# Pages: SmartExpenses
 
 ## Page Inventory
 
 | Page | Title | Layout | Type | Roles | Parameters |
-|------|-------|--------|------|-------|------------|
-| BalanceType_Overview | Overzicht van alle saldo's | Atlas_TopBar | Full | User, Admin | FBGProfile |
-| Balance_MasterNewEdit | Edit Balance | PopupLayout | Popup | Admin | Balance |
-| Balance_MasterOverview | Balance Overview | Atlas_Default | Full | Admin, Parent | — |
-| Balance_NewEdit | Saldo | PopupLayout | Popup | Admin, User | Balance |
-| BudgetTerm_EditQuick | Edit Budget Type | PopupLayout | Popup | Admin, User | BudgetTerm |
-| BudgetTerm_MasterNewEdit | Edit Budget Term | PopupLayout | Popup | Admin | BudgetTerm |
-| BudgetTerm_MasterOverview | Budget Term Overview | Atlas_Default | Full | Admin | — |
-| BudgetTerm_NewEdit | Budget | PopupLayout | Popup | Admin, User | BudgetType, BudgetTerm |
-| BudgetTerm_Overview | Budget Term Overview | Atlas_TopBar | Full | Admin, User, Parent | BudgetType |
-| BudgetType_NewEdit_Master | Edit Budget Type | PopupLayout | Popup | Admin | BudgetType |
-| BudgetType_Overview | Budget Type Overview | Atlas_TopBar | Full | User, Admin, Parent | FBGProfile, DateHelper |
-| BudgetType_Overview_2 | Budget Type Overview | Atlas_Default | Full | Admin | — |
-| datagid | datagid | PopupLayout | Popup | — | — |
-| FBGProfile_NewEdit | Edit FBG Profile | PopupLayout | Popup | Admin | FBGProfile |
-| FBGProfile_Overview | FBG Environment Overview | Atlas_TopBar | Full | Admin | — |
-| FBGProfile_Overview_2 | FBG Profile Overview | Atlas_Default | Full | Admin | — |
-| Homepage_Admin | Homepage Admin | Atlas_TopBar | Full | Admin | — |
-| Home_Parent | Homepage | Atlas_TopBar | Full | Admin, Parent, User | FBGProfile |
-| Home_Web | Homepage | Atlas_TopBar | Full | User, Admin, Parent | — |
-| Login_Overview | Login Overview | PopupLayout | Popup | Anonymous, Admin | — |
-| StandardBudget_NewEdit | Edit Standard Budget | PopupLayout | Popup | Admin | StandardBudget |
-| StandardBudget_Overview | Standard Budget Overview | Atlas_TopBar | Full | Admin | — |
-| Transaction_BulkEdit | Transaction Bulk edit | PopupLayout | Popup | Admin, User | BulkEditHelper, FBGProfile |
-| Transaction_Edit | Pas transactie aan | PopupLayout (800x0) | Popup | Admin, User | Transaction |
-| Transaction_EditQuick | Snel verwerken | PopupLayout | Popup | Admin, User | Transaction |
-| Transaction_New | Nieuwe transactie | PopupLayout (800x600) | Popup | Admin, User | Transaction |
-| Transaction_NewEdit | Edit Transaction | PopupLayout | Popup | Admin | Transaction |
-| Transaction_Overview | Transaction Overview | Atlas_TopBar | Full | Admin, User, Parent | FBGProfile |
-| Transaction_Overview_2 | Transaction Overview | Atlas_Default | Full | Admin | — |
+|---|---|---|---|---|---|
+| Balance_MasterNewEdit | Edit Balance | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin | Balance:SmartExpenses.Balance |
+| Balance_MasterOverview | Balance Overview | Atlas_Core.Atlas_Default | Page | SmartExpenses.Admin, SmartExpenses.Parent | none |
+| Balance_NewEdit | Saldo | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | Balance:SmartExpenses.Balance |
+| BalanceType_Overview | Overzicht van alle saldo's | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin, SmartExpenses.User | FBGProfile:SmartExpenses.FBGProfile |
+| BudgetTerm_EditQuick | Edit Budget Type | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | BudgetTerm:SmartExpenses.BudgetTerm |
+| BudgetTerm_MasterNewEdit | Edit Budget Term | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin | BudgetTerm:SmartExpenses.BudgetTerm |
+| BudgetTerm_MasterOverview | Budget Term Overview | Atlas_Core.Atlas_Default | Page | SmartExpenses.Admin | none |
+| BudgetTerm_NewEdit | Budget | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | BudgetTerm:SmartExpenses.BudgetTerm, BudgetType:SmartExpenses.BudgetType |
+| BudgetTerm_Overview | Budget Term Overview | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | BudgetType:SmartExpenses.BudgetType |
+| BudgetType_NewEdit_Master | Edit Budget Type | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin | BudgetType:SmartExpenses.BudgetType |
+| BudgetType_Overview | Budget Type Overview | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | DateHelper:SmartExpenses.DateHelper, FBGProfile:SmartExpenses.FBGProfile |
+| BudgetType_Overview_2 | Budget Type Overview | Atlas_Core.Atlas_Default | Page | SmartExpenses.Admin | none |
+| datagid | datagid | Atlas_Core.PopupLayout | Popup | none | none |
+| FBGProfile_NewEdit | Edit FBG Profile | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin | FBGProfile:SmartExpenses.FBGProfile |
+| FBGProfile_Overview | FBG Environment Overview | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin | none |
+| FBGProfile_Overview_2 | FBG Profile Overview | Atlas_Core.Atlas_Default | Page | SmartExpenses.Admin | none |
+| Home_Parent | Homepage | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | FBGProfile:SmartExpenses.FBGProfile |
+| Home_Web | Homepage | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | none |
+| Homepage_Admin | Homepage Admin | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin | none |
+| Login_Overview | Login Overview | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.Anonymous | none |
+| StandardBudget_NewEdit | Edit Standard Budget | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin | StandardBudget:SmartExpenses.StandardBudget |
+| StandardBudget_Overview | Standard Budget Overview | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin | none |
+| Transaction_BulkEdit | Transaction Bulk edit | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | BulkEditHelper:SmartExpenses.BulkEditHelper, FBGProfile:SmartExpenses.FBGProfile |
+| Transaction_Edit | Pas transactie aan | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | Transaction:SmartExpenses.Transaction |
+| Transaction_EditQuick | Snel verwerken | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | Transaction:SmartExpenses.Transaction |
+| Transaction_New | Nieuwe transactie | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | Transaction:SmartExpenses.Transaction |
+| Transaction_NewEdit | Edit Transaction | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin | Transaction:SmartExpenses.Transaction |
+| Transaction_Overview | Transaction Overview | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | FBGProfile:SmartExpenses.FBGProfile |
+| Transaction_Overview_2 | Transaction Overview | Atlas_Core.Atlas_Default | Page | SmartExpenses.Admin | none |
 
 ## Page-Flow Links
 
 | Page | Shown by Flows |
-|------|----------------|
-| Balance_NewEdit | ACT_Balance_Create |
-| BudgetTerm_NewEdit | ACT_BudgetTerm_BudgetType_Edit, ACT_BudgetType_New |
-| BudgetType_Overview | ACT_BudgetType_OpenOverviewPAge, Nanoflow |
-| Home_Parent | ACT_FBGProfile_showParentPage |
-| StandardBudget_NewEdit | ACT_StandardBudget_Edit, ACT_StandardBudget_New |
-| Transaction_BulkEdit | ACT_Transaction_BulkEditCreate |
-| Transaction_New | ACT_Transaction_Create |
-| ImporterHelper.ExcelFileImport_Upload | (shown from ImporterHelper flows) |
-| ImporterHelper.ImportTransaction_Overview | (shown from ImporterHelper flows) |
-
-## Page Patterns
-- **Overview + Edit pairs**: Most entities follow a pattern of full-page overview (Atlas_TopBar) + popup edit form (PopupLayout)
-- **Master variants**: Some entities have "Master" admin-only pages alongside user-facing pages (Balance_MasterOverview vs BalanceType_Overview)
-- **Dutch titles**: Several pages use Dutch titles (Saldo, Pas transactie aan, Nieuwe transactie, Snel verwerken, Overzicht van alle saldo's)
-- **_2 suffix pages**: Admin-only full-page overviews using Atlas_Default layout — likely alternative admin views
+|---|---|
+| Balance_MasterNewEdit | Unknown |
+| Balance_MasterOverview | Unknown |
+| Balance_NewEdit | Unknown |
+| BalanceType_Overview | Unknown |
+| BudgetTerm_EditQuick | Unknown |
+| BudgetTerm_MasterNewEdit | Unknown |
+| BudgetTerm_MasterOverview | Unknown |
+| BudgetTerm_NewEdit | Unknown |
+| BudgetTerm_Overview | Unknown |
+| BudgetType_NewEdit_Master | Unknown |
+| BudgetType_Overview | Unknown |
+| BudgetType_Overview_2 | Unknown |
+| datagid | Unknown |
+| FBGProfile_NewEdit | Unknown |
+| FBGProfile_Overview | Unknown |
+| FBGProfile_Overview_2 | Unknown |
+| Home_Parent | Unknown |
+| Home_Web | Unknown |
+| Homepage_Admin | Unknown |
+| Login_Overview | Unknown |
+| StandardBudget_NewEdit | Unknown |
+| StandardBudget_Overview | Unknown |
+| Transaction_BulkEdit | Unknown |
+| Transaction_Edit | Unknown |
+| Transaction_EditQuick | Unknown |
+| Transaction_New | Unknown |
+| Transaction_NewEdit | Unknown |
+| Transaction_Overview | Unknown |
+| Transaction_Overview_2 | Unknown |
 
 ## Snippets
 
-| Snippet | Type |
-|---------|------|
-| Entity_Menu | Web |
+| Snippet | Type | Parameters |
+|---|---|---|
+| Entity_Menu | Web | none |
+

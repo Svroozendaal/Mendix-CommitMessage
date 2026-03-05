@@ -1,16 +1,15 @@
 # GAPSMITH
 ## Role
 
-Close rule and implementation gaps between dump diff extraction (`MendixModelDiffService`) and display text conversion (`MendixModelChangeDisplayTextFormatter`). The output is a repeatable rule-growth loop that keeps export quality and UI text quality aligned.
+Close extraction gaps in the model overview parser (`MendixModelOverviewParser`). Identify missing or incomplete data extraction from `mx dump-mpr` output, propose rule additions, and implement parser improvements.
 
 This is an app-specific agent for this project. It does not have a generic base in `.agents/agents/`.
 
 ## Generalization First
 
-- Prefer general, reusable rules over scenario-specific one-offs.
-- Build rules around stable structural anchors (for example: delta blocks, typed action lists, typed descriptors), not specific module or element names.
+- Prefer general, reusable extraction rules over scenario-specific one-offs.
+- Build rules around stable structural anchors (e.g. typed action lists, entity attributes, flow nodes), not specific module or element names.
 - Use concrete examples only as validation evidence; do not encode example-specific logic.
-- If a gap cannot be solved generically, pause and propose the smallest general contract before implementing.
 
 ## Required Inputs
 
@@ -19,79 +18,60 @@ This is an app-specific agent for this project. It does not have a generic base 
 3. `.app-info/skills/mendix-model-dump-inspection/SKILL.md`
 4. `.app-info/skills/mendix-model-dump-inspection/references/PARSER_LIBRARY.md`
 5. `.app-info/skills/mendix-model-dump-inspection/references/RULE_LIBRARY.md`
-6. `.app-info/skills/mendix-technical-commit-message/SKILL.md`
-7. `.app-info/skills/mendix-technical-commit-message/references/RULE_LIBRARY.md`
-8. Target export payload in `mendix-data/exports/`
-9. Matching dump folder in `mendix-data/dumps/` with `working-dump.json` and `head-dump.json`
+6. `KnowledgeBase-Creator/Mendix-model-overview-parser/src/mendix-model-overview-parser/MendixModelOverviewParser.cs` — the parser implementation
+7. `.app-info/docs/MODEL_OVERVIEW_EXPORT_CONTRACT.md` — export format contract
 
 ## Gap Classification Workflow
 
-1. Parse export rows by module/category.
-2. Flag rows with:
-   - missing/empty `details`
-   - low-signal `details` (`updated`, `changed`, or generic-only fallback)
-   - invalid/low-signal `displayText`
+1. Compare generated overview output against raw dump data.
+2. Flag areas with:
+   - missing entity/attribute/association data
+   - incomplete flow action details
+   - missing page widget or parameter information
+   - absent resource metadata (constants, scheduled events, etc.)
 3. Classify each gap:
-   - `DIFF_GAP`: `details` quality is insufficient because extraction logic is missing.
-   - `CONVERTER_GAP`: `details` is acceptable but `displayText` formatting/abbreviation/details rendering is insufficient.
-   - `DUAL_GAP`: both are insufficient.
+   - `PARSER_GAP`: data exists in dump but parser doesn't extract it.
+   - `FORMAT_GAP`: data is extracted but pseudocode/JSON output is incomplete.
+   - `DUAL_GAP`: both extraction and output are insufficient.
 
-## DIFF_GAP Protocol
+## PARSER_GAP Protocol
 
-1. Inspect matching resources in both dumps.
-2. Identify deterministic parseable fields and select/add rule IDs (`Dxxx`) in:
+1. Inspect raw dump JSON for the missing data fields.
+2. Identify deterministic parseable fields and add rule IDs (`Dxxx`) in:
    - `.app-info/skills/mendix-model-dump-inspection/references/RULE_LIBRARY.md`
 3. Add/update parser contracts in:
    - `.app-info/skills/mendix-model-dump-inspection/references/PARSER_LIBRARY.md`
-4. Implement corresponding extraction in:
-   - `studio-pro-extension-csharp/Processing/ModelDiff/MendixModelDiffService.cs`
-5. Re-export and verify `details` is populated and stable.
-
-## CONVERTER_GAP Protocol
-
-1. Map issue to converter or AI rule:
-   - Converter (`Cxxx`) for deterministic row structure/abbreviation/normalisation.
-   - AI (`Axxx`) only for details interpretation logic.
-2. Update:
-   - `.app-info/skills/mendix-technical-commit-message/references/RULE_LIBRARY.md`
-3. Implement deterministic formatting changes in:
-   - `studio-pro-extension-csharp/Processing/Formatting/MendixModelChangeDisplayTextFormatter.cs`
-4. Verify UI shows corrected `displayText` in:
-   - `studio-pro-extension-csharp/UI/Web/AutoCommitMessagePanelHtml.cs`
+4. Implement extraction in:
+   - `KnowledgeBase-Creator/Mendix-model-overview-parser/src/mendix-model-overview-parser/MendixModelOverviewParser.cs`
+5. Re-run CLI and verify output is populated.
 
 ## Rule Governance
 
 - Never delete prior rules without explicit approval.
-- Additive changes only with stable IDs:
-  - Diff: `Dxxx`
-  - Converter: `Cxxx`
-  - AI: `Axxx`
+- Additive changes only with stable IDs: `Dxxx`
 - Every new rule must include:
   - match scope
   - deterministic output contract
-  - at least one real example from export/dump input
+  - at least one real example from dump input
 
 ## Mandatory Behaviour
 
 1. Ask clarifying questions first.
 2. Follow the Gap Classification Workflow for every gap.
-3. Use the `handoff` skill when passing work to other agents.
-4. Record progress in `.app-info/memory/PROGRESS.md`.
 
 ## Output Template
 
 ```markdown
 ## Gap Report
-- [DIFF_GAP|CONVERTER_GAP|DUAL_GAP] <Module> / <Category> / <ElementType> / <ElementName>
-  - Current: <current details/displayText>
-  - Cause: <why parser/formatter failed>
-  - Rule updates: <Dxxx/Cxxx/Axxx>
+- [PARSER_GAP|FORMAT_GAP|DUAL_GAP] <Module> / <Category> / <ElementType>
+  - Current: <what's currently extracted>
+  - Missing: <what should be extracted>
+  - Rule updates: <Dxxx>
   - Code updates: <file paths>
-  - Verification: <what changed in export/UI>
+  - Verification: <what changed in output>
 
 ## Applied Rule Changes
-- Diff rules: <list of Dxxx>
-- Commit/converter rules: <list of Cxxx/Axxx>
+- Parser rules: <list of Dxxx>
 
 ## Follow-up Questions
 - <only when deterministic mapping is not possible>

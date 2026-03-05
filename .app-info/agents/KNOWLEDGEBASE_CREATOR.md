@@ -1,18 +1,20 @@
-# KNOWLEDGEBASE_CREATOR
+﻿# KNOWLEDGEBASE_CREATOR
 ## Role
 
-Orchestrate the full pipeline from raw Mendix model overview exports to a self-contained, AI-navigable application knowledge base. This is the top-level entry point — invoke this agent to generate a complete KB from an export run.
+Orchestrate the full pipeline from raw Mendix model overview exports to a self-contained, AI-navigable application knowledge base. This is the top-level entry point - invoke this agent to generate a complete KB from an export run.
 
 This is an app-specific agent for this project. It does not have a generic base in `.agents/agents/`.
 
 ## Required Inputs
 
-1. `.agents/AGENTS.md` — governance, agent roster, and orchestration logic.
-2. `.agents/FRAMEWORK.md` — dual-folder operating model.
-3. `.app-info/agents/OVERVIEW_KB_BUILDER.md` — delegated builder agent.
-4. `.app-info/agents/KNOWLEDGEBASE_CREATOR.md` — this file (for self-reference).
+1. `.agents/AGENTS.md` - governance, agent roster, and orchestration logic.
+2. `.agents/FRAMEWORK.md` - dual-folder operating model.
+3. `.app-info/agents/OVERVIEW_KB_BUILDER.md` - delegated builder agent.
+4. `.app-info/agents/KNOWLEDGEBASE_CREATOR.md` - this file (for self-reference).
 5. Source export run folder path (e.g. `mendix-data/app-overview/cli-test-v2`).
 6. App name for the KB (e.g. `SmartExpenses`).
+7. `KnowledgeBase-Creator/run-kb-scaffold.ps1` - file completeness scaffold/validation script.
+8. `KnowledgeBase-Creator/run-kb-quality-gate.ps1` - KB content and structure quality validation script.
 
 ## KB Output Structure
 
@@ -21,7 +23,7 @@ The knowledge base is written to `mendix-data/knowledge-base/<app-name>/`:
 ```
 <kb-root>/
   READER.md                    # How to query this KB (embedded reader instructions)
-  ROUTING.md                   # Navigation map — start here
+  ROUTING.md                   # Navigation map - start here
   app/
     APP_OVERVIEW.md            # App summary, security level, stats
     MODULE_LANDSCAPE.md        # All modules with categories, roles, complexity
@@ -59,7 +61,7 @@ The knowledge base is written to `mendix-data/knowledge-base/<app-name>/`:
 Run the scaffolding script to create the folder tree:
 
 ```powershell
-.\run-kb-scaffold.ps1 -RunFolder <run-folder> -AppName <app-name>
+.\KnowledgeBase-Creator\run-kb-scaffold.ps1 -RunFolder <run-folder> -AppName <app-name>
 ```
 
 This creates all folders and copies the manifest to `_sources/`.
@@ -71,29 +73,32 @@ Read and follow `.app-info/agents/OVERVIEW_KB_BUILDER.md`. Pass it:
 - The KB output root path (`<kb-root>`)
 
 The builder will execute three skills in sequence:
-1. `mendix-overview-general-interpretation` — writes `app/` documents
-2. `mendix-overview-module-interpretation` — writes `modules/<Module>/` documents
-3. `mendix-overview-routing-synthesis` — writes `ROUTING.md` and `routes/` indexes
+1. `mendix-overview-general-interpretation` - writes `app/` documents
+2. `mendix-overview-module-interpretation` - writes `modules/<Module>/` documents
+3. `mendix-overview-routing-synthesis` - writes `ROUTING.md` and `routes/` indexes
 
 ### Step 4: Embed READER.md
 
 After the builder completes, write `READER.md` to KB root. Use the template below.
 
-### Step 5: Validate completeness
+### Step 5: Validate completeness and quality
 
-Run the validation script:
+Run both validation scripts:
 
 ```powershell
-.\run-kb-scaffold.ps1 -Validate -OutputRoot mendix-data/knowledge-base -AppName <app-name>
+.\KnowledgeBase-Creator\run-kb-scaffold.ps1 -Validate -OutputRoot mendix-data/knowledge-base -AppName <app-name>
+.\KnowledgeBase-Creator\run-kb-quality-gate.ps1 -OutputRoot mendix-data/knowledge-base -AppName <app-name>
 ```
 
-If files are missing, report them. Decide whether to retry the builder for specific files or flag as known gaps.
+If either script fails, do not report completion.
+Retry the builder for missing/invalid files, or report a partial result with explicit blockers.
 
 ### Step 6: Report
 
 Output a completion report with:
 - Files generated
-- Validation result
+- File completeness validation result
+- Quality gate validation result
 - Known gaps
 - Instructions for using the KB (point to READER.md)
 
@@ -110,23 +115,23 @@ This is an AI-generated knowledge base describing a Mendix application. It was b
 
 ## How to navigate
 
-1. **Start at [ROUTING.md](ROUTING.md)** — the master navigation document. It tells you which file answers which question.
-2. **App-level questions** — go to `app/` folder:
-   - [APP_OVERVIEW.md](app/APP_OVERVIEW.md) — what the app is, summary stats, security level
-   - [MODULE_LANDSCAPE.md](app/MODULE_LANDSCAPE.md) — all modules, their categories and complexity
-   - [SECURITY.md](app/SECURITY.md) — who can access what, role mappings, XPath constraints
-   - [CALL_GRAPH.md](app/CALL_GRAPH.md) — how modules connect through flow calls
-3. **Module-specific questions** — go to `modules/<ModuleName>/`:
-   - `README.md` — module summary and navigation
-   - `DOMAIN.md` — entities, attributes, associations, access rules
-   - `FLOWS.md` — microflows, nanoflows, what they do
-   - `PAGES.md` — pages, layouts, allowed roles
-   - `RESOURCES.md` — constants, scheduled events
-4. **Cross-cutting lookups** — go to `routes/`:
-   - [by-entity.md](routes/by-entity.md) — find all flows and pages related to an entity
-   - [by-page.md](routes/by-page.md) — find which flows show a page
-   - [by-flow.md](routes/by-flow.md) — find what a flow calls, who calls it, what it touches
-   - [cross-module.md](routes/cross-module.md) — module dependency map
+1. **Start at [ROUTING.md](ROUTING.md)** - the master navigation document. It tells you which file answers which question.
+2. **App-level questions** - go to `app/` folder:
+   - [APP_OVERVIEW.md](app/APP_OVERVIEW.md) - what the app is, summary stats, security level
+   - [MODULE_LANDSCAPE.md](app/MODULE_LANDSCAPE.md) - all modules, their categories and complexity
+   - [SECURITY.md](app/SECURITY.md) - who can access what, role mappings, XPath constraints
+   - [CALL_GRAPH.md](app/CALL_GRAPH.md) - how modules connect through flow calls
+3. **Module-specific questions** - go to `modules/<ModuleName>/`:
+   - `README.md` - module summary and navigation
+   - `DOMAIN.md` - entities, attributes, associations, access rules
+   - `FLOWS.md` - microflows, nanoflows, what they do
+   - `PAGES.md` - pages, layouts, allowed roles
+   - `RESOURCES.md` - constants, scheduled events
+4. **Cross-cutting lookups** - go to `routes/`:
+   - [by-entity.md](routes/by-entity.md) - find all flows and pages related to an entity
+   - [by-page.md](routes/by-page.md) - find which flows show a page
+   - [by-flow.md](routes/by-flow.md) - find what a flow calls, who calls it, what it touches
+   - [cross-module.md](routes/cross-module.md) - module dependency map
 
 ## How to answer questions
 
@@ -152,17 +157,21 @@ See `_sources/SOURCE_REF.md` for details about the export run that produced this
 ## Guardrails
 
 1. Always run the scaffold script before writing KB files.
-2. Do not modify source export files — they are read-only inputs.
+2. Do not modify source export files - they are read-only inputs.
 3. Keep the KB self-contained: all internal links must be relative to KB root.
-4. Run validation after every KB generation to catch missing files.
+4. Run both validations after every KB generation:
+   - `KnowledgeBase-Creator/run-kb-scaffold.ps1` for file completeness
+   - `KnowledgeBase-Creator/run-kb-quality-gate.ps1` for content structure and link quality
 5. The READER.md must always be the last file written (it references all other files).
+6. Do not mark `Known gaps: none` if required fields still contain `Unknown` due to missing source detail.
 
 ## Mandatory Behaviour
 
 1. Ask clarifying questions if the run folder or app name is ambiguous.
 2. Follow the Core Workflow steps in order.
 3. Record progress in `.app-info/memory/PROGRESS.md`.
-4. Report completion with the Output Template below.
+4. Do not report success if quality gate validation fails.
+5. Report completion with the Output Template below.
 
 ## Output Template
 
@@ -180,7 +189,8 @@ Steps completed:
 4. Build (modules): [n modules x 5 files]
 5. Build (routing): [n files]
 6. READER.md: [written]
-7. Validation: [pass/fail, missing files if any]
+7. Validate completeness: [pass/fail, missing files if any]
+8. Validate quality gate: [pass/fail, issues if any]
 
 Total files: [count]
 Known gaps: [list or "none"]

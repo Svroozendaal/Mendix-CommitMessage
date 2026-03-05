@@ -1,54 +1,51 @@
-# Flows: ImporterHelper
-
-Total: 7 (Microflows: 6, Nanoflows: 1)
+﻿# Flows: ImporterHelper
 
 ## Flow Catalogue
 
 ### Action Flows (ACT_*)
 
 | Flow | Nodes | Key Actions | Pages Shown |
-|------|-------|-------------|-------------|
-| ACT_ExcelFileImport_Create | 7 | Create ExcelFileImport, link to helper, show upload page | ExcelFileImport_Upload |
-| ACT_ExcelFileImport_ImportToNP | 13 | Retrieve helper, call SUB_ImportTemplateDocument, commit on success | — |
-| ACT_ImportTransaction_AcceptTransactions | 11 | Loop staged imports, create SmartExpenses.Transaction per row, delete staging objects | — |
-| ACT_ImportTransaction_ShowPage | 5 | Create ImportTransactionHelper, show overview | ImportTransaction_Overview |
+|---|---:|---|---|
+| ACT_ExcelFileImport_Create | 7 | change ImportTransactionHelper (ImportTransactionHelper_ExcelFileImport=$NewExcelFileImport; refreshInClient=false), create ImporterHelper.ExcelFileImport as NewExcelFileImport | Unknown |
+| ACT_ExcelFileImport_ImportToNP | 13 | close page (pagesToClose=1), commit ExcelFileImport (refreshInClient=true, withEvents=true) | Unknown |
+| ACT_ImportTransaction_AcceptTransactions | 16 | change ImportTransactionList (type=Remove, value=$IteratorImportTransaction), change TransactionList (type=Add, value=$Transaction) | Unknown |
+| ACT_ImportTransaction_Refreshpage | 7 | call javascript action Toast.showToast -> ReturnValueName, call microflow ImporterHelper.ACT_ImportTransaction_AcceptTransactions | Unknown |
+| ACT_ImportTransaction_ShowPage | 5 | create ImporterHelper.ImportTransactionHelper as NewImportTransactionHelper, show page ImporterHelper.ImportTransaction_Overview | Unknown |
 
-### Sub-Microflows (SUB_*)
+### Data Sources (DS_*)
 
-| Flow | Nodes | Key Actions |
-|------|-------|-------------|
-| SUB_ImportTemplateDocument | 14 | Retrieve ExcelImporter template, call StartImportByTemplate, show result message |
+| Flow | Nodes | Key Actions | Returns |
+|---|---:|---|---|
+| none | 0 | none | none |
 
-### Consumed Web Service Flows (CWS_*)
-
-| Flow | Nodes | Key Actions |
-|------|-------|-------------|
-| CWS_GetProducts | 10 | REST call to external endpoint, count imported transactions, show result |
-
-### Nanoflows
+### Validation Flows (VAL_*)
 
 | Flow | Nodes | Key Actions |
-|------|-------|-------------|
-| ACT_ImportTransaction_Refreshpage | 7 | Show toast notification, call ACT_ImportTransaction_AcceptTransactions |
+|---|---:|---|
+| none | 0 | none |
+
+### Other Flows
+
+| Flow | Type | Nodes | Key Actions |
+|---|---|---:|---|
+| CWS_GetProducts | Microflow | 10 | AggregateListAction (output=CountTransactions, errorHandlingType=Rollback), commit Response (refreshInClient=true, withEvents=true) |
+| SUB_ImportTemplateDocument | Microflow | 14 | call java action ExcelImporter.StartImportByTemplate -> rowCount, LogMessageAction (errorHandlingType=Rollback) |
 
 ## Cross-Module Calls
 
 | Flow | Calls | Target Module |
-|------|-------|---------------|
+|---|---|---|
 | ACT_ImportTransaction_AcceptTransactions | SUB_Transaction_setStatus | SmartExpenses |
 
-| Flow | Calls | Direction |
-|------|-------|-----------|
-| ACT_ExcelFileImport_ImportToNP | SUB_ImportTemplateDocument | internal |
-| ACT_ImportTransaction_Refreshpage | ACT_ImportTransaction_AcceptTransactions | internal |
+## Flow Details
 
-## Key Flow Details
+| Flow | Kind | Nodes | Calls Out | Called By |
+|---|---|---:|---:|---:|
+| ACT_ExcelFileImport_Create | Microflow | 7 | 0 | 0 |
+| ACT_ExcelFileImport_ImportToNP | Microflow | 13 | 1 | 0 |
+| ACT_ImportTransaction_AcceptTransactions | Microflow | 16 | 1 | 1 |
+| ACT_ImportTransaction_Refreshpage | Nanoflow | 7 | 1 | 0 |
+| ACT_ImportTransaction_ShowPage | Microflow | 5 | 0 | 0 |
+| CWS_GetProducts | Microflow | 10 | 0 | 0 |
+| SUB_ImportTemplateDocument | Microflow | 14 | 0 | 1 |
 
-### ACT_ImportTransaction_AcceptTransactions
-The core acceptance flow: iterates over all staged ImportTransaction objects, creates a real SmartExpenses.Transaction for each (mapping Bedrag to Value, Tegenpartij to Name, etc.), calls SUB_Transaction_setStatus to classify as income/expenditure, deletes the staging object, then commits all new transactions in batch.
-
-### SUB_ImportTemplateDocument
-Bridges to the ExcelImporter marketplace module: retrieves the configured import template, calls the Java action `ExcelImporter.StartImportByTemplate` to parse the uploaded file into ImportTransaction objects, handles errors with logging and user messages.
-
-### CWS_GetProducts
-Makes a REST call (URL from CONST_RESTTransactionURL constant) to fetch transactions from an external system. On success, counts and displays the number of imported transactions.
