@@ -1,157 +1,93 @@
-﻿# Pages: WorkflowCommons
+# Pages: WorkflowCommons
 
 ## Page Inventory
 
-| Page | Title | Layout | Type | Roles | Parameters |
-|---|---|---|---|---|---|
-| CompletedUserTaskView | Expense request approval | Atlas_Core.Atlas_Default | Page | WorkflowCommons.Administrator, WorkflowCommons.User | UserTaskView:WorkflowCommons.UserTaskView |
-| CompletedWorkflowView | Default workflow admin | Atlas_Core.Atlas_Default | Page | WorkflowCommons.Administrator | WorkflowView:WorkflowCommons.WorkflowView |
-| DefaultWorkflowAdmin | Default workflow admin | Atlas_Core.Atlas_Default | Page | WorkflowCommons.Administrator | Workflow:System.Workflow |
-| ManageTaskAssignments | Manage Task Assignments | Atlas_Core.Atlas_Default | Page | WorkflowCommons.Administrator | TaskAssignmentHelper:WorkflowCommons.TaskAssignmentHelper |
-| MyInitiatedWorkflows | My Initiated Workflows | Atlas_Core.Atlas_Default | Page | WorkflowCommons.Administrator, WorkflowCommons.User | none |
-| TaskAssignmentHelper_UserTask_Reassign | User Search | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator | TaskAssignmentHelper:WorkflowCommons.TaskAssignmentHelper |
-| TaskAssignmentHelper_UserTask_Reassign_TargetUserOptions | Reassign task(s) | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator | NewAssignee:Administration.Account, TaskManagementHelper:WorkflowCommons.TaskAssignmentHelper |
-| TaskAssignmentHelper_UserTask_Retarget | User Search | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator | TaskAssignmentHelper:WorkflowCommons.TaskAssignmentHelper |
-| TaskAssignmentHelper_UserTask_Retarget_TargetUserOptions | Retarget task(s) | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator | NewTargetUser:Administration.Account, TaskAssignmentHelper:WorkflowCommons.TaskAssignmentHelper |
-| TaskAssignmentHelper_UserTask_Unassign_TargetUserOptions | Unassign task(s) | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator | TaskAssignmentHelper:WorkflowCommons.TaskAssignmentHelper |
-| TaskDashboard | My task dashboard | Atlas_Core.Atlas_Default | Page | WorkflowCommons.Administrator, WorkflowCommons.User | none |
-| TaskInbox | Task Inbox | Atlas_Core.Atlas_Default | Page | WorkflowCommons.Administrator, WorkflowCommons.User | none |
-| UserTask_Assign | Assign User | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator | WorkflowUserTask:System.WorkflowUserTask |
-| UserTask_Target | Manage target users | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator | WorkflowUserTask:System.WorkflowUserTask |
-| Workflow_ActionConfirmation | Confirmation | Atlas_Core.PopupLayout | Popup | none | Workflow:System.Workflow |
-| Workflow_Dashboard | Workflow Dashboard | Atlas_Core.Atlas_Default | Page | WorkflowCommons.Administrator | none |
-| Workflow_JumpTo_Options | Jump to activity | Atlas_Core.PopupLayout | Popup | none | WorkflowJumpToDetails:System.WorkflowJumpToDetails |
-| Workflow_Retry_Options | Retry Workflow | Atlas_Core.PopupLayout | Popup | none | Workflow:System.Workflow |
-| Workflow_WithdrawConfirmation | Withdraw Workflow | Atlas_Core.PopupLayout | Popup | none | WorkflowComment:WorkflowCommons.WorkflowComment |
-| WorkflowAdminCenter | Workflow Admin Center | Atlas_Core.Atlas_Default | Page | WorkflowCommons.Administrator | none |
-| WorkflowAttachment_New | New attachment | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator, WorkflowCommons.User | WorkflowAttachment:WorkflowCommons.WorkflowAttachment |
-| WorkflowAttachment_View | Attachment | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator, WorkflowCommons.User | WorkflowAttachment:WorkflowCommons.WorkflowAttachment |
-| WorkflowAuditTrailRecord_Overview | Workflow Audit trail | Atlas_Core.Atlas_Default | Page | WorkflowCommons.Administrator | none |
-| WorkflowComment_Edit_Admin | Edit Comment | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator | WorkflowComment:WorkflowCommons.WorkflowComment |
-| WorkflowCommentHelper_Edit | Edit Comment | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator, WorkflowCommons.User | WorkflowCommentHelper:WorkflowCommons.WorkflowCommentHelper |
-| WorkflowDefinition_ActionConfirmation | Confirmation | Atlas_Core.PopupLayout | Popup | none | WorkflowDefinition:System.WorkflowDefinition |
-| WorkflowDefinition_CleanUp | Clean-up workflow instances | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator | CleanupHelper:WorkflowCommons.CleanupHelper |
-| WorkflowDefinition_CleanUp_Preview | Clean-up workflow instances | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator | CleanupHelper:WorkflowCommons.CleanupHelper |
-| WorkflowDefinition_Lock | Lock workflow | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator | WorkflowDefinitionHelper:WorkflowCommons.WorkflowDefinitionHelper |
-| WorkflowDefinition_Overview | Workflow Definitions | Atlas_Core.Atlas_Default | Page | WorkflowCommons.Administrator | none |
-| WorkflowDefinition_Unlock | Unlock workflow | Atlas_Core.PopupLayout | Popup | WorkflowCommons.Administrator | WorkflowDefinitionHelper:WorkflowCommons.WorkflowDefinitionHelper |
-| WorkflowDefinition_View | Workflow Definition | Atlas_Core.Atlas_Default | Page | WorkflowCommons.Administrator | WorkflowDefinition:System.WorkflowDefinition |
+| Page | Title | Allowed roles | Parameters | Popup |
+|---|---|---|---|---|
+| WorkflowCommons.CompletedUserTaskView | Expense request approval | WorkflowCommons.Administrator, WorkflowCommons.User | UserTaskView:WorkflowCommons.UserTaskView | False |
+| WorkflowCommons.CompletedWorkflowView | Default workflow admin | WorkflowCommons.Administrator | WorkflowView:WorkflowCommons.WorkflowView | False |
+| WorkflowCommons.DefaultWorkflowAdmin | Default workflow admin | WorkflowCommons.Administrator | Workflow:System.Workflow | False |
+| WorkflowCommons.ManageTaskAssignments | Manage Task Assignments | WorkflowCommons.Administrator | TaskAssignmentHelper:WorkflowCommons.TaskAssignmentHelper | False |
+| WorkflowCommons.MyInitiatedWorkflows | My Initiated Workflows | WorkflowCommons.Administrator, WorkflowCommons.User | none | False |
+| WorkflowCommons.TaskAssignmentHelper_UserTask_Reassign | User Search | WorkflowCommons.Administrator | TaskAssignmentHelper:WorkflowCommons.TaskAssignmentHelper | True |
+| WorkflowCommons.TaskAssignmentHelper_UserTask_Reassign_TargetUserOptions | Reassign task(s) | WorkflowCommons.Administrator | NewAssignee:Administration.Account, TaskManagementHelper:WorkflowCommons.TaskAssignmentHelper | True |
+| WorkflowCommons.TaskAssignmentHelper_UserTask_Retarget | User Search | WorkflowCommons.Administrator | TaskAssignmentHelper:WorkflowCommons.TaskAssignmentHelper | True |
+| WorkflowCommons.TaskAssignmentHelper_UserTask_Retarget_TargetUserOptions | Retarget task(s) | WorkflowCommons.Administrator | NewTargetUser:Administration.Account, TaskAssignmentHelper:WorkflowCommons.TaskAssignmentHelper | True |
+| WorkflowCommons.TaskAssignmentHelper_UserTask_Unassign_TargetUserOptions | Unassign task(s) | WorkflowCommons.Administrator | TaskAssignmentHelper:WorkflowCommons.TaskAssignmentHelper | True |
+| WorkflowCommons.TaskDashboard | My task dashboard | WorkflowCommons.Administrator, WorkflowCommons.User | none | False |
+| WorkflowCommons.TaskInbox | Task Inbox | WorkflowCommons.Administrator, WorkflowCommons.User | none | False |
+| WorkflowCommons.UserTask_Assign | Assign User | WorkflowCommons.Administrator | WorkflowUserTask:System.WorkflowUserTask | True |
+| WorkflowCommons.UserTask_Target | Manage target users | WorkflowCommons.Administrator | WorkflowUserTask:System.WorkflowUserTask | True |
+| WorkflowCommons.Workflow_ActionConfirmation | Confirmation | none | Workflow:System.Workflow | True |
+| WorkflowCommons.Workflow_Dashboard | Workflow Dashboard | WorkflowCommons.Administrator | none | False |
+| WorkflowCommons.Workflow_JumpTo_Options | Jump to activity | none | WorkflowJumpToDetails:System.WorkflowJumpToDetails | True |
+| WorkflowCommons.Workflow_Retry_Options | Retry Workflow | none | Workflow:System.Workflow | True |
+| WorkflowCommons.Workflow_WithdrawConfirmation | Withdraw Workflow | none | WorkflowComment:WorkflowCommons.WorkflowComment | True |
+| WorkflowCommons.WorkflowAdminCenter | Workflow Admin Center | WorkflowCommons.Administrator | none | False |
+| WorkflowCommons.WorkflowAttachment_New | New attachment | WorkflowCommons.Administrator, WorkflowCommons.User | WorkflowAttachment:WorkflowCommons.WorkflowAttachment | True |
+| WorkflowCommons.WorkflowAttachment_View | Attachment | WorkflowCommons.Administrator, WorkflowCommons.User | WorkflowAttachment:WorkflowCommons.WorkflowAttachment | True |
+| WorkflowCommons.WorkflowAuditTrailRecord_Overview | Workflow Audit trail | WorkflowCommons.Administrator | none | False |
+| WorkflowCommons.WorkflowComment_Edit_Admin | Edit Comment | WorkflowCommons.Administrator | WorkflowComment:WorkflowCommons.WorkflowComment | True |
+| WorkflowCommons.WorkflowCommentHelper_Edit | Edit Comment | WorkflowCommons.Administrator, WorkflowCommons.User | WorkflowCommentHelper:WorkflowCommons.WorkflowCommentHelper | True |
+| WorkflowCommons.WorkflowDefinition_ActionConfirmation | Confirmation | none | WorkflowDefinition:System.WorkflowDefinition | True |
+| WorkflowCommons.WorkflowDefinition_CleanUp | Clean-up workflow instances | WorkflowCommons.Administrator | CleanupHelper:WorkflowCommons.CleanupHelper | True |
+| WorkflowCommons.WorkflowDefinition_CleanUp_Preview | Clean-up workflow instances | WorkflowCommons.Administrator | CleanupHelper:WorkflowCommons.CleanupHelper | True |
+| WorkflowCommons.WorkflowDefinition_Lock | Lock workflow | WorkflowCommons.Administrator | WorkflowDefinitionHelper:WorkflowCommons.WorkflowDefinitionHelper | True |
+| WorkflowCommons.WorkflowDefinition_Overview | Workflow Definitions | WorkflowCommons.Administrator | none | False |
+| WorkflowCommons.WorkflowDefinition_Unlock | Unlock workflow | WorkflowCommons.Administrator | WorkflowDefinitionHelper:WorkflowCommons.WorkflowDefinitionHelper | True |
+| WorkflowCommons.WorkflowDefinition_View | Workflow Definition | WorkflowCommons.Administrator | WorkflowDefinition:System.WorkflowDefinition | False |
 
 ## Page-Flow Links
 
-| Page | Shown by Flows |
+| Page | Shown by flows |
 |---|---|
-| CompletedUserTaskView | Unknown |
-| CompletedWorkflowView | Unknown |
-| DefaultWorkflowAdmin | Unknown |
-| ManageTaskAssignments | Unknown |
-| MyInitiatedWorkflows | Unknown |
-| TaskAssignmentHelper_UserTask_Reassign | Unknown |
-| TaskAssignmentHelper_UserTask_Reassign_TargetUserOptions | Unknown |
-| TaskAssignmentHelper_UserTask_Retarget | Unknown |
-| TaskAssignmentHelper_UserTask_Retarget_TargetUserOptions | Unknown |
-| TaskAssignmentHelper_UserTask_Unassign_TargetUserOptions | Unknown |
-| TaskDashboard | Unknown |
-| TaskInbox | Unknown |
-| UserTask_Assign | Unknown |
-| UserTask_Target | Unknown |
-| Workflow_ActionConfirmation | Unknown |
-| Workflow_Dashboard | Unknown |
-| Workflow_JumpTo_Options | Unknown |
-| Workflow_Retry_Options | Unknown |
-| Workflow_WithdrawConfirmation | Unknown |
-| WorkflowAdminCenter | Unknown |
-| WorkflowAttachment_New | Unknown |
-| WorkflowAttachment_View | Unknown |
-| WorkflowAuditTrailRecord_Overview | Unknown |
-| WorkflowComment_Edit_Admin | Unknown |
-| WorkflowCommentHelper_Edit | Unknown |
-| WorkflowDefinition_ActionConfirmation | Unknown |
-| WorkflowDefinition_CleanUp | Unknown |
-| WorkflowDefinition_CleanUp_Preview | Unknown |
-| WorkflowDefinition_Lock | Unknown |
-| WorkflowDefinition_Overview | Unknown |
-| WorkflowDefinition_Unlock | Unknown |
-| WorkflowDefinition_View | Unknown |
+| WorkflowCommons.CompletedUserTaskView | WorkflowCommons.ACT_UserTaskView_ShowUserTaskPage |
+| WorkflowCommons.CompletedWorkflowView | WorkflowCommons.SUB_WorkflowView_ShowWorkflowAdminPage |
+| WorkflowCommons.DefaultWorkflowAdmin | WorkflowCommons.ACT_UserTask_ShowDefaultAdminPage, WorkflowCommons.SUB_Workflow_ShowWorkflowAdminPage |
+| WorkflowCommons.ManageTaskAssignments | WorkflowCommons.ACT_TaskAssignment_Show |
+| WorkflowCommons.MyInitiatedWorkflows | none (no show-page evidence) |
+| WorkflowCommons.TaskAssignmentHelper_UserTask_Reassign | WorkflowCommons.ACT_TaskAssignmentHelper_Reassign_Show |
+| WorkflowCommons.TaskAssignmentHelper_UserTask_Reassign_TargetUserOptions | none (no show-page evidence) |
+| WorkflowCommons.TaskAssignmentHelper_UserTask_Retarget | WorkflowCommons.ACT_TaskAssignmentHelper_Retarget_Show |
+| WorkflowCommons.TaskAssignmentHelper_UserTask_Retarget_TargetUserOptions | none (no show-page evidence) |
+| WorkflowCommons.TaskAssignmentHelper_UserTask_Unassign_TargetUserOptions | WorkflowCommons.ACT_TaskAssignmentHelper_Unassign_Show |
+| WorkflowCommons.TaskDashboard | none (no show-page evidence) |
+| WorkflowCommons.TaskInbox | none (no show-page evidence) |
+| WorkflowCommons.UserTask_Assign | none (no show-page evidence) |
+| WorkflowCommons.UserTask_Target | none (no show-page evidence) |
+| WorkflowCommons.Workflow_ActionConfirmation | WorkflowCommons.ACT_Workflow_Abort, WorkflowCommons.ACT_Workflow_Continue, WorkflowCommons.ACT_Workflow_Pause, WorkflowCommons.ACT_Workflow_Restart, WorkflowCommons.ACT_Workflow_Unpause, WorkflowCommons.ACT_WorkflowJumpToDetails_Apply, WorkflowCommons.SUB_Workflow_Retry |
+| WorkflowCommons.Workflow_Dashboard | none (no show-page evidence) |
+| WorkflowCommons.Workflow_JumpTo_Options | WorkflowCommons.ACT_Workflow_JumpTo |
+| WorkflowCommons.Workflow_Retry_Options | WorkflowCommons.ACT_Workflow_Retry |
+| WorkflowCommons.Workflow_WithdrawConfirmation | WorkflowCommons.ACT_WorkflowView_WithdrawWorkflow |
+| WorkflowCommons.WorkflowAdminCenter | none (no show-page evidence) |
+| WorkflowCommons.WorkflowAttachment_New | WorkflowCommons.ACT_Attachment_Create |
+| WorkflowCommons.WorkflowAttachment_View | none (no show-page evidence) |
+| WorkflowCommons.WorkflowAuditTrailRecord_Overview | none (no show-page evidence) |
+| WorkflowCommons.WorkflowComment_Edit_Admin | none (no show-page evidence) |
+| WorkflowCommons.WorkflowCommentHelper_Edit | WorkflowCommons.ACT_WorkflowComment_Edit |
+| WorkflowCommons.WorkflowDefinition_ActionConfirmation | WorkflowCommons.ACT_WorkflowDefinition_Lock, WorkflowCommons.ACT_WorkflowDefinition_Unlock |
+| WorkflowCommons.WorkflowDefinition_CleanUp | WorkflowCommons.ACT_WorkflowDefinition_CleanUp_Open |
+| WorkflowCommons.WorkflowDefinition_CleanUp_Preview | none (no show-page evidence) |
+| WorkflowCommons.WorkflowDefinition_Lock | WorkflowCommons.ACT_WorkflowDefinitionHelper_ShowLockPage |
+| WorkflowCommons.WorkflowDefinition_Overview | none (no show-page evidence) |
+| WorkflowCommons.WorkflowDefinition_Unlock | WorkflowCommons.ACT_WorkflowDefinitionHelper_ShowUnlockPage |
+| WorkflowCommons.WorkflowDefinition_View | WorkflowCommons.OCl_WorkflowSummary |
+
+## Journey Fragments
+
+| User intent group | Pages |
+|---|---|
+| General | WorkflowCommons.CompletedUserTaskView, WorkflowCommons.CompletedWorkflowView, WorkflowCommons.DefaultWorkflowAdmin, WorkflowCommons.ManageTaskAssignments, WorkflowCommons.MyInitiatedWorkflows, WorkflowCommons.TaskDashboard, WorkflowCommons.TaskInbox, WorkflowCommons.WorkflowAdminCenter |
+| TaskAssignmentHelper | WorkflowCommons.TaskAssignmentHelper_UserTask_Reassign, WorkflowCommons.TaskAssignmentHelper_UserTask_Reassign_TargetUserOptions, WorkflowCommons.TaskAssignmentHelper_UserTask_Retarget, WorkflowCommons.TaskAssignmentHelper_UserTask_Retarget_TargetUserOptions, WorkflowCommons.TaskAssignmentHelper_UserTask_Unassign_TargetUserOptions |
+| UserTask | WorkflowCommons.UserTask_Assign, WorkflowCommons.UserTask_Target |
+| Workflow | WorkflowCommons.Workflow_ActionConfirmation, WorkflowCommons.Workflow_Dashboard, WorkflowCommons.Workflow_JumpTo_Options, WorkflowCommons.Workflow_Retry_Options, WorkflowCommons.Workflow_WithdrawConfirmation |
+| WorkflowAttachment | WorkflowCommons.WorkflowAttachment_New, WorkflowCommons.WorkflowAttachment_View |
+| WorkflowAuditTrailRecord | WorkflowCommons.WorkflowAuditTrailRecord_Overview |
+| WorkflowComment | WorkflowCommons.WorkflowComment_Edit_Admin |
+| WorkflowCommentHelper | WorkflowCommons.WorkflowCommentHelper_Edit |
+| WorkflowDefinition | WorkflowCommons.WorkflowDefinition_ActionConfirmation, WorkflowCommons.WorkflowDefinition_CleanUp, WorkflowCommons.WorkflowDefinition_CleanUp_Preview, WorkflowCommons.WorkflowDefinition_Lock, WorkflowCommons.WorkflowDefinition_Overview, WorkflowCommons.WorkflowDefinition_Unlock, WorkflowCommons.WorkflowDefinition_View |
 
 ## Snippets
 
-| Snippet | Type | Parameters |
-|---|---|---|
-| Readme | Web | none |
-| Snip_Assignee_Search | Web | TaskCount:WorkflowCommons.TaskCount |
-| Snip_AuditTrailViewer_Toolbar | Web | AuditTrailViewer:WorkflowCommons.AuditTrailViewer |
-| Snip_DashboardContext_Timeline | Web | DashboardContext:WorkflowCommons.DashboardContext |
-| Snip_TaskAssignment_UserTask_Assignees | Web | Account:Administration.Account, WorkflowUserTask:System.WorkflowUserTask |
-| Snip_TaskAssignment_UserTask_TargetUsers | Web | Account:Administration.Account, WorkflowUserTask:System.WorkflowUserTask |
-| Snip_TaskAssignmentHelper_Assignee_Search | Web | TaskAssignmentHelper:WorkflowCommons.TaskAssignmentHelper |
-| Snip_TaskAssignmentHelper_TargetUser_Search | Web | TaskAssignmentHelper:WorkflowCommons.TaskAssignmentHelper |
-| Snip_TaskCount_RefreshBTN | Web | TaskCount:WorkflowCommons.TaskCount |
-| Snip_TaskDashboard_Header | Web | DashboardContext:WorkflowCommons.DashboardContext |
-| Snip_TaskDashboard_Numbers | Web | DashboardContext:WorkflowCommons.DashboardContext |
-| Snip_TimelineViewer_Timeline_Full | Web | TimelineViewer:WorkflowCommons.TimelineViewer |
-| Snip_TimelineViewer_Timeline_Tasks | Web | TimelineViewer:WorkflowCommons.TimelineViewer |
-| Snip_UserTask_Assignees | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_UserTask_AttachmentAndComments | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_UserTask_Detail | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_UserTask_DueDate | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_UserTask_DueDate_Warning | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_UserTask_Header | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_UserTask_NameColumn | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_UserTask_NameColumnWithIcon | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_UserTask_NotificationArea | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_UserTask_State | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_UserTask_TargetUsers | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_UserTask_TaskTimeline | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_UserTask_UnassignedMessage | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_UserTaskView_Assignees | Web | UserTaskView:WorkflowCommons.UserTaskView |
-| Snip_UserTaskView_Assignees_Aggregated | Web | UserTaskView:WorkflowCommons.UserTaskView |
-| Snip_UserTaskView_Details | Web | UserTaskView:WorkflowCommons.UserTaskView |
-| Snip_UserTaskView_Header | Web | UserTaskView:WorkflowCommons.UserTaskView |
-| Snip_UserTaskView_IncompatibleWarning | Web | UserTaskView:WorkflowCommons.UserTaskView |
-| Snip_UserTaskView_NameColumn | Web | UserTaskView:WorkflowCommons.UserTaskView |
-| Snip_UserTaskView_NameColumnWithIcon | Web | UserTaskView:WorkflowCommons.UserTaskView |
-| Snip_UserTaskView_State | Web | UserTaskView:WorkflowCommons.UserTaskView |
-| Snip_UserTaskView_TargetUsers | Web | UserTaskView:WorkflowCommons.UserTaskView |
-| Snip_Workflow_ActivityTimeline | Web | Workflow:System.Workflow |
-| Snip_Workflow_ActivityTimelineOnly_Full | Web | Workflow:System.Workflow |
-| Snip_Workflow_ActivityTimelineOnly_Tasks | Web | Workflow:System.Workflow |
-| Snip_Workflow_AuditTrail | Web | Workflow:System.Workflow |
-| Snip_Workflow_CommentsAndAttachments_Admin | Web | Workflow:System.Workflow |
-| Snip_Workflow_Detail | Web | Workflow:System.Workflow |
-| Snip_Workflow_DueDate_Warning | Web | Workflow:System.Workflow |
-| Snip_Workflow_Header | Web | Workflow:System.Workflow |
-| Snip_Workflow_MoreActions | Web | Workflow:System.Workflow |
-| Snip_Workflow_NotificationArea | Web | Workflow:System.Workflow |
-| Snip_Workflow_State | Web | Workflow:System.Workflow |
-| Snip_Workflow_StateCircleOnly | Web | Workflow:System.Workflow |
-| Snip_Workflow_TaskDetails | Web | Workflow:System.Workflow |
-| Snip_WorkflowActivity_Details_ActivityType | Web | WorkflowActivityDetails:System.WorkflowActivityDetails |
-| Snip_WorkflowActivityRecord_ActivityIcon | Web | WorkflowActivityRecord:System.WorkflowActivityRecord |
-| Snip_WorkflowActivityRecord_Details | Web | TimelineViewer:WorkflowCommons.TimelineViewer, WorkflowActivityRecord:System.WorkflowActivityRecord |
-| Snip_WorkflowActivityRecord_Header | Web | WorkflowActivityRecord:System.WorkflowActivityRecord |
-| Snip_WorkflowAuditTrailRecord_Overview | Web | none |
-| Snip_WorkflowDashboard_Header | Web | DashboardContext:WorkflowCommons.DashboardContext |
-| Snip_WorkflowDashboard_TaskNumbers | Web | DashboardContext:WorkflowCommons.DashboardContext |
-| Snip_WorkflowDashboard_WorkflowNumbers | Web | DashboardContext:WorkflowCommons.DashboardContext |
-| Snip_WorkflowDefinition_Actions | Web | WorkflowDefinition:System.WorkflowDefinition |
-| Snip_WorkflowDefinition_AuditTrail | Web | WorkflowDefinition:System.WorkflowDefinition |
-| Snip_WorkflowDefinition_Header | Web | WorkflowDefinition:System.WorkflowDefinition |
-| Snip_WorkflowJumpToDetails | Web | WorkflowJumpToDetails:System.WorkflowJumpToDetails |
-| Snip_WorkflowUserTask_IncompatibleWarning | Web | WorkflowUserTask:System.WorkflowUserTask |
-| Snip_WorkflowView_ActivityTimeline | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_ActivityTimelineOnly_Full | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_ActivityTimelineOnly_Tasks | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_AuditTrail | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_CommentsAndAttachments | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_CommentsAndAttachments_Admin | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_CompletedTaskDetails | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_Detail | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_Header | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_NotificationArea | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_State | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_StateCircleOnly | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_TaskTimeline | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_TaskTimeline_WithoutTitleAndDescription | Web | WorkflowView:WorkflowCommons.WorkflowView |
-| Snip_WorkflowView_TaskTimeLineOnly | Web | WorkflowView:WorkflowCommons.WorkflowView |
-
+Snippet-level page widget behaviour is not exported in current overview contract.

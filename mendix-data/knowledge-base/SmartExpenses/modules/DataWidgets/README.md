@@ -1,4 +1,4 @@
-﻿# Module: DataWidgets
+# Module: DataWidgets
 
 Category: Marketplace
 Module roles: User
@@ -12,9 +12,24 @@ Module roles: User
 
 ## Purpose
 
-- Export-backed: Module category is $cat.
-- Inferred: Focus depends on whether entities, pages, or flows dominate.
-- Unknown: Business-owner intent text is not exported.
+- Export-backed: module category and inventory from overview export.
+- Inferred: module role is support capability.
+- Unknown: product-owner intent text is not included in export.
+
+## Capability Map
+
+| Capability prefix | Flow count | Representative flow |
+|---|---:|---|
+| none | 0 | none |
+
+## Primary User Journeys
+
+| Entry flow | UI result | Entities touched |
+|---|---|---|
+| support module | n/a | dependency-focused summary |
+
+## Top risks/unknowns in model understanding
+- No major derivation gaps detected for this module.
 
 ## Navigation
 
@@ -33,4 +48,3 @@ Module roles: User
 
 - Export module: DataWidgets
 - Run folder: cli_2026-03-04T20-44-47.917Z
-

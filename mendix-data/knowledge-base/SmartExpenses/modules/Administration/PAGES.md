@@ -1,36 +1,40 @@
-﻿# Pages: Administration
+# Pages: Administration
 
 ## Page Inventory
 
-| Page | Title | Layout | Type | Roles | Parameters |
-|---|---|---|---|---|---|
-| Account_Edit | Edit Account | Atlas_Core.PopupLayout | Popup | Administration.Administrator, Administration.User | Account:Administration.Account |
-| Account_New | New Account | Atlas_Core.PopupLayout | Popup | Administration.Administrator, Administration.User | AccountPasswordData:Administration.AccountPasswordData |
-| Account_Overview | Accounts | Atlas_Core.Atlas_Default | Page | Administration.Administrator | none |
-| ActiveSessions | Active Sessions | Atlas_Core.Atlas_Default | Page | Administration.Administrator | none |
-| ChangeMyPasswordForm | Change Password | Atlas_Core.PopupLayout | Popup | none | AccountPasswordData:Administration.AccountPasswordData |
-| ChangePasswordForm | Change Password | Atlas_Core.PopupLayout | Popup | none | AccountPasswordData:Administration.AccountPasswordData |
-| MyAccount | My Account | Atlas_Core.PopupLayout | Popup | none | Account:Administration.Account |
-| RuntimeInstances | Runtime Instances | Atlas_Core.Atlas_Default | Page | Administration.Administrator | none |
-| ScheduledEvents | Scheduled Events | Atlas_Core.Atlas_Default | Page | Administration.Administrator | none |
+| Page | Title | Allowed roles | Parameters | Popup |
+|---|---|---|---|---|
+| Administration.Account_Edit | Edit Account | Administration.Administrator, Administration.User | Account:Administration.Account | True |
+| Administration.Account_New | New Account | Administration.Administrator, Administration.User | AccountPasswordData:Administration.AccountPasswordData | True |
+| Administration.Account_Overview | Accounts | Administration.Administrator | none | False |
+| Administration.ActiveSessions | Active Sessions | Administration.Administrator | none | False |
+| Administration.ChangeMyPasswordForm | Change Password | none | AccountPasswordData:Administration.AccountPasswordData | True |
+| Administration.ChangePasswordForm | Change Password | none | AccountPasswordData:Administration.AccountPasswordData | True |
+| Administration.MyAccount | My Account | none | Account:Administration.Account | True |
+| Administration.RuntimeInstances | Runtime Instances | Administration.Administrator | none | False |
+| Administration.ScheduledEvents | Scheduled Events | Administration.Administrator | none | False |
 
 ## Page-Flow Links
 
-| Page | Shown by Flows |
+| Page | Shown by flows |
 |---|---|
-| Account_Edit | Unknown |
-| Account_New | Unknown |
-| Account_Overview | Unknown |
-| ActiveSessions | Unknown |
-| ChangeMyPasswordForm | Unknown |
-| ChangePasswordForm | Unknown |
-| MyAccount | Unknown |
-| RuntimeInstances | Unknown |
-| ScheduledEvents | Unknown |
+| Administration.Account_Edit | none (no show-page evidence) |
+| Administration.Account_New | Administration.NewAccount, Administration.NewWebServiceAccount |
+| Administration.Account_Overview | none (no show-page evidence) |
+| Administration.ActiveSessions | none (no show-page evidence) |
+| Administration.ChangeMyPasswordForm | Administration.ShowMyPasswordForm |
+| Administration.ChangePasswordForm | Administration.ShowPasswordForm |
+| Administration.MyAccount | Administration.ManageMyAccount |
+| Administration.RuntimeInstances | none (no show-page evidence) |
+| Administration.ScheduledEvents | none (no show-page evidence) |
+
+## Journey Fragments
+
+| User intent group | Pages |
+|---|---|
+| Account | Administration.Account_Edit, Administration.Account_New, Administration.Account_Overview |
+| General | Administration.ActiveSessions, Administration.ChangeMyPasswordForm, Administration.ChangePasswordForm, Administration.MyAccount, Administration.RuntimeInstances, Administration.ScheduledEvents |
 
 ## Snippets
 
-| Snippet | Type | Parameters |
-|---|---|---|
-| ReadMe | Web | none |
-
+Snippet-level page widget behaviour is not exported in current overview contract.

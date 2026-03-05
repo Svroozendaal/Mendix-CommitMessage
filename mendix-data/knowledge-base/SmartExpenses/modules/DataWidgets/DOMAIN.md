@@ -1,18 +1,37 @@
-﻿# Domain Model: DataWidgets
+# Domain: DataWidgets
 
 ## Entities
 
-none
+| Entity | Persistable | Attribute count | Access rule count |
+|---|---|---:|---:|
+| none | false | 0 | 0 |
 
-## Associations
+Confidence: Export-backed
 
-| Association | Parent | Child | Type |
+## Entity Lifecycle Matrix
+
+| Entity | Create flows | Update flows | Delete flows | Read flows |
+|---|---|---|---|---|
+| none | none | none | none | none |
+
+Confidence: Inferred
+
+## Role impacts per sensitive entity
+
+| Entity | Module roles | Default member rights | XPath constraint |
 |---|---|---|---|
 | none | none | none | none |
 
+Confidence: Export-backed
+
+## Associations
+
+| Association | Parent | Child | Cardinality | Type | Owner |
+|---|---|---|---|---|---|
+| none | none | none | none | none | none |
+
 ## Enumerations
 
-| Enumeration | Values |
-|---|---|
-| DataWidgets.Filter_Operators | between, contains, empty, endsWith, equal, greater, greaterEqual, notEmpty, notEqual, smaller +2 more |
-
+| Enumeration | Value count | Sample values |
+|---|---:|---|
+| DataWidgets.Filter_Operators | 12 | between, contains, empty, endsWith |

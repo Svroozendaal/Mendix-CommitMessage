@@ -1,20 +1,19 @@
-﻿# Resources: FeedbackModule
+# Resources: FeedbackModule
 
 ## Constants
 
-| Constant | Type | Default | Exposed to Client |
-|---|---|---|---|
-| LocalStorageKey | StringType | mxfeedback-form-data | True |
+| Name | Type | Value |
+|---|---|---|
+| LocalStorageKey | StringType |  |
 
 ## Scheduled Events
 
-| Event | Schedule | Target Flow |
+| Event | Schedule | Target flow |
 |---|---|---|
 | none | none | none |
 
 ## Other Resources
 
-| Resource | Type |
+| Kind | Name |
 |---|---|
 | none | none |
-

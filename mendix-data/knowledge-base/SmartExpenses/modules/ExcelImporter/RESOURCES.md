@@ -1,21 +1,20 @@
-﻿# Resources: ExcelImporter
+# Resources: ExcelImporter
 
 ## Constants
 
-| Constant | Type | Default | Exposed to Client |
-|---|---|---|---|
-| EnableExternalEntities | BooleanType | False | False |
-| ParseEmptyCells | BooleanType | False | False |
+| Name | Type | Value |
+|---|---|---|
+| EnableExternalEntities | BooleanType |  |
+| ParseEmptyCells | BooleanType |  |
 
 ## Scheduled Events
 
-| Event | Schedule | Target Flow |
+| Event | Schedule | Target flow |
 |---|---|---|
 | none | none | none |
 
 ## Other Resources
 
-| Resource | Type |
+| Kind | Name |
 |---|---|
 | none | none |
-

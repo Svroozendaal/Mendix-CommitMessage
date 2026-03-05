@@ -1,4 +1,4 @@
-﻿# Module: ExcelImporter
+# Module: ExcelImporter
 
 Category: Marketplace
 Module roles: Configurator, Readonly
@@ -12,9 +12,39 @@ Module roles: Configurator, Readonly
 
 ## Purpose
 
-- Export-backed: Module category is $cat.
-- Inferred: Focus depends on whether entities, pages, or flows dominate.
-- Unknown: Business-owner intent text is not exported.
+- Export-backed: module category and inventory from overview export.
+- Inferred: module role is support capability.
+- Unknown: product-owner intent text is not included in export.
+
+## Capability Map
+
+| Capability prefix | Flow count | Representative flow |
+|---|---:|---|
+| ACR | 1 | ExcelImporter.ACr_Template |
+| ASU | 1 | ExcelImporter.ASu_CheckModelAndTemplates |
+| BCO | 1 | ExcelImporter.BCo_Column |
+| BDE | 1 | ExcelImporter.BDe_Column |
+| CH | 13 | ExcelImporter.Ch_Column_SetDefaultObject |
+| COLUMN | 2 | ExcelImporter.Column_SetCorrectRefObjectType |
+| EXAMPLE | 1 | ExcelImporter.Example_SetupImportTemplate |
+| EXCELTEMPLATE | 2 | ExcelImporter.ExcelTemplate_ExportToXML |
+| IVK | 14 | ExcelImporter.IVK_CancelTemplate |
+| OTHER | 40 | ExcelImporter._DocumentationDummyXSD |
+| PARSEENUMTOSTRING | 1 | ExcelImporter.ParseEnumToString_StatisticLevel |
+| PARSESTRINGTOENUM | 1 | ExcelImporter.ParseStringToEnum_StatisticsLevel |
+| SF | 1 | ExcelImporter.SF_Template_CheckNrs |
+| SUB | 1 | ExcelImporter.Sub_CreateColumnsFromTemplate |
+| VALIDATE | 1 | ExcelImporter.Validate_TemplateDocument |
+
+## Primary User Journeys
+
+| Entry flow | UI result | Entities touched |
+|---|---|---|
+| support module | n/a | dependency-focused summary |
+
+## Top risks/unknowns in model understanding
+- Some flows have behavioural actions without explicit entity name tokens (parser gap).
+- Some pages have no explicit ShowPageAction evidence in exported flows.
 
 ## Navigation
 
@@ -33,4 +63,3 @@ Module roles: Configurator, Readonly
 
 - Export module: ExcelImporter
 - Run folder: cli_2026-03-04T20-44-47.917Z
-

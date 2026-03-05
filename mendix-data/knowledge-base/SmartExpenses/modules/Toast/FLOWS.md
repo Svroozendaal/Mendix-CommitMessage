@@ -1,4 +1,4 @@
-﻿# Flows: Toast
+# Flows: Toast
 
 ## Flow Catalogue
 
@@ -6,7 +6,7 @@
 
 | Flow | Nodes | Key Actions | Pages Shown |
 |---|---:|---|---|
-| ACT_ShowToast | 3 | call javascript action Toast.showToast -> ReturnValueName | Unknown |
+| ACT_ShowToast | 3 | none | none |
 
 ### Data Sources (DS_*)
 
@@ -34,7 +34,10 @@
 
 ## Flow Details
 
-| Flow | Kind | Nodes | Calls Out | Called By |
-|---|---|---:|---:|---:|
-| ACT_ShowToast | Nanoflow | 3 | 0 | 0 |
+| Flow | Kind | Nodes | Tier | Calls Out | Called By |
+|---|---|---:|---:|---:|---:|
+| ACT_ShowToast | Nanoflow | 3 | 3 | 0 | 0 |
 
+## Tier 1 Deep Narratives
+
+No Tier 1 narrative required for this module category.

@@ -1,34 +1,41 @@
-﻿# Module Landscape
+# Module Landscape
 
-## Inventory
+## Module Categories
 
-| Module | Category | Source | Entities | Flows | Pages | Constants | Link |
-|---|---|---|---:|---:|---:|---:|---|
-| Administration | Marketplace | Marketplace | 2 | 8 | 9 | 0 | [README](../modules/Administration/README.md) |
-| AIDE_Lite | Marketplace | Marketplace | 0 | 0 | 0 | 0 | [README](../modules/AIDE_Lite/README.md) |
-| Atlas_Core | Marketplace | Marketplace | 0 | 0 | 0 | 0 | [README](../modules/Atlas_Core/README.md) |
-| Atlas_Web_Content | Marketplace | Marketplace | 1 | 2 | 0 | 0 | [README](../modules/Atlas_Web_Content/README.md) |
-| DataWidgets | Marketplace | Marketplace | 0 | 0 | 0 | 0 | [README](../modules/DataWidgets/README.md) |
-| ExcelImporter | Marketplace | Marketplace | 7 | 81 | 13 | 2 | [README](../modules/ExcelImporter/README.md) |
-| FeedbackModule | Marketplace | Marketplace | 2 | 16 | 6 | 1 | [README](../modules/FeedbackModule/README.md) |
-| ImporterHelper | Custom | Custom | 3 | 7 | 3 | 1 | [README](../modules/ImporterHelper/README.md) |
-| mIcons | Marketplace | Marketplace | 0 | 0 | 0 | 0 | [README](../modules/mIcons/README.md) |
-| MxModelReflection | Marketplace | Marketplace | 15 | 33 | 17 | 0 | [README](../modules/MxModelReflection/README.md) |
-| NanoflowCommons | Marketplace | Marketplace | 2 | 0 | 0 | 0 | [README](../modules/NanoflowCommons/README.md) |
-| New_Module | Custom | Custom | 5 | 2 | 1 | 0 | [README](../modules/New_Module/README.md) |
-| SmartExpenses | Custom | Custom | 10 | 39 | 29 | 0 | [README](../modules/SmartExpenses/README.md) |
-| System | System | Custom | 36 | 1 | 0 | 0 | [README](../modules/System/README.md) |
-| Toast | Marketplace | Marketplace | 0 | 1 | 1 | 0 | [README](../modules/Toast/README.md) |
-| Unknown | none | Custom | 0 | 0 | 0 | 0 | [README](../modules/Unknown/README.md) |
-| WebActions | Marketplace | Marketplace | 0 | 0 | 0 | 0 | [README](../modules/WebActions/README.md) |
-| WorkflowCommons | Marketplace | Marketplace | 26 | 186 | 32 | 2 | [README](../modules/WorkflowCommons/README.md) |
+| Module | Category | Complexity | Why this module exists |
+|---|---|---:|---|
+| Administration | Marketplace | 31 | Support capability from marketplace or shared library |
+| AIDE_Lite | Marketplace | 0 | Support capability from marketplace or shared library |
+| Atlas_Core | Marketplace | 0 | Support capability from marketplace or shared library |
+| Atlas_Web_Content | Marketplace | 7 | Support capability from marketplace or shared library |
+| DataWidgets | Marketplace | 0 | Support capability from marketplace or shared library |
+| ExcelImporter | Marketplace | 196 | Support capability from marketplace or shared library |
+| FeedbackModule | Marketplace | 44 | Support capability from marketplace or shared library |
+| ImporterHelper | Custom | 26 | Implements app-specific behaviour |
+| mIcons | Marketplace | 0 | Support capability from marketplace or shared library |
+| MxModelReflection | Marketplace | 128 | Support capability from marketplace or shared library |
+| NanoflowCommons | Marketplace | 6 | Support capability from marketplace or shared library |
+| New_Module | Custom | 20 | Implements app-specific behaviour |
+| SmartExpenses | Custom | 137 | Implements app-specific behaviour |
+| System | System | 110 | Platform/runtime baseline |
+| Toast | Marketplace | 3 | Support capability from marketplace or shared library |
+| Unknown |  | 0 | Support capability from marketplace or shared library |
+| WebActions | Marketplace | 0 | Support capability from marketplace or shared library |
+| WorkflowCommons | Marketplace | 482 | Support capability from marketplace or shared library |
 
-## Distribution
+Confidence: Export-backed
 
-- Export-backed: Custom modules: 
-5
-- Export-backed: Marketplace modules: 
-13
-- Inferred: Marketplace modules are mostly platform/integration layers.
-- Unknown: Module ownership boundaries are not encoded.
+## Custom Module Priority Ranking
 
+| Rank | Module | Score | Rationale |
+|---|---|---:|---|
+| 1 | SmartExpenses | 137 | flow/entity/page density |
+| 2 | ImporterHelper | 26 | flow/entity/page density |
+| 3 | New_Module | 20 | flow/entity/page density |
+
+Confidence: Inferred
+
+## Source
+
+- Generated at: 2026-03-05T07:10:50Z
+- Run folder: mendix-data/app-overview/cli_2026-03-04T20-44-47.917Z

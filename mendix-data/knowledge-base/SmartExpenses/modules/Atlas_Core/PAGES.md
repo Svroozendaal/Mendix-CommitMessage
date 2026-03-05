@@ -1,21 +1,23 @@
-﻿# Pages: Atlas_Core
+# Pages: Atlas_Core
 
 ## Page Inventory
 
-| Page | Title | Layout | Type | Roles | Parameters |
-|---|---|---|---|---|---|
-| none | none | none | none | none | none |
+| Page | Title | Allowed roles | Parameters | Popup |
+|---|---|---|---|---|
+| none | none | none | none | false |
 
 ## Page-Flow Links
 
-| Page | Shown by Flows |
+| Page | Shown by flows |
+|---|---|
+| none | none |
+
+## Journey Fragments
+
+| User intent group | Pages |
 |---|---|
 | none | none |
 
 ## Snippets
 
-| Snippet | Type | Parameters |
-|---|---|---|
-| FeedbackWidget | Web | none |
-| LanguageSelectorWidget | Web | none |
-
+Snippet-level page widget behaviour is not exported in current overview contract.

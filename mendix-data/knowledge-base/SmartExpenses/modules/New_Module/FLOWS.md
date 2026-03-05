@@ -1,4 +1,4 @@
-﻿# Flows: New_Module
+# Flows: New_Module
 
 ## Flow Catalogue
 
@@ -24,8 +24,8 @@
 
 | Flow | Type | Nodes | Key Actions |
 |---|---|---:|---|
-| ACO_new | Microflow | 10 | change Entity2 (Attribute=' jooo nieuwe tekst'; refreshInClient=false), commit Entity2 (refreshInClient=false, withEvents=true) |
-| BCO_new | Microflow | 4 | change Entitywith10attributes (Attribute2int=$Entitywith10attributes/Attribute2int + 15; refreshInClient=false) |
+| ACO_new | Microflow | 10 | none |
+| BCO_new | Microflow | 4 | none |
 
 ## Cross-Module Calls
 
@@ -35,8 +35,11 @@
 
 ## Flow Details
 
-| Flow | Kind | Nodes | Calls Out | Called By |
-|---|---|---:|---:|---:|
-| ACO_new | Microflow | 10 | 0 | 0 |
-| BCO_new | Microflow | 4 | 0 | 0 |
+| Flow | Kind | Nodes | Tier | Calls Out | Called By |
+|---|---|---:|---:|---:|---:|
+| ACO_new | Microflow | 10 | 2 | 0 | 0 |
+| BCO_new | Microflow | 4 | 2 | 0 | 0 |
 
+## Tier 1 Deep Narratives
+
+No Tier 1 narrative required for this module category.

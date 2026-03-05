@@ -1,21 +1,20 @@
-﻿# Resources: WorkflowCommons
+# Resources: WorkflowCommons
 
 ## Constants
 
-| Constant | Type | Default | Exposed to Client |
-|---|---|---|---|
-| AuditTrailRetentionInDays | IntegerType | 365 | False |
-| DueDateExpirationInDays | IntegerType | 2 | True |
+| Name | Type | Value |
+|---|---|---|
+| AuditTrailRetentionInDays | IntegerType |  |
+| DueDateExpirationInDays | IntegerType |  |
 
 ## Scheduled Events
 
-| Event | Schedule | Target Flow |
+| Event | Schedule | Target flow |
 |---|---|---|
-| SE_WorkflowAuditTrailRecord_CleanUp | Unknown | Unknown |
+| SE_WorkflowAuditTrailRecord_CleanUp |  | unknown target flow |
 
 ## Other Resources
 
-| Resource | Type |
+| Kind | Name |
 |---|---|
 | none | none |
-

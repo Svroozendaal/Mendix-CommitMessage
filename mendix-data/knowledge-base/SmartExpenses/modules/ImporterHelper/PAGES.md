@@ -1,24 +1,28 @@
-﻿# Pages: ImporterHelper
+# Pages: ImporterHelper
 
 ## Page Inventory
 
-| Page | Title | Layout | Type | Roles | Parameters |
-|---|---|---|---|---|---|
-| ExcelFileImport_Upload | Excel file import Upload | Atlas_Core.PopupLayout | Popup | none | ExcelFileImport:ImporterHelper.ExcelFileImport |
-| ImportTransaction_Edit | Pas transactie aan | Atlas_Core.PopupLayout | Popup | ImporterHelper.ExcelImporter | Transaction:ImporterHelper.ImportTransaction |
-| ImportTransaction_Overview | Page | Atlas_Core.Atlas_TopBar | Page | ImporterHelper.ExcelImporter | FBGProfile:SmartExpenses.FBGProfile, ImportTransactionHelper:ImporterHelper.ImportTransactionHelper |
+| Page | Title | Allowed roles | Parameters | Popup |
+|---|---|---|---|---|
+| ImporterHelper.ExcelFileImport_Upload | Excel file import Upload | none | ExcelFileImport:ImporterHelper.ExcelFileImport | True |
+| ImporterHelper.ImportTransaction_Edit | Pas transactie aan | ImporterHelper.ExcelImporter | Transaction:ImporterHelper.ImportTransaction | True |
+| ImporterHelper.ImportTransaction_Overview | Page | ImporterHelper.ExcelImporter | FBGProfile:SmartExpenses.FBGProfile, ImportTransactionHelper:ImporterHelper.ImportTransactionHelper | False |
 
 ## Page-Flow Links
 
-| Page | Shown by Flows |
+| Page | Shown by flows |
 |---|---|
-| ExcelFileImport_Upload | Unknown |
-| ImportTransaction_Edit | Unknown |
-| ImportTransaction_Overview | Unknown |
+| ImporterHelper.ExcelFileImport_Upload | ImporterHelper.ACT_ExcelFileImport_Create |
+| ImporterHelper.ImportTransaction_Edit | none (no show-page evidence) |
+| ImporterHelper.ImportTransaction_Overview | ImporterHelper.ACT_ImportTransaction_ShowPage |
+
+## Journey Fragments
+
+| User intent group | Pages |
+|---|---|
+| ExcelFileImport | ImporterHelper.ExcelFileImport_Upload |
+| ImportTransaction | ImporterHelper.ImportTransaction_Edit, ImporterHelper.ImportTransaction_Overview |
 
 ## Snippets
 
-| Snippet | Type | Parameters |
-|---|---|---|
-| none | none | none |
-
+Snippet-level page widget behaviour is not exported in current overview contract.

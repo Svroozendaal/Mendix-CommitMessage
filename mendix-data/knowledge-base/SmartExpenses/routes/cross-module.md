@@ -1,40 +1,48 @@
-﻿# Cross-Module Dependencies
+# Cross-Module Dependencies
 
-## Dependency Matrix
+## Flow-call edges
 
-| Source -> Target | Flow Calls | Shared Associations |
-|---|---:|---:|
-| ExcelImporter->MxModelReflection | 20 | 0 |
-| ImporterHelper->SmartExpenses | 2 | 0 |
+| Source flow | Target flow | Source module | Target module |
+|---|---|---|---|
+| ExcelImporter.ASu_CheckModelAndTemplates | MxModelReflection.ASu_CheckMetamodel | ExcelImporter | MxModelReflection |
+| ExcelImporter.Ch_FindAttribute | MxModelReflection.FindMember | ExcelImporter | MxModelReflection |
+| ExcelImporter.Ch_FindAttribute_Reference | MxModelReflection.FindMember | ExcelImporter | MxModelReflection |
+| ExcelImporter.Ch_FindMicroflow | MxModelReflection.FindMicroflow | ExcelImporter | MxModelReflection |
+| ExcelImporter.Ch_FindObjectType_Reference | MxModelReflection.FindObjectType | ExcelImporter | MxModelReflection |
+| ExcelImporter.Ch_FindReference | MxModelReflection.FindReference | ExcelImporter | MxModelReflection |
+| ExcelImporter.SetupColumn | MxModelReflection.FindMember | ExcelImporter | MxModelReflection |
+| ExcelImporter.SetupColumn | MxModelReflection.FindMicroflow | ExcelImporter | MxModelReflection |
+| ExcelImporter.SetupTemplate | MxModelReflection.FindObjectType | ExcelImporter | MxModelReflection |
+| ExcelImporter.SetupTemplate | MxModelReflection.FindReference | ExcelImporter | MxModelReflection |
+| ImporterHelper.ACT_ImportTransaction_AcceptTransactions | SmartExpenses.SUB_Transaction_setStatus | ImporterHelper | SmartExpenses |
 
-## Hub Modules
+## Hub/leaf module classification
 
-- ImporterHelper (out: 1, in: 0)
-- SmartExpenses (out: 0, in: 1)
-- ExcelImporter (out: 1, in: 0)
-- MxModelReflection (out: 0, in: 1)
-- New_Module (out: 0, in: 0)
+| Module | Outbound edges | Inbound edges | Classification |
+|---|---:|---:|---|
+| Administration | 0 | 0 | isolated |
+| AIDE_Lite | 0 | 0 | isolated |
+| Atlas_Core | 0 | 0 | isolated |
+| Atlas_Web_Content | 0 | 0 | isolated |
+| DataWidgets | 0 | 0 | isolated |
+| ExcelImporter | 10 | 0 | source-leaf |
+| FeedbackModule | 0 | 0 | isolated |
+| ImporterHelper | 1 | 0 | source-leaf |
+| mIcons | 0 | 0 | isolated |
+| MxModelReflection | 0 | 10 | sink-leaf |
+| NanoflowCommons | 0 | 0 | isolated |
+| New_Module | 0 | 0 | isolated |
+| SmartExpenses | 0 | 1 | sink-leaf |
+| System | 0 | 0 | isolated |
+| Toast | 0 | 0 | isolated |
+| Unknown | 0 | 0 | isolated |
+| WebActions | 0 | 0 | isolated |
+| WorkflowCommons | 0 | 0 | isolated |
 
-## Leaf Modules
+## Custom-boundary dependency lens
 
-- Administration
-- AIDE_Lite
-- Atlas_Core
-- Atlas_Web_Content
-- DataWidgets
-- FeedbackModule
-- mIcons
-- NanoflowCommons
-- New_Module
-- System
-- Toast
-- Unknown
-- WebActions
-- WorkflowCommons
-
-## Association Links
-
-| Association | From Module | To Module |
+| Custom module | Depends on | Used by |
 |---|---|---|
-| none | none | none |
-
+| ImporterHelper | SmartExpenses | none |
+| New_Module | none | none |
+| SmartExpenses | none | ImporterHelper |

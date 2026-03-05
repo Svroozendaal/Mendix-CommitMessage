@@ -1,76 +1,89 @@
-﻿# Pages: SmartExpenses
+# Pages: SmartExpenses
 
 ## Page Inventory
 
-| Page | Title | Layout | Type | Roles | Parameters |
-|---|---|---|---|---|---|
-| Balance_MasterNewEdit | Edit Balance | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin | Balance:SmartExpenses.Balance |
-| Balance_MasterOverview | Balance Overview | Atlas_Core.Atlas_Default | Page | SmartExpenses.Admin, SmartExpenses.Parent | none |
-| Balance_NewEdit | Saldo | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | Balance:SmartExpenses.Balance |
-| BalanceType_Overview | Overzicht van alle saldo's | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin, SmartExpenses.User | FBGProfile:SmartExpenses.FBGProfile |
-| BudgetTerm_EditQuick | Edit Budget Type | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | BudgetTerm:SmartExpenses.BudgetTerm |
-| BudgetTerm_MasterNewEdit | Edit Budget Term | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin | BudgetTerm:SmartExpenses.BudgetTerm |
-| BudgetTerm_MasterOverview | Budget Term Overview | Atlas_Core.Atlas_Default | Page | SmartExpenses.Admin | none |
-| BudgetTerm_NewEdit | Budget | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | BudgetTerm:SmartExpenses.BudgetTerm, BudgetType:SmartExpenses.BudgetType |
-| BudgetTerm_Overview | Budget Term Overview | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | BudgetType:SmartExpenses.BudgetType |
-| BudgetType_NewEdit_Master | Edit Budget Type | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin | BudgetType:SmartExpenses.BudgetType |
-| BudgetType_Overview | Budget Type Overview | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | DateHelper:SmartExpenses.DateHelper, FBGProfile:SmartExpenses.FBGProfile |
-| BudgetType_Overview_2 | Budget Type Overview | Atlas_Core.Atlas_Default | Page | SmartExpenses.Admin | none |
-| datagid | datagid | Atlas_Core.PopupLayout | Popup | none | none |
-| FBGProfile_NewEdit | Edit FBG Profile | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin | FBGProfile:SmartExpenses.FBGProfile |
-| FBGProfile_Overview | FBG Environment Overview | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin | none |
-| FBGProfile_Overview_2 | FBG Profile Overview | Atlas_Core.Atlas_Default | Page | SmartExpenses.Admin | none |
-| Home_Parent | Homepage | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | FBGProfile:SmartExpenses.FBGProfile |
-| Home_Web | Homepage | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | none |
-| Homepage_Admin | Homepage Admin | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin | none |
-| Login_Overview | Login Overview | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.Anonymous | none |
-| StandardBudget_NewEdit | Edit Standard Budget | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin | StandardBudget:SmartExpenses.StandardBudget |
-| StandardBudget_Overview | Standard Budget Overview | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin | none |
-| Transaction_BulkEdit | Transaction Bulk edit | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | BulkEditHelper:SmartExpenses.BulkEditHelper, FBGProfile:SmartExpenses.FBGProfile |
-| Transaction_Edit | Pas transactie aan | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | Transaction:SmartExpenses.Transaction |
-| Transaction_EditQuick | Snel verwerken | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | Transaction:SmartExpenses.Transaction |
-| Transaction_New | Nieuwe transactie | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin, SmartExpenses.User | Transaction:SmartExpenses.Transaction |
-| Transaction_NewEdit | Edit Transaction | Atlas_Core.PopupLayout | Popup | SmartExpenses.Admin | Transaction:SmartExpenses.Transaction |
-| Transaction_Overview | Transaction Overview | Atlas_Core.Atlas_TopBar | Page | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | FBGProfile:SmartExpenses.FBGProfile |
-| Transaction_Overview_2 | Transaction Overview | Atlas_Core.Atlas_Default | Page | SmartExpenses.Admin | none |
+| Page | Title | Allowed roles | Parameters | Popup |
+|---|---|---|---|---|
+| SmartExpenses.Balance_MasterNewEdit | Edit Balance | SmartExpenses.Admin | Balance:SmartExpenses.Balance | True |
+| SmartExpenses.Balance_MasterOverview | Balance Overview | SmartExpenses.Admin, SmartExpenses.Parent | none | False |
+| SmartExpenses.Balance_NewEdit | Saldo | SmartExpenses.Admin, SmartExpenses.User | Balance:SmartExpenses.Balance | True |
+| SmartExpenses.BalanceType_Overview | Overzicht van alle saldo's | SmartExpenses.Admin, SmartExpenses.User | FBGProfile:SmartExpenses.FBGProfile | False |
+| SmartExpenses.BudgetTerm_EditQuick | Edit Budget Type | SmartExpenses.Admin, SmartExpenses.User | BudgetTerm:SmartExpenses.BudgetTerm | True |
+| SmartExpenses.BudgetTerm_MasterNewEdit | Edit Budget Term | SmartExpenses.Admin | BudgetTerm:SmartExpenses.BudgetTerm | True |
+| SmartExpenses.BudgetTerm_MasterOverview | Budget Term Overview | SmartExpenses.Admin | none | False |
+| SmartExpenses.BudgetTerm_NewEdit | Budget | SmartExpenses.Admin, SmartExpenses.User | BudgetTerm:SmartExpenses.BudgetTerm, BudgetType:SmartExpenses.BudgetType | True |
+| SmartExpenses.BudgetTerm_Overview | Budget Term Overview | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | BudgetType:SmartExpenses.BudgetType | False |
+| SmartExpenses.BudgetType_NewEdit_Master | Edit Budget Type | SmartExpenses.Admin | BudgetType:SmartExpenses.BudgetType | True |
+| SmartExpenses.BudgetType_Overview | Budget Type Overview | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | DateHelper:SmartExpenses.DateHelper, FBGProfile:SmartExpenses.FBGProfile | False |
+| SmartExpenses.BudgetType_Overview_2 | Budget Type Overview | SmartExpenses.Admin | none | False |
+| SmartExpenses.datagid | datagid | none | none | True |
+| SmartExpenses.FBGProfile_NewEdit | Edit FBG Profile | SmartExpenses.Admin | FBGProfile:SmartExpenses.FBGProfile | True |
+| SmartExpenses.FBGProfile_Overview | FBG Environment Overview | SmartExpenses.Admin | none | False |
+| SmartExpenses.FBGProfile_Overview_2 | FBG Profile Overview | SmartExpenses.Admin | none | False |
+| SmartExpenses.Home_Parent | Homepage | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | FBGProfile:SmartExpenses.FBGProfile | False |
+| SmartExpenses.Home_Web | Homepage | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | none | False |
+| SmartExpenses.Homepage_Admin | Homepage Admin | SmartExpenses.Admin | none | False |
+| SmartExpenses.Login_Overview | Login Overview | SmartExpenses.Admin, SmartExpenses.Anonymous | none | True |
+| SmartExpenses.StandardBudget_NewEdit | Edit Standard Budget | SmartExpenses.Admin | StandardBudget:SmartExpenses.StandardBudget | True |
+| SmartExpenses.StandardBudget_Overview | Standard Budget Overview | SmartExpenses.Admin | none | False |
+| SmartExpenses.Transaction_BulkEdit | Transaction Bulk edit | SmartExpenses.Admin, SmartExpenses.User | BulkEditHelper:SmartExpenses.BulkEditHelper, FBGProfile:SmartExpenses.FBGProfile | True |
+| SmartExpenses.Transaction_Edit | Pas transactie aan | SmartExpenses.Admin, SmartExpenses.User | Transaction:SmartExpenses.Transaction | True |
+| SmartExpenses.Transaction_EditQuick | Snel verwerken | SmartExpenses.Admin, SmartExpenses.User | Transaction:SmartExpenses.Transaction | True |
+| SmartExpenses.Transaction_New | Nieuwe transactie | SmartExpenses.Admin, SmartExpenses.User | Transaction:SmartExpenses.Transaction | True |
+| SmartExpenses.Transaction_NewEdit | Edit Transaction | SmartExpenses.Admin | Transaction:SmartExpenses.Transaction | True |
+| SmartExpenses.Transaction_Overview | Transaction Overview | SmartExpenses.Admin, SmartExpenses.Parent, SmartExpenses.User | FBGProfile:SmartExpenses.FBGProfile | False |
+| SmartExpenses.Transaction_Overview_2 | Transaction Overview | SmartExpenses.Admin | none | False |
 
 ## Page-Flow Links
 
-| Page | Shown by Flows |
+| Page | Shown by flows |
 |---|---|
-| Balance_MasterNewEdit | Unknown |
-| Balance_MasterOverview | Unknown |
-| Balance_NewEdit | Unknown |
-| BalanceType_Overview | Unknown |
-| BudgetTerm_EditQuick | Unknown |
-| BudgetTerm_MasterNewEdit | Unknown |
-| BudgetTerm_MasterOverview | Unknown |
-| BudgetTerm_NewEdit | Unknown |
-| BudgetTerm_Overview | Unknown |
-| BudgetType_NewEdit_Master | Unknown |
-| BudgetType_Overview | Unknown |
-| BudgetType_Overview_2 | Unknown |
-| datagid | Unknown |
-| FBGProfile_NewEdit | Unknown |
-| FBGProfile_Overview | Unknown |
-| FBGProfile_Overview_2 | Unknown |
-| Home_Parent | Unknown |
-| Home_Web | Unknown |
-| Homepage_Admin | Unknown |
-| Login_Overview | Unknown |
-| StandardBudget_NewEdit | Unknown |
-| StandardBudget_Overview | Unknown |
-| Transaction_BulkEdit | Unknown |
-| Transaction_Edit | Unknown |
-| Transaction_EditQuick | Unknown |
-| Transaction_New | Unknown |
-| Transaction_NewEdit | Unknown |
-| Transaction_Overview | Unknown |
-| Transaction_Overview_2 | Unknown |
+| SmartExpenses.Balance_MasterNewEdit | none (no show-page evidence) |
+| SmartExpenses.Balance_MasterOverview | none (no show-page evidence) |
+| SmartExpenses.Balance_NewEdit | SmartExpenses.ACT_Balance_Create |
+| SmartExpenses.BalanceType_Overview | none (no show-page evidence) |
+| SmartExpenses.BudgetTerm_EditQuick | none (no show-page evidence) |
+| SmartExpenses.BudgetTerm_MasterNewEdit | none (no show-page evidence) |
+| SmartExpenses.BudgetTerm_MasterOverview | none (no show-page evidence) |
+| SmartExpenses.BudgetTerm_NewEdit | SmartExpenses.ACT_BudgetTerm_BudgetType_Edit, SmartExpenses.ACT_BudgetType_New |
+| SmartExpenses.BudgetTerm_Overview | none (no show-page evidence) |
+| SmartExpenses.BudgetType_NewEdit_Master | none (no show-page evidence) |
+| SmartExpenses.BudgetType_Overview | SmartExpenses.ACT_BudgetType_OpenOverviewPAge, SmartExpenses.Nanoflow |
+| SmartExpenses.BudgetType_Overview_2 | none (no show-page evidence) |
+| SmartExpenses.datagid | none (no show-page evidence) |
+| SmartExpenses.FBGProfile_NewEdit | none (no show-page evidence) |
+| SmartExpenses.FBGProfile_Overview | none (no show-page evidence) |
+| SmartExpenses.FBGProfile_Overview_2 | none (no show-page evidence) |
+| SmartExpenses.Home_Parent | SmartExpenses.ACT_FBGProfile_showParentPage |
+| SmartExpenses.Home_Web | none (no show-page evidence) |
+| SmartExpenses.Homepage_Admin | none (no show-page evidence) |
+| SmartExpenses.Login_Overview | none (no show-page evidence) |
+| SmartExpenses.StandardBudget_NewEdit | SmartExpenses.ACT_StandardBudget_Edit, SmartExpenses.ACT_StandardBudget_New |
+| SmartExpenses.StandardBudget_Overview | none (no show-page evidence) |
+| SmartExpenses.Transaction_BulkEdit | SmartExpenses.ACT_Transaction_BulkEditCreate |
+| SmartExpenses.Transaction_Edit | none (no show-page evidence) |
+| SmartExpenses.Transaction_EditQuick | none (no show-page evidence) |
+| SmartExpenses.Transaction_New | SmartExpenses.ACT_Transaction_Create |
+| SmartExpenses.Transaction_NewEdit | none (no show-page evidence) |
+| SmartExpenses.Transaction_Overview | none (no show-page evidence) |
+| SmartExpenses.Transaction_Overview_2 | none (no show-page evidence) |
+
+## Journey Fragments
+
+| User intent group | Pages |
+|---|---|
+| Balance | SmartExpenses.Balance_MasterNewEdit, SmartExpenses.Balance_MasterOverview, SmartExpenses.Balance_NewEdit |
+| BalanceType | SmartExpenses.BalanceType_Overview |
+| BudgetTerm | SmartExpenses.BudgetTerm_EditQuick, SmartExpenses.BudgetTerm_MasterNewEdit, SmartExpenses.BudgetTerm_MasterOverview, SmartExpenses.BudgetTerm_NewEdit, SmartExpenses.BudgetTerm_Overview |
+| BudgetType | SmartExpenses.BudgetType_NewEdit_Master, SmartExpenses.BudgetType_Overview, SmartExpenses.BudgetType_Overview_2 |
+| FBGProfile | SmartExpenses.FBGProfile_NewEdit, SmartExpenses.FBGProfile_Overview, SmartExpenses.FBGProfile_Overview_2 |
+| General | SmartExpenses.datagid |
+| Home | SmartExpenses.Home_Parent, SmartExpenses.Home_Web |
+| Homepage | SmartExpenses.Homepage_Admin |
+| Login | SmartExpenses.Login_Overview |
+| StandardBudget | SmartExpenses.StandardBudget_NewEdit, SmartExpenses.StandardBudget_Overview |
+| Transaction | SmartExpenses.Transaction_BulkEdit, SmartExpenses.Transaction_Edit, SmartExpenses.Transaction_EditQuick, SmartExpenses.Transaction_New, SmartExpenses.Transaction_NewEdit, SmartExpenses.Transaction_Overview, SmartExpenses.Transaction_Overview_2 |
 
 ## Snippets
 
-| Snippet | Type | Parameters |
-|---|---|---|
-| Entity_Menu | Web | none |
-
+Snippet-level page widget behaviour is not exported in current overview contract.

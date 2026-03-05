@@ -1,102 +1,187 @@
-﻿# Domain Model: System
+# Domain: System
 
 ## Entities
 
-| Entity | Persistable | Attributes | Access Rules |
+| Entity | Persistable | Attribute count | Access rule count |
 |---|---|---:|---:|
-| System.ConsumedODataConfiguration | False | 6 |  |
+| System.ConsumedODataConfiguration | False | 6 | 1 |
 | System.Error | False | 3 | 0 |
 | System.FileDocument | True | 6 | 0 |
-| System.HttpHeader | False | 2 |  |
-| System.HttpMessage | False | 2 |  |
-| System.HttpRequest | True |  |  |
-| System.HttpResponse | True | 2 |  |
+| System.HttpHeader | False | 2 | 1 |
+| System.HttpMessage | False | 2 | 1 |
+| System.HttpRequest | True | 1 | 1 |
+| System.HttpResponse | True | 2 | 1 |
 | System.Image | True | 2 | 0 |
-| System.Language | True | 2 |  |
-| System.ODataResponse | False |  |  |
-| System.Paging | False | 5 |  |
-| System.ProcessedQueueTask | True | 19 |  |
-| System.QueuedTask | True | 17 |  |
-| System.ScheduledEventInformation | True | 5 |  |
-| System.Session | True | 3 |  |
+| System.Language | True | 2 | 1 |
+| System.ODataResponse | False | 1 | 1 |
+| System.Paging | False | 5 | 1 |
+| System.ProcessedQueueTask | True | 19 | 1 |
+| System.QueuedTask | True | 17 | 1 |
+| System.ScheduledEventInformation | True | 5 | 1 |
+| System.Session | True | 3 | 1 |
 | System.SoapFault | True | 5 | 0 |
-| System.SynchronizationError | True | 4 |  |
-| System.SynchronizationErrorFile | True | 0 |  |
-| System.TaskQueueToken | True | 3 |  |
-| System.TimeZone | True | 3 |  |
-| System.TokenInformation | True | 3 |  |
-| System.User | True | 9 |  |
+| System.SynchronizationError | True | 4 | 1 |
+| System.SynchronizationErrorFile | True | 0 | 1 |
+| System.TaskQueueToken | True | 3 | 1 |
+| System.TimeZone | True | 3 | 1 |
+| System.TokenInformation | True | 3 | 1 |
+| System.User | True | 9 | 1 |
 | System.UserReportInfo | True | 2 | 0 |
-| System.UserRole | True | 3 |  |
+| System.UserRole | True | 3 | 1 |
 | System.Workflow | True | 10 | 2 |
-| System.WorkflowActivityDetails | False | 4 |  |
-| System.WorkflowActivityRecord | False | 17 |  |
-| System.WorkflowCurrentActivity | False |  |  |
-| System.WorkflowDefinition | True | 4 |  |
-| System.WorkflowEvent | False | 2 |  |
-| System.WorkflowJumpToDetails | False |  |  |
-| System.WorkflowRecord | False | 8 |  |
+| System.WorkflowActivityDetails | False | 4 | 1 |
+| System.WorkflowActivityRecord | False | 17 | 1 |
+| System.WorkflowCurrentActivity | False | 1 | 1 |
+| System.WorkflowDefinition | True | 4 | 1 |
+| System.WorkflowEvent | False | 2 | 1 |
+| System.WorkflowJumpToDetails | False | 1 | 1 |
+| System.WorkflowRecord | False | 8 | 1 |
 | System.WorkflowUserTask | True | 8 | 2 |
-| System.WorkflowUserTaskDefinition | True | 2 |  |
+| System.WorkflowUserTaskDefinition | True | 2 | 1 |
 | System.WorkflowUserTaskOutcome | True | 2 | 2 |
-| System.XASInstance | True | 5 |  |
+| System.XASInstance | True | 5 | 1 |
+
+Confidence: Export-backed
+
+## Entity Lifecycle Matrix
+
+| Entity | Create flows | Update flows | Delete flows | Read flows |
+|---|---|---|---|---|
+| System.ConsumedODataConfiguration | none | none | none | none |
+| System.Error | none | none | none | none |
+| System.FileDocument | none | none | none | none |
+| System.HttpHeader | none | none | none | none |
+| System.HttpMessage | none | none | none | none |
+| System.HttpRequest | none | none | none | none |
+| System.HttpResponse | none | none | none | none |
+| System.Image | none | none | none | none |
+| System.Language | none | none | none | none |
+| System.ODataResponse | none | none | none | none |
+| System.Paging | none | none | none | none |
+| System.ProcessedQueueTask | none | none | none | none |
+| System.QueuedTask | none | none | none | none |
+| System.ScheduledEventInformation | none | none | none | none |
+| System.Session | none | none | none | none |
+| System.SoapFault | none | none | none | none |
+| System.SynchronizationError | none | none | none | none |
+| System.SynchronizationErrorFile | none | none | none | none |
+| System.TaskQueueToken | none | none | none | none |
+| System.TimeZone | none | none | none | none |
+| System.TokenInformation | none | none | none | none |
+| System.User | WorkflowCommons.SUB_UserTask_Assignee_Add, WorkflowCommons.SUB_UserTask_Assignee_Remove, WorkflowCommons.SUB_UserTask_TargetUser_Add, WorkflowCommons.SUB_UserTask_TargetUser_Remove, WorkflowCommons.SUB_WorkflowEvent_AuditTrail | FeedbackModule.PopulateUserAttributes, WorkflowCommons.SUB_UserTask_Assign, WorkflowCommons.SUB_UserTask_Assignee_Add, WorkflowCommons.SUB_UserTask_Assignee_Remove, WorkflowCommons.SUB_UserTask_TargetUser_Add, WorkflowCommons.SUB_UserTask_TargetUser_Remove | none | FeedbackModule.PopulateUserAttributes, WorkflowCommons.SUB_UserTask_Assign |
+| System.UserReportInfo | none | none | none | none |
+| System.UserRole | none | none | none | none |
+| System.Workflow | none | WorkflowCommons.SUB_CleanupHelper_Execute_Workflow | WorkflowCommons.ACT_WorkflowDefinition_Delete, WorkflowCommons.SUB_CleanupHelper_Execute_Workflow | WorkflowCommons.ACT_WorkflowDefinition_Delete, WorkflowCommons.SUB_CleanupHelper_Execute_Workflow, WorkflowCommons.SUB_Workflow_CountAlmostDue, WorkflowCommons.SUB_Workflow_CountInProgress, WorkflowCommons.SUB_Workflow_CountOverdue |
+| System.WorkflowActivityDetails | none | none | none | none |
+| System.WorkflowActivityRecord | none | none | none | none |
+| System.WorkflowCurrentActivity | none | none | none | none |
+| System.WorkflowDefinition | WorkflowCommons.DS_WorkflowDefinition_Overview, WorkflowCommons.DS_WorkflowDefinition_SelectableImplementation | WorkflowCommons.DS_WorkflowDefinition_Overview, WorkflowCommons.DS_WorkflowDefinition_SelectableImplementation | none | WorkflowCommons.DashboardContext_GetSelectedWorkflowDefinition, WorkflowCommons.DS_WorkflowDefinition_Overview, WorkflowCommons.DS_WorkflowDefinition_SelectableImplementation |
+| System.WorkflowEvent | none | none | none | none |
+| System.WorkflowJumpToDetails | none | none | none | none |
+| System.WorkflowRecord | none | none | none | none |
+| System.WorkflowUserTask | none | WorkflowCommons.ACT_Workflow_Retry_RerunUserTargeting, WorkflowCommons.SUB_TaskCount_Update | none | WorkflowCommons.ACT_Workflow_Retry, WorkflowCommons.ACT_Workflow_Retry_RerunUserTargeting, WorkflowCommons.SUB_TaskCount_Update, WorkflowCommons.SUB_UserTask_CountAlmostDue, WorkflowCommons.SUB_UserTask_CountInProgress, WorkflowCommons.SUB_UserTask_CountOverdue |
+| System.WorkflowUserTaskDefinition | WorkflowCommons.DS_WorkflowTaskDefinition_Selectable_UserImplementation, WorkflowCommons.SUB_WorkflowTaskDetail_CreateOrUpdate | WorkflowCommons.DS_WorkflowTaskDefinition_Selectable_UserImplementation | none | WorkflowCommons.DashboardContext_GetSelectedWorkflowTaskDefinition, WorkflowCommons.DS_WorkflowTaskDefinition_Selectable_Administrator, WorkflowCommons.DS_WorkflowTaskDefinition_Selectable_UserImplementation, WorkflowCommons.SUB_WorkflowTaskDetail_CreateOrUpdate |
+| System.WorkflowUserTaskOutcome | none | none | none | WorkflowCommons.SUB_UserTaskOutcome_AssignedToUser |
+| System.XASInstance | none | none | none | none |
+
+Confidence: Inferred
+
+## Role impacts per sensitive entity
+
+| Entity | Module roles | Default member rights | XPath constraint |
+|---|---|---|---|
+| System.ConsumedODataConfiguration | System.Administrator, System.User | ReadWrite | none |
+| System.HttpHeader | System.Administrator, System.User | ReadWrite | none |
+| System.HttpMessage | System.Administrator, System.User | ReadWrite | none |
+| System.HttpRequest | System.Administrator, System.User | ReadWrite | none |
+| System.HttpResponse | System.Administrator, System.User | ReadWrite | none |
+| System.Language | System.Administrator, System.User | None | none |
+| System.ODataResponse | System.Administrator, System.User | ReadWrite | none |
+| System.Paging | System.Administrator, System.User | ReadWrite | none |
+| System.ProcessedQueueTask | System.Administrator | None | none |
+| System.QueuedTask | System.Administrator | None | none |
+| System.ScheduledEventInformation | System.Administrator | None | none |
+| System.Session | System.Administrator | None | none |
+| System.SynchronizationError | System.Administrator | ReadOnly | none |
+| System.SynchronizationErrorFile | System.Administrator | ReadOnly | none |
+| System.TaskQueueToken | System.Administrator | ReadOnly | none |
+| System.TimeZone | System.Administrator, System.User | None | none |
+| System.TokenInformation | System.Administrator | None | none |
+| System.User | System.Administrator, System.User | None | [id = '[%CurrentUser%]'] |
+| System.UserRole | System.Administrator, System.User | None | [System.UserRoles = '[%CurrentUser%]' or System.grantableRoles[reversed()]/System.UserRole/System.UserRoles = '[%CurrentUser%]'] |
+| System.Workflow | System.Administrator | None | none |
+| System.Workflow | System.User | None | [System.WorkflowUserTask_Workflow/System.WorkflowUserTask[State = 'InProgress' and (System.WorkflowUserTask_TargetUsers = '[%CurrentUser%]' or System.WorkflowUserTask_Assignees = '[%CurrentUser%]')]] |
+| System.WorkflowActivityDetails | System.Administrator, System.User | None | none |
+| System.WorkflowActivityRecord | System.Administrator, System.User | None | none |
+| System.WorkflowCurrentActivity | System.Administrator, System.User | None | none |
+| System.WorkflowDefinition | System.Administrator | None | none |
+| System.WorkflowEvent | System.Administrator, System.User | None | none |
+| System.WorkflowJumpToDetails | System.Administrator, System.User | None | none |
+| System.WorkflowRecord | System.Administrator, System.User | None | none |
+| System.WorkflowUserTask | System.Administrator | None | none |
+| System.WorkflowUserTask | System.User | None | [State = 'InProgress' and (System.WorkflowUserTask_TargetUsers = '[%CurrentUser%]' or System.WorkflowUserTask_Assignees = '[%CurrentUser%]') and System.WorkflowUserTask_Workflow/System.Workflow[State != 'Incompatible' and State != 'Failed']] |
+| System.WorkflowUserTaskDefinition | System.Administrator | None | none |
+| System.WorkflowUserTaskOutcome | System.Administrator | None | none |
+| System.WorkflowUserTaskOutcome | System.User | None | [System.WorkflowUserTaskOutcome_WorkflowUserTask/System.WorkflowUserTask/State = 'InProgress' and (System.WorkflowUserTaskOutcome_WorkflowUserTask/System.WorkflowUserTask/System.WorkflowUserTask_TargetUsers = '[%CurrentUser%]' or System.WorkflowUserTaskOutcome_WorkflowUserTask/System.WorkflowUserTask/System.WorkflowUserTask_Assignees = '[%CurrentUser%]') and System.WorkflowUserTaskOutcome_WorkflowUserTask/System.WorkflowUserTask/System.WorkflowUserTask_Workflow/System.Workflow[State != 'Incompatible' and State != 'Failed']] |
+| System.XASInstance | System.Administrator | None | none |
+
+Confidence: Export-backed
 
 ## Associations
 
-| Association | Parent | Child | Type |
-|---|---|---|---|
-| System.grantableRoles | System.UserRole | System.UserRole | ReferenceSet (*-*) |
-| System.HttpHeader_ConsumedODataConfiguration | System.HttpHeader | System.ConsumedODataConfiguration | Reference (*-1) |
-| System.HttpHeaders | System.HttpHeader | System.HttpMessage | Reference (*-1) |
-| System.ScheduledEventInformation_XASInstance | System.ScheduledEventInformation | System.XASInstance | Reference (*-1) |
-| System.Session_User | System.Session | System.User | Reference (*-1) |
-| System.SynchronizationErrorFile_SynchronizationError | System.SynchronizationErrorFile | System.SynchronizationError | Reference (*-1) |
-| System.TokenInformation_User | System.TokenInformation | System.User | Reference (*-1) |
-| System.User_Language | System.User | System.Language | Reference (*-1) |
-| System.User_TimeZone | System.User | System.TimeZone | Reference (*-1) |
-| System.UserReportInfo_User | System.UserReportInfo | System.User | Reference (*-1) |
-| System.UserRoles | System.User | System.UserRole | ReferenceSet (*-*) |
-| System.Workflow_ParentWorkflow | System.Workflow | System.Workflow | Reference (*-1) |
-| System.Workflow_WorkflowDefinition | System.Workflow | System.WorkflowDefinition | Reference (*-1) |
-| System.WorkflowActivityRecord_Actor | System.WorkflowActivityRecord | System.User | Reference (*-1) |
-| System.WorkflowActivityRecord_PreviousActivity | System.WorkflowActivityRecord | System.WorkflowActivityRecord | Reference (*-1) |
-| System.WorkflowActivityRecord_SubWorkflow | System.WorkflowActivityRecord | System.WorkflowRecord | Reference (*-1) |
-| System.WorkflowActivityRecord_TaskAssignedUsers | System.WorkflowActivityRecord | System.User | ReferenceSet (*-*) |
-| System.WorkflowActivityRecord_TaskTargetedUsers | System.WorkflowActivityRecord | System.User | ReferenceSet (*-*) |
-| System.WorkflowActivityRecord_UserTask | System.WorkflowActivityRecord | System.WorkflowUserTask | Reference (*-1) |
-| System.WorkflowActivityRecord_WorkflowUserTaskDefinition | System.WorkflowActivityRecord | System.WorkflowUserTaskDefinition | Reference (*-1) |
-| System.WorkflowCurrentActivity_ActivityDetails | System.WorkflowCurrentActivity | System.WorkflowActivityDetails | Reference (*-1) |
-| System.WorkflowCurrentActivity_ApplicableTargets | System.WorkflowCurrentActivity | System.WorkflowActivityDetails | ReferenceSet (*-*) |
-| System.WorkflowCurrentActivity_JumpToTarget | System.WorkflowCurrentActivity | System.WorkflowActivityDetails | Reference (*-1) |
-| System.WorkflowEvent_Initiator | System.WorkflowEvent | System.User | Reference (*-1) |
-| System.WorkflowJumpToDetails_CurrentActivities | System.WorkflowJumpToDetails | System.WorkflowCurrentActivity | ReferenceSet (*-*) |
-| System.WorkflowJumpToDetails_Workflow | System.WorkflowJumpToDetails | System.Workflow | Reference (*-1) |
-| System.WorkflowRecord_Owner | System.WorkflowRecord | System.User | Reference (*-1) |
-| System.WorkflowRecord_Workflow | System.WorkflowRecord | System.Workflow | Reference (*-1) |
-| System.WorkflowRecord_WorkflowDefinition | System.WorkflowRecord | System.WorkflowDefinition | Reference (*-1) |
-| System.WorkflowUserTask_Assignees | System.WorkflowUserTask | System.User | ReferenceSet (*-*) |
-| System.WorkflowUserTask_TargetUsers | System.WorkflowUserTask | System.User | ReferenceSet (*-*) |
-| System.WorkflowUserTask_Workflow | System.WorkflowUserTask | System.Workflow | Reference (*-1) |
-| System.WorkflowUserTask_WorkflowUserTaskDefinition | System.WorkflowUserTask | System.WorkflowUserTaskDefinition | Reference (*-1) |
-| System.WorkflowUserTaskDefinition_WorkflowDefinition | System.WorkflowUserTaskDefinition | System.WorkflowDefinition | Reference (*-1) |
-| System.WorkflowUserTaskOutcome_User | System.WorkflowUserTaskOutcome | System.User | Reference (*-1) |
-| System.WorkflowUserTaskOutcome_WorkflowUserTask | System.WorkflowUserTaskOutcome | System.WorkflowUserTask | Reference (*-1) |
+| Association | Parent | Child | Cardinality | Type | Owner |
+|---|---|---|---|---|---|
+| System.grantableRoles | System.UserRole | System.UserRole | *-* | ReferenceSet | Default |
+| System.HttpHeaders | System.HttpHeader | System.HttpMessage | *-1 | Reference | Default |
+| System.HttpHeader_ConsumedODataConfiguration | System.HttpHeader | System.ConsumedODataConfiguration | *-1 | Reference | Default |
+| System.ScheduledEventInformation_XASInstance | System.ScheduledEventInformation | System.XASInstance | *-1 | Reference | Default |
+| System.Session_User | System.Session | System.User | *-1 | Reference | Default |
+| System.SynchronizationErrorFile_SynchronizationError | System.SynchronizationErrorFile | System.SynchronizationError | *-1 | Reference | Default |
+| System.TokenInformation_User | System.TokenInformation | System.User | *-1 | Reference | Default |
+| System.UserReportInfo_User | System.UserReportInfo | System.User | *-1 | Reference | Default |
+| System.UserRoles | System.User | System.UserRole | *-* | ReferenceSet | Default |
+| System.User_Language | System.User | System.Language | *-1 | Reference | Default |
+| System.User_TimeZone | System.User | System.TimeZone | *-1 | Reference | Default |
+| System.WorkflowActivityRecord_Actor | System.WorkflowActivityRecord | System.User | *-1 | Reference | Default |
+| System.WorkflowActivityRecord_PreviousActivity | System.WorkflowActivityRecord | System.WorkflowActivityRecord | *-1 | Reference | Default |
+| System.WorkflowActivityRecord_SubWorkflow | System.WorkflowActivityRecord | System.WorkflowRecord | *-1 | Reference | Default |
+| System.WorkflowActivityRecord_TaskAssignedUsers | System.WorkflowActivityRecord | System.User | *-* | ReferenceSet | Default |
+| System.WorkflowActivityRecord_TaskTargetedUsers | System.WorkflowActivityRecord | System.User | *-* | ReferenceSet | Default |
+| System.WorkflowActivityRecord_UserTask | System.WorkflowActivityRecord | System.WorkflowUserTask | *-1 | Reference | Default |
+| System.WorkflowActivityRecord_WorkflowUserTaskDefinition | System.WorkflowActivityRecord | System.WorkflowUserTaskDefinition | *-1 | Reference | Default |
+| System.WorkflowCurrentActivity_ActivityDetails | System.WorkflowCurrentActivity | System.WorkflowActivityDetails | *-1 | Reference | Default |
+| System.WorkflowCurrentActivity_ApplicableTargets | System.WorkflowCurrentActivity | System.WorkflowActivityDetails | *-* | ReferenceSet | Default |
+| System.WorkflowCurrentActivity_JumpToTarget | System.WorkflowCurrentActivity | System.WorkflowActivityDetails | *-1 | Reference | Default |
+| System.WorkflowEvent_Initiator | System.WorkflowEvent | System.User | *-1 | Reference | Default |
+| System.WorkflowJumpToDetails_CurrentActivities | System.WorkflowJumpToDetails | System.WorkflowCurrentActivity | *-* | ReferenceSet | Default |
+| System.WorkflowJumpToDetails_Workflow | System.WorkflowJumpToDetails | System.Workflow | *-1 | Reference | Default |
+| System.WorkflowRecord_Owner | System.WorkflowRecord | System.User | *-1 | Reference | Default |
+| System.WorkflowRecord_Workflow | System.WorkflowRecord | System.Workflow | *-1 | Reference | Default |
+| System.WorkflowRecord_WorkflowDefinition | System.WorkflowRecord | System.WorkflowDefinition | *-1 | Reference | Default |
+| System.WorkflowUserTaskDefinition_WorkflowDefinition | System.WorkflowUserTaskDefinition | System.WorkflowDefinition | *-1 | Reference | Default |
+| System.WorkflowUserTaskOutcome_User | System.WorkflowUserTaskOutcome | System.User | *-1 | Reference | Default |
+| System.WorkflowUserTaskOutcome_WorkflowUserTask | System.WorkflowUserTaskOutcome | System.WorkflowUserTask | *-1 | Reference | Default |
+| System.WorkflowUserTask_Assignees | System.WorkflowUserTask | System.User | *-* | ReferenceSet | Default |
+| System.WorkflowUserTask_TargetUsers | System.WorkflowUserTask | System.User | *-* | ReferenceSet | Default |
+| System.WorkflowUserTask_Workflow | System.WorkflowUserTask | System.Workflow | *-1 | Reference | Default |
+| System.WorkflowUserTask_WorkflowUserTaskDefinition | System.WorkflowUserTask | System.WorkflowUserTaskDefinition | *-1 | Reference | Default |
+| System.Workflow_ParentWorkflow | System.Workflow | System.Workflow | *-1 | Reference | Default |
+| System.Workflow_WorkflowDefinition | System.Workflow | System.WorkflowDefinition | *-1 | Reference | Default |
 
 ## Enumerations
 
-| Enumeration | Values |
-|---|---|
-| System.ContextType | Anonymous, ScheduledEvent, System, User |
-| System.DeviceType | Desktop, Phone, Tablet |
-| System.EventStatus | Completed, Error, Running, Stopped |
-| System.ProxyConfiguration | NoProxy, Override, UseAppSettings |
-| System.QueueTaskStatus | Aborted, Completed, Failed, Idle, Incompatible, Retrying, Running |
-| System.UserType | External, Internal |
-| System.WorkflowActivityExecutionState | Aborted, Completed, Created, Failed, InProgress, Paused |
-| System.WorkflowActivityType | CallMicroflow, CallWorkflow, End, EndOfBoundaryEventPath, ExclusiveSplit, InterruptingTimerEvent, JumpTo, MultiInputUserTask, NonInterruptingTimerEvent, ParallelSplit +6 more |
-| System.WorkflowCurrentActivityAction | DoNothing, JumpTo |
-| System.WorkflowEventType | CallMicroflowEnded, CallMicroflowStarted, CallWorkflowEnded, CallWorkflowStarted, DecisionExecuted, EndEventExecuted, InterruptingTimerEventExecuted, JumpExecuted, MultiUserTaskOutcomeSelected, NonInterruptingTimerEventExecuted +22 more |
-| System.WorkflowState | Aborted, Completed, Failed, Incompatible, InProgress, Paused |
-| System.WorkflowUserTaskCompletionType | Consensus, Majority, Microflow, Single, Threshold, Veto |
-| System.WorkflowUserTaskState | Aborted, Completed, Created, Failed, InProgress, Paused |
-
+| Enumeration | Value count | Sample values |
+|---|---:|---|
+| System.ContextType | 4 | Anonymous, ScheduledEvent, System, User |
+| System.DeviceType | 3 | Desktop, Phone, Tablet |
+| System.EventStatus | 4 | Completed, Error, Running, Stopped |
+| System.ProxyConfiguration | 3 | NoProxy, Override, UseAppSettings |
+| System.QueueTaskStatus | 7 | Aborted, Completed, Failed, Idle |
+| System.UserType | 2 | External, Internal |
+| System.WorkflowActivityExecutionState | 6 | Aborted, Completed, Created, Failed |
+| System.WorkflowActivityType | 16 | CallMicroflow, CallWorkflow, End, EndOfBoundaryEventPath |
+| System.WorkflowCurrentActivityAction | 2 | DoNothing, JumpTo |
+| System.WorkflowEventType | 32 | CallMicroflowEnded, CallMicroflowStarted, CallWorkflowEnded, CallWorkflowStarted |
+| System.WorkflowState | 6 | Aborted, Completed, Failed, Incompatible |
+| System.WorkflowUserTaskCompletionType | 6 | Consensus, Majority, Microflow, Single |
+| System.WorkflowUserTaskState | 6 | Aborted, Completed, Created, Failed |

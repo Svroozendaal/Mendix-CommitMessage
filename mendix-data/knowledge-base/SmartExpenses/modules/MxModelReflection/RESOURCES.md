@@ -1,20 +1,19 @@
-﻿# Resources: MxModelReflection
+# Resources: MxModelReflection
 
 ## Constants
 
-| Constant | Type | Default | Exposed to Client |
-|---|---|---|---|
-| none | none | none | no |
+| Name | Type | Value |
+|---|---|---|
+| none | none | none |
 
 ## Scheduled Events
 
-| Event | Schedule | Target Flow |
+| Event | Schedule | Target flow |
 |---|---|---|
 | none | none | none |
 
 ## Other Resources
 
-| Resource | Type |
+| Kind | Name |
 |---|---|
 | none | none |
-

@@ -1,4 +1,4 @@
-﻿# Flows: WebActions
+# Flows: WebActions
 
 ## Flow Catalogue
 
@@ -34,7 +34,10 @@
 
 ## Flow Details
 
-| Flow | Kind | Nodes | Calls Out | Called By |
-|---|---|---:|---:|---:|
-| none | none | 0 | 0 | 0 |
+| Flow | Kind | Nodes | Tier | Calls Out | Called By |
+|---|---|---:|---:|---:|---:|
+| none | none | 0 | 3 | 0 | 0 |
 
+## Tier 1 Deep Narratives
+
+No Tier 1 narrative required for this module category.

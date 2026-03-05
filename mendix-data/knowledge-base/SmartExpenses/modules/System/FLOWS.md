@@ -1,4 +1,4 @@
-﻿# Flows: System
+# Flows: System
 
 ## Flow Catalogue
 
@@ -24,7 +24,7 @@
 
 | Flow | Type | Nodes | Key Actions |
 |---|---|---:|---|
-| ShowHomePage | Microflow | 3 | ShowHomePageAction (errorHandlingType=Rollback) |
+| ShowHomePage | Microflow | 3 | none |
 
 ## Cross-Module Calls
 
@@ -34,7 +34,10 @@
 
 ## Flow Details
 
-| Flow | Kind | Nodes | Calls Out | Called By |
-|---|---|---:|---:|---:|
-| ShowHomePage | Microflow | 3 | 0 | 0 |
+| Flow | Kind | Nodes | Tier | Calls Out | Called By |
+|---|---|---:|---:|---:|---:|
+| ShowHomePage | Microflow | 3 | 3 | 0 | 0 |
 
+## Tier 1 Deep Narratives
+
+No Tier 1 narrative required for this module category.

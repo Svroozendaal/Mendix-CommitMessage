@@ -1,20 +1,23 @@
-﻿# Pages: New_Module
+# Pages: New_Module
 
 ## Page Inventory
 
-| Page | Title | Layout | Type | Roles | Parameters |
-|---|---|---|---|---|---|
-| Pagina_test | Pagina test | Atlas_Core.Atlas_Default | Page | none | Entity2:New_Module.Entity2 |
+| Page | Title | Allowed roles | Parameters | Popup |
+|---|---|---|---|---|
+| New_Module.Pagina_test | Pagina test | none | Entity2:New_Module.Entity2 | False |
 
 ## Page-Flow Links
 
-| Page | Shown by Flows |
+| Page | Shown by flows |
 |---|---|
-| Pagina_test | Unknown |
+| New_Module.Pagina_test | none (no show-page evidence) |
+
+## Journey Fragments
+
+| User intent group | Pages |
+|---|---|
+| Pagina | New_Module.Pagina_test |
 
 ## Snippets
 
-| Snippet | Type | Parameters |
-|---|---|---|
-| SNP_testsnippet | Web | GeneralizationEntityImage:New_Module.GeneralizationEntityImage |
-
+Snippet-level page widget behaviour is not exported in current overview contract.

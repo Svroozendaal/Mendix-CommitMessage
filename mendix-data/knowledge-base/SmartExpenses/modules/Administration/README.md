@@ -1,4 +1,4 @@
-﻿# Module: Administration
+# Module: Administration
 
 Category: Marketplace
 Module roles: Administrator, User
@@ -12,9 +12,25 @@ Module roles: Administrator, User
 
 ## Purpose
 
-- Export-backed: Module category is $cat.
-- Inferred: Focus depends on whether entities, pages, or flows dominate.
-- Unknown: Business-owner intent text is not exported.
+- Export-backed: module category and inventory from overview export.
+- Inferred: module role is support capability.
+- Unknown: product-owner intent text is not included in export.
+
+## Capability Map
+
+| Capability prefix | Flow count | Representative flow |
+|---|---:|---|
+| OTHER | 8 | Administration.ChangeMyPassword |
+
+## Primary User Journeys
+
+| Entry flow | UI result | Entities touched |
+|---|---|---|
+| support module | n/a | dependency-focused summary |
+
+## Top risks/unknowns in model understanding
+- Some flows have behavioural actions without explicit entity name tokens (parser gap).
+- Some pages have no explicit ShowPageAction evidence in exported flows.
 
 ## Navigation
 
@@ -33,4 +49,3 @@ Module roles: Administrator, User
 
 - Export module: Administration
 - Run folder: cli_2026-03-04T20-44-47.917Z
-

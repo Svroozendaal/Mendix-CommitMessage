@@ -1,30 +1,25 @@
-﻿# Call Graph
+# Call Graph
 
-## Summary
+## Cross-Module Dependency Table
 
-- Export-backed: Total call edges: 
-225
-- Export-backed: Cross-module call edges: 
-22
+| Source module | Target module | Call edges | Key flows |
+|---|---|---:|---|
+| ExcelImporter | MxModelReflection | 10 | ExcelImporter.ASu_CheckModelAndTemplates -> MxModelReflection.ASu_CheckMetamodel, ExcelImporter.Ch_FindAttribute -> MxModelReflection.FindMember, ExcelImporter.Ch_FindAttribute_Reference -> MxModelReflection.FindMember |
+| ImporterHelper | SmartExpenses | 1 | ImporterHelper.ACT_ImportTransaction_AcceptTransactions -> SmartExpenses.SUB_Transaction_setStatus |
 
-## Cross-Module Calls
+Confidence: Export-backed
 
-| Source -> Target | Call Edges |
-|---|---:|
-| ExcelImporter->MxModelReflection | 20 |
-| ImporterHelper->SmartExpenses | 2 |
+## Custom Module Boundary
 
-## Hub Modules
+| Custom module | Outbound dependencies | Inbound dependencies |
+|---|---|---|
+| ImporterHelper | SmartExpenses | none |
+| New_Module | none | none |
+| SmartExpenses | none | ImporterHelper |
 
-- ImporterHelper (outbound modules: 1, inbound modules: 0)
-- SmartExpenses (outbound modules: 0, inbound modules: 1)
-- ExcelImporter (outbound modules: 1, inbound modules: 0)
-- MxModelReflection (outbound modules: 0, inbound modules: 1)
-- New_Module (outbound modules: 0, inbound modules: 0)
+Confidence: Export-backed
 
-## Notes
+## Source
 
-- Export-backed: Call edges come from module `flows.json` artifacts.
-- Inferred: High-degree modules act as orchestration hubs.
-- Unknown: Runtime call frequency is not available.
-
+- Export flow call edges: 214
+- Derived cross-module edges: 11

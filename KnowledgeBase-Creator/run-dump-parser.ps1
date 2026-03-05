@@ -247,18 +247,26 @@ $appName = if ([string]::IsNullOrWhiteSpace($configuredAppName)) {
 }
 
 $moduleFilter = Get-Setting -Settings $settings -Key "MENDIX_MODULES" -Default "*"
-$strictQuality = Get-BoolSetting -Settings $settings -Key "STRICT_QUALITY_GATE" -Default $false
+$strictQuality = Get-BoolSetting -Settings $settings -Key "STRICT_QUALITY_GATE" -Default $true
 
 $parserExe = Join-Path $packageRoot "Mendix-model-overview-parser\bin\win-x64\ModelOverviewCli.exe"
 $parserSourceProject = Join-Path $packageRoot "Mendix-model-overview-parser\src\model-overview-cli\ModelOverviewCli.csproj"
 $scaffoldScript = Join-Path $packageRoot "run-kb-scaffold.ps1"
+$composeScript = Join-Path $packageRoot "run-kb-compose.ps1"
 $qualityGateScript = Join-Path $packageRoot "run-kb-quality-gate.ps1"
+$semanticBenchmarkScript = Join-Path $packageRoot "run-kb-semantic-benchmark.ps1"
 
 if (-not (Test-Path $scaffoldScript -PathType Leaf)) {
     throw "Missing scaffold script: $scaffoldScript"
 }
+if (-not (Test-Path $composeScript -PathType Leaf)) {
+    throw "Missing composer script: $composeScript"
+}
 if (-not (Test-Path $qualityGateScript -PathType Leaf)) {
     throw "Missing quality gate script: $qualityGateScript"
+}
+if (-not (Test-Path $semanticBenchmarkScript -PathType Leaf)) {
+    throw "Missing semantic benchmark script: $semanticBenchmarkScript"
 }
 
 $dumpsRoot = Join-Path $dataRoot "dumps"
@@ -286,13 +294,13 @@ Write-Host "overview: $runFolder"
 Write-Host "kb root:  $knowledgeBaseRoot"
 
 Write-Host ""
-Write-Host "[1/5] Dumping .mpr..." -ForegroundColor Yellow
+Write-Host "[1/8] Dumping .mpr..." -ForegroundColor Yellow
 & $mxExe dump-mpr $mprPath --output-file $dumpPath
 if ($LASTEXITCODE -ne 0) {
     throw "mx dump-mpr failed with exit code $LASTEXITCODE"
 }
 
-Write-Host "[2/5] Building app-overview export..." -ForegroundColor Yellow
+Write-Host "[2/8] Building app-overview export..." -ForegroundColor Yellow
 if (Test-Path $parserExe -PathType Leaf) {
     $args = @("--dump", $dumpPath, "--output", $runFolder)
     if (-not [string]::IsNullOrWhiteSpace($moduleFilter) -and $moduleFilter -ne "*") {
@@ -325,13 +333,13 @@ if (-not (Test-Path $manifestPath -PathType Leaf)) {
 $modules = Get-ModulesFromManifest -ManifestPath $manifestPath
 $kbRoot = Join-Path $knowledgeBaseRoot $appName
 
-Write-Host "[3/5] Scaffolding knowledge-base..." -ForegroundColor Yellow
+Write-Host "[3/8] Scaffolding knowledge-base..." -ForegroundColor Yellow
 & powershell -NoProfile -ExecutionPolicy Bypass -File $scaffoldScript -RunFolder $runFolder -OutputRoot $knowledgeBaseRoot -AppName $appName
 if ($LASTEXITCODE -ne 0) {
     throw "run-kb-scaffold.ps1 failed with exit code $LASTEXITCODE"
 }
 
-Write-Host "[4/5] Seeding KB templates..." -ForegroundColor Yellow
+Write-Host "[4/8] Seeding KB templates..." -ForegroundColor Yellow
 $generatedAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 $commonTokens = @{
     APP_NAME = $appName
@@ -375,18 +383,34 @@ foreach ($module in $modules) {
     Apply-Template -TemplatePath (Join-Path $artifactsRoot "MODULE_RESOURCES_TEMPLATE.md") -TargetPath (Join-Path $moduleDir "RESOURCES.md") -Tokens $moduleTokens
 }
 
-Write-Host "[5/5] Running validation..." -ForegroundColor Yellow
+Write-Host "[5/8] Composing behaviour-rich KB content..." -ForegroundColor Yellow
+& powershell -NoProfile -ExecutionPolicy Bypass -File $composeScript -RunFolder $runFolder -OutputRoot $knowledgeBaseRoot -AppName $appName
+if ($LASTEXITCODE -ne 0) {
+    throw "run-kb-compose.ps1 failed with exit code $LASTEXITCODE"
+}
+
+Write-Host "[6/8] Running scaffold validation..." -ForegroundColor Yellow
 & powershell -NoProfile -ExecutionPolicy Bypass -File $scaffoldScript -Validate -OutputRoot $knowledgeBaseRoot -AppName $appName
 if ($LASTEXITCODE -ne 0) {
     throw "Scaffold validation failed with exit code $LASTEXITCODE"
 }
 
+Write-Host "[7/8] Running hybrid quality gate..." -ForegroundColor Yellow
 & powershell -NoProfile -ExecutionPolicy Bypass -File $qualityGateScript -OutputRoot $knowledgeBaseRoot -AppName $appName
 if ($LASTEXITCODE -ne 0) {
     if ($strictQuality) {
         throw "Quality gate failed with exit code $LASTEXITCODE"
     }
     Write-Warning "Quality gate failed. Set STRICT_QUALITY_GATE=true in .env to fail hard."
+}
+
+Write-Host "[8/8] Running semantic benchmark..." -ForegroundColor Yellow
+& powershell -NoProfile -ExecutionPolicy Bypass -File $semanticBenchmarkScript -OutputRoot $knowledgeBaseRoot -AppName $appName
+if ($LASTEXITCODE -ne 0) {
+    if ($strictQuality) {
+        throw "Semantic benchmark failed with exit code $LASTEXITCODE"
+    }
+    Write-Warning "Semantic benchmark failed. Set STRICT_QUALITY_GATE=true in .env to fail hard."
 }
 
 Write-Host ""

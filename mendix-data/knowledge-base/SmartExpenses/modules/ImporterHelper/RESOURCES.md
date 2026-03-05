@@ -1,20 +1,19 @@
-﻿# Resources: ImporterHelper
+# Resources: ImporterHelper
 
 ## Constants
 
-| Constant | Type | Default | Exposed to Client |
-|---|---|---|---|
-| CONST_RESTTransactionURL | StringType | http://localhost:8079/rest/restproducts/v1/transaction | False |
+| Name | Type | Value |
+|---|---|---|
+| CONST_RESTTransactionURL | StringType |  |
 
 ## Scheduled Events
 
-| Event | Schedule | Target Flow |
+| Event | Schedule | Target flow |
 |---|---|---|
 | none | none | none |
 
 ## Other Resources
 
-| Resource | Type |
+| Kind | Name |
 |---|---|
 | none | none |
-

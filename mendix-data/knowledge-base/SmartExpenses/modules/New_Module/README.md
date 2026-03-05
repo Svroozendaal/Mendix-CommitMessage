@@ -1,4 +1,4 @@
-﻿# Module: New_Module
+# Module: New_Module
 
 Category: Custom
 Module roles: ModuleRole
@@ -7,14 +7,31 @@ Module roles: ModuleRole
 
 - Entities: 5
 - Flows: 2
-- Pages: 
+- Pages: 1
 - Constants: 0
 
 ## Purpose
 
-- Export-backed: Module category is $cat.
-- Inferred: Focus depends on whether entities, pages, or flows dominate.
-- Unknown: Business-owner intent text is not exported.
+- Export-backed: module category and inventory from overview export.
+- Inferred: module role is app-specific business behaviour.
+- Unknown: product-owner intent text is not included in export.
+
+## Capability Map
+
+| Capability prefix | Flow count | Representative flow |
+|---|---:|---|
+| ACO | 1 | New_Module.ACO_new |
+| BCO | 1 | New_Module.BCO_new |
+
+## Primary User Journeys
+
+| Entry flow | UI result | Entities touched |
+|---|---|---|
+| none | none | none |
+
+## Top risks/unknowns in model understanding
+- Some flows have behavioural actions without explicit entity name tokens (parser gap).
+- Some pages have no explicit ShowPageAction evidence in exported flows.
 
 ## Navigation
 
@@ -33,4 +50,3 @@ Module roles: ModuleRole
 
 - Export module: New_Module
 - Run folder: cli_2026-03-04T20-44-47.917Z
-

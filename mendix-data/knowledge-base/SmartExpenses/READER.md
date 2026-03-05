@@ -1,32 +1,36 @@
-﻿# How to Read This Knowledge Base
+# How to Read This Knowledge Base
 
 ## What is this?
 
-This knowledge base documents the Mendix application $app from export run $runLeaf.
+This knowledge base is generated from Mendix model-overview export JSON and is tuned for AI-assisted reasoning.
+
+Confidence: Export-backed
 
 ## How to navigate
 
-1. Start at [ROUTING.md](ROUTING.md).
-2. Use [app/APP_OVERVIEW.md](app/APP_OVERVIEW.md) for app-level context.
-3. Use `modules/<Module>/` docs for module-level details.
-4. Use `routes/` indexes for cross-module lookup.
+- Start at [ROUTING.md](ROUTING.md) for index-style lookup.
+- Use [app/APP_OVERVIEW.md](app/APP_OVERVIEW.md) for app mission and key behaviours.
+- Use modules/<Module>/ files for module-level behaviour, domain, pages, and resources.
+- Use outes/ files for cross-cut indexes by entity, page, and flow.
+
+Confidence: Export-backed
 
 ## How to answer questions
 
-1. Identify app/module/entity/page/flow scope.
-2. Use ROUTING.md to select the next document.
-3. Cross-reference routes for multi-module questions.
-4. Mark uncertainty as Inferred or Unknown.
+- For behaviour questions, trace: trigger -> flow chain -> entity mutations -> shown pages -> role constraints.
+- Prefer custom modules for deep app-specific answers.
+- Use support modules mainly for dependencies that affect custom behaviour.
+
+Confidence: Inferred
 
 ## Confidence levels
 
-- Export-backed: direct from export JSON.
-- Inferred: deduced from naming or graph structure.
-- Unknown: not present in export artifacts.
+- Export-backed: direct from JSON export.
+- Inferred: deterministic synthesis from export data (for example tier ranking, capability grouping).
+- Unknown: source data is absent or non-derivable.
 
 ## Source
 
-- Manifest: [_sources/manifest.json](_sources/manifest.json)
-- Source reference: [_sources/SOURCE_REF.md](_sources/SOURCE_REF.md)
-- Generated at: 2026-03-04T21:05:25Z
-
+- Generated at: 2026-03-05T07:10:50Z
+- Run folder: mendix-data/app-overview/cli_2026-03-04T20-44-47.917Z
+- Schema version: 2.0

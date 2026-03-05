@@ -1,32 +1,39 @@
-﻿# Application Overview
+# App Overview
 
-## Identity
+## Mission Summary
 
-- App: SmartExpenses
-- Run folder: cli_2026-03-04T20-44-47.917Z
-- Generated at: 2026-03-04T20:44:58.4671065+00:00
-- Confidence: Export-backed
+The application centres on the custom modules ImporterHelper, New_Module, SmartExpenses and orchestrates data and UI behaviour through model-driven flows and pages.
 
-## Summary
+Confidence: Inferred
 
-- Modules: 18
-- Entities: 109
-- Associations: 97
-- Enumerations: 53
-- Flows: 376 (microflows: 332, nanoflows: 41, rules: 3, workflows: 0)
-- Flow graph size: nodes 3465, edges 2588, call edges 214
+## Core Business Capabilities
 
-## Security
+| Module | Flow Count | Tier 1 Flows | Detail |
+|---|---:|---:|---|
+| ImporterHelper | 7 | 5 | [FLOWS](../modules/ImporterHelper/FLOWS.md) |
+| New_Module | 2 | 0 | [FLOWS](../modules/New_Module/FLOWS.md) |
+| SmartExpenses | 39 | 32 | [FLOWS](../modules/SmartExpenses/FLOWS.md) |
 
-- Security level: CheckEverything
-- Guest access enabled: True
-- Guest role: Anonymous
-- Admin username: MxAdmin
+Confidence: Export-backed
 
-## Key observations
+## Top Behavioural Entry Points (Top 10)
 
-- Export-backed: Highest flow-count modules are ExcelImporter (81), FeedbackModule (16), MxModelReflection (33), SmartExpenses (39), WorkflowCommons (186).
-- Export-backed: Highest entity-count modules are ExcelImporter (7), MxModelReflection (15), SmartExpenses (10), System (36), WorkflowCommons (26).
-- Inferred: Custom modules likely hold core business behaviour.
-- Unknown: Runtime usage patterns are not present in static export.
+| Flow | Tier | Impact reason | Link |
+|---|---:|---|---|
+| SmartExpenses.ACT_Transaction_Recalculate_all | Tier 1 | fan-out 3, writes data | [Flow](../modules/SmartExpenses/FLOWS.md) |
+| SmartExpenses.SUB_BudgetTerm_Recalculate | Tier 1 | fan-in 3, writes data | [Flow](../modules/SmartExpenses/FLOWS.md) |
+| SmartExpenses.SUB_Balance_Recalculate | Tier 1 | fan-in 3, writes data | [Flow](../modules/SmartExpenses/FLOWS.md) |
+| SmartExpenses.ACT_BudgetType_New | Tier 1 | shows UI, writes data | [Flow](../modules/SmartExpenses/FLOWS.md) |
+| SmartExpenses.ACR_FBGProfile_setStandardBudgets | Tier 1 | writes data | [Flow](../modules/SmartExpenses/FLOWS.md) |
+| SmartExpenses.ACT_Transaction_BulkEditSave | Tier 1 | fan-out 3, writes data | [Flow](../modules/SmartExpenses/FLOWS.md) |
+| SmartExpenses.SUB_Transaction_setStatus | Tier 1 | cross-module, fan-in 3 | [Flow](../modules/SmartExpenses/FLOWS.md) |
+| SmartExpenses.ACT_StandardBudget_New | Tier 1 | shows UI, writes data | [Flow](../modules/SmartExpenses/FLOWS.md) |
+| SmartExpenses.ACT_StandardBudget_Edit | Tier 1 | shows UI, writes data | [Flow](../modules/SmartExpenses/FLOWS.md) |
+| ImporterHelper.ACT_ImportTransaction_AcceptTransactions | Tier 1 | cross-module, writes data | [Flow](../modules/ImporterHelper/FLOWS.md) |
 
+Confidence: Inferred
+
+## Source
+
+- Export summary: modules=18, flows=376, entities=109
+- Generated at: 2026-03-05T07:10:50Z
