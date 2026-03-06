@@ -26,4 +26,7 @@ This knowledge base describes the Mendix application `{{APP_NAME}}`.
 
 ## Source
 
-See `_sources/SOURCE_REF.md`.
+- KB Format Version: {{KB_FORMAT_VERSION}}
+- Run folder: {{RUN_FOLDER}}
+- Generated at: {{GENERATED_AT_UTC}}
+- See `_sources/SOURCE_REF.md`.

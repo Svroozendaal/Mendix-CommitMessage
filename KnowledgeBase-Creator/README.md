@@ -1,35 +1,77 @@
-﻿# KnowledgeBase Creator Artifact
+# KnowledgeBase Creator
 
-This folder is a portable drop-in package for creating a Mendix knowledge base.
+Portable toolchain for generating an AI-usable Mendix knowledge base from parser export JSON while preserving the existing KB file contract.
 
-It includes:
-- `run-dump-parser.ps1` for dump, parser export, scaffold, compose, and validation.
-- `run-kb-compose.ps1` for deterministic behaviour-rich markdown composition.
-- `run-kb-quality-gate.ps1` for structural + semantic completeness checks.
-- `run-kb-semantic-benchmark.ps1` for canonical QA benchmark scoring.
-- `Mendix-model-overview-parser/` with source and prebuilt parser binary.
-- `.agents/` with only the agent and skills required to create a KB.
-- `artifacts/` markdown templates copied into each generated KB.
+## Included Scripts
 
-## Quick Start
+- `run-dump-parser.ps1`: full pipeline entrypoint (dump -> parser -> scaffold -> compose -> validate -> quality -> benchmark).
+- `run-kb-scaffold.ps1`: scaffold and structural file-presence validation.
+- `run-kb-compose.ps1`: deterministic KB composition with conservative `Unknown` handling and `_reports/UNKNOWN_TODO.md`.
+- `run-kb-quality-gate.ps1`: structural + semantic completeness gate.
+- `run-kb-semantic-benchmark.ps1`: structural benchmark (mandatory) + optional app-specific benchmark.
 
-1. Edit `.env`.
-2. Run `./run-dump-parser.ps1`.
-3. Give your AI agent the instruction from `agents.md`.
+## `.env` Contract
 
-## Validation Contract
+Required for dump step:
 
-`run-dump-parser.ps1` executes and requires:
+- `STUDIO_PRO_PATH`
+- `MPR_FILE_PATH`
+- `APP_NAME`
 
-1. `./run-kb-scaffold.ps1 -Validate -OutputRoot mendix-data/knowledge-base -AppName <app-name>`
-2. `./run-kb-quality-gate.ps1 -OutputRoot mendix-data/knowledge-base -AppName <app-name>`
-3. `./run-kb-semantic-benchmark.ps1 -OutputRoot mendix-data/knowledge-base -AppName <app-name>`
+Optional:
 
-## Default Output
+- `MENDIX_MX_EXE` (explicit `mx.exe` override)
+- `MENDIX_DATA_ROOT` (default: `../mendix-data`)
+- `MENDIX_MODULES` (default: `*`)
+- `STRICT_MODE` (`true|false`, default: `false`)
+- `CUSTOM_SCENARIOS_PATH` (optional app-specific benchmark JSON)
+- `DUMP_FILE_PATH` (when using `-SkipDump` without `-SkipParser`)
 
-By default, output is created in:
-- `../mendix-data/dumps/`
-- `../mendix-data/app-overview/`
-- `../mendix-data/knowledge-base/`
+Backward-compatible aliases are still accepted (`MENDIX_STUDIO_PRO_PATH`, `MENDIX_MPR_PATH`, `MENDIX_APP_PATH`, `STRICT_QUALITY_GATE`).
 
-Set `MENDIX_DATA_ROOT` in `.env` to override.
+## Main Usage
+
+Full run:
+
+```powershell
+./run-dump-parser.ps1
+```
+
+Resume from existing parser run folder:
+
+```powershell
+./run-dump-parser.ps1 -SkipDump -SkipParser -SkipScaffold -RunFolder "mendix-data/app-overview/cli_2026-03-05T14-38-13.865Z"
+```
+
+## Quality + Benchmark Policy
+
+- `run-kb-quality-gate.ps1` fails on structural issues or semantic coverage below thresholds:
+  - Page-flow linkage: `>=95%`
+  - Flow entity coverage: `>=90%`
+  - Entity lifecycle mapping: `>=90%`
+- `run-kb-semantic-benchmark.ps1` always runs structural scenarios:
+  - pass requires `>=80/100` and no critical failures.
+- App-specific benchmark is optional (`-CustomScenarios`):
+  - pass requires `>=85/100` and no critical failures.
+- Final benchmark score:
+  - structural-only when no custom scenarios;
+  - weighted score when both run (default weights: structural `0.7`, custom `0.3`).
+
+## App-Specific Scenarios
+
+SmartExpenses pilot scenarios are provided at:
+
+- `benchmarks/smartexpenses-custom-scenarios.json`
+
+Run directly:
+
+```powershell
+./run-kb-semantic-benchmark.ps1 -OutputRoot mendix-data/knowledge-base -AppName SmartExpenses -CustomScenarios benchmarks/smartexpenses-custom-scenarios.json
+```
+
+## CI Regression
+
+- Reference export fixture: `tests/reference/app-overview/cli_reference_minimal`
+- Baseline KB snapshot: `tests/reference/baseline-kb/ReferenceApp`
+- Regression runner: `KnowledgeBase-Creator/scripts/run-reference-regression.ps1`
+- GitHub Actions workflow: `.github/workflows/kb-regression.yml` (runs on PR + push to `main`)

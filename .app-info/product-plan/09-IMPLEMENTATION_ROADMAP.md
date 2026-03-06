@@ -118,9 +118,30 @@ Gate:
 
 Deliverables:
 
-1. guidance for applying custom-depth policy to other apps.
-2. explicit assumptions/limits documented.
+1. Guidance for applying custom-depth policy to other apps.
+2. Explicit assumptions/limits documented.
+3. Structural benchmark (app-generic) implemented in `run-kb-semantic-benchmark.ps1`.
+4. SmartExpenses-specific scenarios moved to optional app-specific benchmark layer.
+5. KB format version field added to `READER.md`.
 
 Gate:
 
-1. no app-specific hardcoding in core composer logic.
+1. No app-specific hardcoding in core composer logic.
+2. Structural benchmark passes on SmartExpenses without app-specific scenario file.
+3. `READER.md` contains `KB Format Version: 1.0`.
+
+## Phase 10: CI and Regression Testing
+
+Deliverables:
+
+1. GitHub Actions workflow that runs the full pipeline on a reference export and validates:
+   - scaffold validation passes
+   - quality gate passes
+   - structural benchmark passes.
+2. Reference export snapshot committed to repository for deterministic regression testing.
+3. Diff-based regression check: compare generated KB output against a committed baseline to detect unintended changes.
+
+Gate:
+
+1. CI workflow runs on PR and push to main.
+2. Pipeline failure blocks merge.

@@ -41,7 +41,8 @@
       "Bash(DUMP=\"c:/Workspaces/Mendix-KnowledgeBase-Builder/mendix-data/dumps/2026-03-04T16-38-26_smart-expenses/working-dump.json\")",
       "Bash(OUTPUT=\"c:/Workspaces/Mendix-KnowledgeBase-Builder/mendix-data/app-overview/smart-expenses-full\")",
       "Bash(dotnet run --project model-overview-cli/ModelOverviewCli.csproj --no-build -- --dump \"$DUMP\" --output \"$OUTPUT\")",
-      "Bash(powershell -ExecutionPolicy Bypass -File run-kb-scaffold.ps1 -RunFolder \"mendix-data/app-overview/smart-expenses-full\" -AppName \"SmartExpenses\")"
+      "Bash(powershell -ExecutionPolicy Bypass -File run-kb-scaffold.ps1 -RunFolder \"mendix-data/app-overview/smart-expenses-full\" -AppName \"SmartExpenses\")",
+      "Bash(ls \"c:\\\\Workspaces\\\\Mendix-KnowledgeBase-Builder\\\\mendix-data\\\\knowledge-base\\\\SmartExpenses\\\\_sources\"\" 2>/dev/null && echo \"EXISTS\" || echo \"NOT_FOUND \")"
     ]
   }
 }

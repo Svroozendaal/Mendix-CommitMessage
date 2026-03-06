@@ -70,6 +70,17 @@ Quality gate fails when any condition is true:
 3. Metric B below threshold
 4. Metric C below threshold.
 
+## Known Evidence Extraction Limitations
+
+The composer derives evidence from flow node `label` and `detail` text using regex patterns. These limitations affect semantic metric baselines:
+
+1. **Show-page detection**: only captures explicit `show page Module.Page` patterns. Pages opened via navigation layouts, deep links, or button widgets are not detected. Expected miss rate: ~30-50% of actual page navigations.
+2. **Entity touch detection**: relies on text patterns like `create Module.Entity`, `retrieve ... from Module.Entity`. Implicit entity access (e.g. via associations, list operations without explicit entity name) is missed. Expected miss rate: ~10-20%.
+3. **Cross-module calls**: well-captured via `callEdges` in flow exports. Miss rate: negligible.
+4. **Parameter typing**: flow parameter types are not exported; lifecycle and page-parameter links rely on name matching only.
+
+These limitations are acceptable for v1.0 and are partially addressed by the parser enrichment roadmap (see [04-PARSER_ENRICHMENT_SPEC.md](04-PARSER_ENRICHMENT_SPEC.md)). Semantic thresholds account for these known miss rates.
+
 ## Output Contract
 
 Quality gate output must print:

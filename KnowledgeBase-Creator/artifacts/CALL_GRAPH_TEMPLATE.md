@@ -1,15 +1,18 @@
-﻿# Flow Call Graph
+# Call Graph
 
-## Cross-Module Dependencies
+## Cross-Module Dependency Table
 
-| Source Module | Target Module | Call Count |
+| Source module | Target module | Call edges | Key flows |
+|---|---|---:|---|
+| Unknown | Unknown | 0 | Unknown |
+
+## Custom Module Boundary
+
+| Custom module | Outbound dependencies | Inbound dependencies |
 |---|---|---|
 | Unknown | Unknown | Unknown |
 
-## High-Connectivity Flows
+## Source
 
-- Export-backed: Unknown
-
-## Module Clusters
-
-- Inferred: Unknown
+- Generated at: {{GENERATED_AT_UTC}}
+- Run folder: {{RUN_FOLDER}}

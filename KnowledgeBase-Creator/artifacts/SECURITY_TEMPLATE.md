@@ -1,13 +1,24 @@
-﻿# Security Model
+# Security
 
-## User Roles
+## Role-to-Module-Role Matrix
 
-- Unknown
+| Project role | Custom module roles | All module roles |
+|---|---|---|
+| Unknown | Unknown | Unknown |
 
-## Access Patterns
+## Entity Access Summary (Custom Entities)
 
-- Export-backed: Unknown
+| Entity | Rule module roles | Allow create | Allow delete | XPath constraint |
+|---|---|---|---|---|
+| Unknown | Unknown | Unknown | Unknown | Unknown |
 
-## Observations
+## XPath Constraints (Plain Language)
 
-- Inferred: Unknown
+| Entity | Module roles | XPath | Access meaning |
+|---|---|---|---|
+| Unknown | Unknown | Unknown | Unknown |
+
+## Source
+
+- Security level: Unknown
+- Guest access: Unknown

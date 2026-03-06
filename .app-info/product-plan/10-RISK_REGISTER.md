@@ -104,6 +104,52 @@ Mitigation:
 1. Validate only target scripts/docs for this feature.
 2. Report tested commands and exact results explicitly.
 
+## R8: Benchmark not portable to other apps
+
+Impact: High
+Likelihood: High
+
+Description:
+
+1. All 10 benchmark scenarios reference SmartExpenses entities and flows by name.
+2. Running the benchmark on any other app would score 0/100, giving a false negative.
+
+Mitigation:
+
+1. Implement two-tier benchmark model (structural + app-specific) per 08-SEMANTIC_BENCHMARK_SUITE.md.
+2. Structural benchmark uses app-generic evidence checks that work on any export.
+3. App-specific scenarios are optional and loaded from a parameter file.
+
+## R9: Template and composer drift
+
+Impact: Medium
+Likelihood: Medium
+
+Description:
+
+1. Templates in `artifacts/` define required heading contracts; composer generates files from scratch.
+2. If one is updated without the other, quality gate may fail on valid content or pass on invalid content.
+
+Mitigation:
+
+1. Document the dual-update rule in 03-TOOLCHAIN_ARCHITECTURE.md.
+2. Quality gate heading checks should be derived from templates as single source of truth.
+
+## R10: No regression baseline for output stability
+
+Impact: Medium
+Likelihood: Medium
+
+Description:
+
+1. Without a committed reference output, changes to composer logic may silently alter KB content.
+2. Semantic benchmark only checks pattern presence, not absence of regressions.
+
+Mitigation:
+
+1. Phase 10 introduces CI with diff-based regression testing.
+2. Commit a reference KB output snapshot and compare against it on each pipeline run.
+
 ## Fallback Strategy
 
 If semantic gates block delivery unexpectedly:

@@ -33,6 +33,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$runFolderDisplay = $RunFolder
 
 # --- Resolve paths ---
 if (-not $Validate -and -not $RunFolder) {
@@ -41,7 +42,7 @@ if (-not $Validate -and -not $RunFolder) {
 }
 
 if ($RunFolder) {
-    $RunFolder = Resolve-Path $RunFolder -ErrorAction Stop
+    $RunFolder = (Resolve-Path $RunFolder -ErrorAction Stop).Path
     $manifestPath = Join-Path $RunFolder "manifest.json"
     if (-not (Test-Path $manifestPath)) {
         Write-Error "manifest.json not found in $RunFolder"
@@ -55,8 +56,8 @@ if ($RunFolder) {
 }
 
 if (-not $AppName) {
-    if ($RunFolder) {
-        $AppName = Split-Path $RunFolder -Leaf
+    if ($runFolderDisplay) {
+        $AppName = Split-Path $runFolderDisplay -Leaf
     } else {
         Write-Error "AppName is required when RunFolder is not specified."
         exit 1
@@ -103,7 +104,8 @@ function Get-ExpectedFiles($modules) {
         "routes/by-page.md",
         "routes/by-flow.md",
         "routes/cross-module.md",
-        "_sources/manifest.json"
+        "_sources/manifest.json",
+        "_sources/SOURCE_REF.md"
     )
     foreach ($mod in $modules) {
         $files += "modules/$mod/README.md"
@@ -183,7 +185,7 @@ $modules = Get-ModulesFromManifest $manifest
 
 Write-Host ""
 Write-Host "=== KB Scaffold ==="
-Write-Host "Source: $RunFolder"
+Write-Host "Source: $runFolderDisplay"
 Write-Host "Output: $kbRoot"
 Write-Host "App: $AppName"
 Write-Host "Modules: $($modules -join ', ')"
@@ -218,7 +220,7 @@ $sourceRef = @"
 # Source Reference
 
 This knowledge base was generated from:
-- Run folder: $RunFolder
+- Run folder: $runFolderDisplay
 - Generated at: $($manifest.generatedAtUtc)
 - Schema version: $($manifest.schemaVersion)
 - Selected modules: $($manifest.selectedModules -join ', ')

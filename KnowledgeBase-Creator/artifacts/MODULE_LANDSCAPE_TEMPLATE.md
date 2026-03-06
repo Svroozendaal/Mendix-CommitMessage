@@ -1,12 +1,18 @@
-﻿# Module Landscape
+# Module Landscape
 
-## Modules
+## Module Categories
 
-| Module | Category | Roles | Purpose |
-|---|---|---|---|
-| Unknown | Unknown | Unknown | Inferred |
+| Module | Category | Complexity | Why this module exists |
+|---|---|---:|---|
+| Unknown | Unknown | 0 | Unknown |
 
-## Complexity profile
+## Custom Module Priority Ranking
 
-- Export-backed: Unknown
-- Inferred: Unknown
+| Rank | Module | Score | Rationale |
+|---|---|---:|---|
+| 1 | Unknown | 0 | Unknown |
+
+## Source
+
+- Generated at: {{GENERATED_AT_UTC}}
+- Run folder: {{RUN_FOLDER}}

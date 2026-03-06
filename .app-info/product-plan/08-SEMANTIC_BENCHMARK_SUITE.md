@@ -47,6 +47,41 @@ Critical scenarios:
 10. What is still unknown and why?
    - Evidence: explicit known-gaps sections.
 
+## Generalisation Strategy
+
+The scenario set above is the **pilot calibration set** for `SmartExpenses`. For arbitrary apps the benchmark must be generated dynamically.
+
+### Two-Tier Benchmark Model
+
+1. **Structural benchmark (app-generic, mandatory)**:
+   - S1: At least one custom flow has a Tier 1 deep narrative.
+   - S2: Entity lifecycle matrix exists and is non-empty for every custom module.
+   - S3: Cross-module dependency table has non-zero rows when `callEdges` exist.
+   - S4: Page-flow linkage rows are non-`Unknown` where show-page evidence exists.
+   - S5: Security role-to-module-role matrix is populated.
+   - S6: ROUTING.md known-gaps section exists and is honest (not `none` when derivable unknowns remain).
+   - S7: READER.md confidence legend is present.
+   - S8: At least one route index has non-`Unknown` cross-references.
+   - S9: Hub/leaf classification exists in `cross-module.md`.
+   - S10: Source metadata (`_sources/manifest.json` and `SOURCE_REF.md`) present and non-empty.
+
+   Scoring: same `10 × 10` model. Pass threshold: `>= 80`. No critical failures.
+
+   Critical structural scenarios: S1, S2, S3.
+
+2. **App-specific benchmark (optional, pilot-only)**:
+   - The current SmartExpenses scenario set (above) is retained as the pilot calibration set.
+   - Future apps may define their own `_reports/semantic-benchmark-custom.md` with app-specific QA scenarios.
+   - App-specific benchmarks are additive and do not replace the structural benchmark.
+
+### Script Implications
+
+`run-kb-semantic-benchmark.ps1` must implement:
+
+1. Structural benchmark (always runs, app-generic).
+2. App-specific benchmark (runs only when a custom scenario file is provided via `-CustomScenarios` parameter).
+3. Final score = structural score alone when no custom scenarios exist; weighted average when both are present.
+
 ## Evidence Rules
 
 1. Each scenario has required files and regex evidence patterns.

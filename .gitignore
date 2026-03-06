@@ -16,3 +16,6 @@ build-artifacts/
 mendix-data/dumps/
 mendix-data/tmp*/
 mendix-data/*.log
+mendix-data/*
+tests/*
+

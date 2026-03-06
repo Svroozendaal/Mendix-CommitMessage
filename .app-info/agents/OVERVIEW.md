@@ -22,7 +22,8 @@ Read `.agents/FRAMEWORK.md` for the full extension model.
 | KnowledgeBase Creator | `KNOWLEDGEBASE_CREATOR.md` | Top-level orchestrator: validates export, scaffolds KB folder, delegates to KB Builder, embeds reader, and enforces completeness + quality gate validation |
 | Overview KB Builder | `OVERVIEW_KB_BUILDER.md` | Orchestrates app/module interpretation and routing synthesis to build an AI-navigable application knowledge base |
 | Overview KB Reader | `OVERVIEW_KB_READER.md` | Reads the generated knowledge base and answers architecture/functionality questions with pointer-backed evidence |
-| GapSmith | `GAPSMITH.md` | Close rule and implementation gaps between dump diff extraction and display text conversion |
+| GapSmith | `GAPSMITH.md` | Investigates generated KB structural gaps, classifies `PARSER_GAP` vs `AI_INTERPRETATION_GAP`, and writes a prioritised TODO backlog |
+| Context Conversation Agent (planned) | `APP_CONTEXT_CONVERSATION.md` (planned) | Conducts product-owner-first context interviews and writes additive context overlay/TODO artifacts for pre-GAPSMITH handoff |
 | OverviewSmith | `OVERVIEWSMITH.md` | Own the full-model overview exporter lifecycle: parsing, flow ordering, exports, and pseudocode readability |
 
 ## Pipeline
@@ -30,7 +31,7 @@ Read `.agents/FRAMEWORK.md` for the full extension model.
 ```
 Model Export:
   OVERVIEWSMITH  (parser improvement)
-  GAPSMITH       (gap analysis + rule growth)
+  GAPSMITH       (structural gap diagnosis + parser/AI-interpretation split)
 
 Knowledge Base:
   KNOWLEDGEBASE_CREATOR  (orchestrator)

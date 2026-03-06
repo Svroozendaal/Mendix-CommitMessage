@@ -1,6 +1,10 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
-    [switch]$OpenOutput
+    [switch]$OpenOutput,
+    [switch]$SkipDump,
+    [switch]$SkipParser,
+    [switch]$SkipScaffold,
+    [string]$RunFolder
 )
 
 $ErrorActionPreference = "Stop"
@@ -53,27 +57,43 @@ function Get-Setting {
     return $value.Trim()
 }
 
-function Get-RequiredSetting {
+function Get-SettingAny {
     param(
         [hashtable]$Settings,
-        [string]$Key
+        [string[]]$Keys,
+        [string]$Default = ""
     )
 
-    $value = Get-Setting -Settings $Settings -Key $Key
+    foreach ($key in @($Keys)) {
+        $value = Get-Setting -Settings $Settings -Key $key
+        if (-not [string]::IsNullOrWhiteSpace($value)) {
+            return $value
+        }
+    }
+    return $Default
+}
+
+function Get-RequiredSettingAny {
+    param(
+        [hashtable]$Settings,
+        [string[]]$Keys
+    )
+
+    $value = Get-SettingAny -Settings $Settings -Keys $Keys
     if ([string]::IsNullOrWhiteSpace($value)) {
-        throw "Missing required setting '$Key' in $envPath"
+        throw "Missing required setting. Provide one of: $($Keys -join ', ') in $envPath"
     }
     return $value
 }
 
-function Get-BoolSetting {
+function Get-BoolSettingAny {
     param(
         [hashtable]$Settings,
-        [string]$Key,
+        [string[]]$Keys,
         [bool]$Default = $false
     )
 
-    $value = Get-Setting -Settings $Settings -Key $Key
+    $value = Get-SettingAny -Settings $Settings -Keys $Keys
     if ([string]::IsNullOrWhiteSpace($value)) { return $Default }
 
     switch ($value.ToLowerInvariant()) {
@@ -100,7 +120,11 @@ function Resolve-MxExe {
         return (Resolve-Path $explicit).Path
     }
 
-    $studioPath = Get-RequiredSetting -Settings $Settings -Key "MENDIX_STUDIO_PRO_PATH"
+    $studioPath = Get-RequiredSettingAny -Settings $Settings -Keys @("STUDIO_PRO_PATH", "MENDIX_STUDIO_PRO_PATH")
+    if (-not (Test-Path $studioPath -PathType Container)) {
+        throw "Studio Pro path does not exist: $studioPath"
+    }
+
     $candidates = @(
         (Join-Path $studioPath "modeler\mx.exe"),
         (Join-Path $studioPath "mx.exe")
@@ -112,40 +136,46 @@ function Resolve-MxExe {
         }
     }
 
-    throw "Could not find mx.exe under MENDIX_STUDIO_PRO_PATH: $studioPath"
+    throw "Could not find mx.exe under Studio Pro path: $studioPath"
 }
 
 function Resolve-MprPath {
-    param(
-        [string]$AppPath,
-        [string]$ExplicitMpr
-    )
+    param([hashtable]$Settings)
 
-    if (-not [string]::IsNullOrWhiteSpace($ExplicitMpr)) {
-        if (-not (Test-Path $ExplicitMpr -PathType Leaf)) {
-            throw "MENDIX_MPR_PATH does not exist: $ExplicitMpr"
+    $mprPath = Get-SettingAny -Settings $Settings -Keys @("MPR_FILE_PATH", "MENDIX_MPR_PATH")
+    if (-not [string]::IsNullOrWhiteSpace($mprPath)) {
+        if (-not (Test-Path $mprPath -PathType Leaf)) {
+            throw "MPR path does not exist: $mprPath"
         }
-        return (Resolve-Path $ExplicitMpr).Path
-    }
-
-    if (Test-Path $AppPath -PathType Leaf) {
-        if ([IO.Path]::GetExtension($AppPath).ToLowerInvariant() -ne ".mpr") {
-            throw "MENDIX_APP_PATH points to a file that is not .mpr: $AppPath"
+        if ([IO.Path]::GetExtension($mprPath).ToLowerInvariant() -ne ".mpr") {
+            throw "Configured MPR path is not a .mpr file: $mprPath"
         }
-        return (Resolve-Path $AppPath).Path
+        return (Resolve-Path $mprPath).Path
     }
 
-    if (-not (Test-Path $AppPath -PathType Container)) {
-        throw "MENDIX_APP_PATH does not exist: $AppPath"
+    $legacyAppPath = Get-Setting -Settings $Settings -Key "MENDIX_APP_PATH"
+    if ([string]::IsNullOrWhiteSpace($legacyAppPath)) {
+        throw "Missing required MPR configuration. Set MPR_FILE_PATH in .env."
     }
 
-    $mprFiles = Get-ChildItem -Path $AppPath -File -Filter *.mpr | Sort-Object Name
+    if (Test-Path $legacyAppPath -PathType Leaf) {
+        if ([IO.Path]::GetExtension($legacyAppPath).ToLowerInvariant() -ne ".mpr") {
+            throw "MENDIX_APP_PATH points to a file that is not .mpr: $legacyAppPath"
+        }
+        return (Resolve-Path $legacyAppPath).Path
+    }
+
+    if (-not (Test-Path $legacyAppPath -PathType Container)) {
+        throw "MENDIX_APP_PATH does not exist: $legacyAppPath"
+    }
+
+    $mprFiles = Get-ChildItem -Path $legacyAppPath -File -Filter *.mpr | Sort-Object Name
     if ($mprFiles.Count -eq 0) {
-        throw "No .mpr file found in app folder: $AppPath"
+        throw "No .mpr file found in app folder: $legacyAppPath"
     }
     if ($mprFiles.Count -gt 1) {
         $names = $mprFiles | ForEach-Object { $_.Name }
-        throw "Multiple .mpr files found in ${AppPath}: $($names -join ', '). Set MENDIX_MPR_PATH in .env."
+        throw "Multiple .mpr files found in ${legacyAppPath}: $($names -join ', '). Set MPR_FILE_PATH in .env."
     }
 
     return $mprFiles[0].FullName
@@ -222,15 +252,104 @@ function Get-ModuleIndexRows {
     return ($rows -join "`n")
 }
 
+function Resolve-ExistingRunFolder {
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) { return $null }
+    if (-not (Test-Path $Path -PathType Container)) {
+        throw "RunFolder does not exist: $Path"
+    }
+    $resolved = (Resolve-Path $Path).Path
+    $manifestPath = Join-Path $resolved "manifest.json"
+    if (-not (Test-Path $manifestPath -PathType Leaf)) {
+        throw "RunFolder manifest.json missing: $manifestPath"
+    }
+    return $resolved
+}
+
+function Get-LatestRunFolder {
+    param([string]$Root)
+
+    if (-not (Test-Path $Root -PathType Container)) { return $null }
+    $latest = Get-ChildItem -Path $Root -Directory | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    if (-not $latest) { return $null }
+    $manifestPath = Join-Path $latest.FullName "manifest.json"
+    if (-not (Test-Path $manifestPath -PathType Leaf)) { return $null }
+    return $latest.FullName
+}
+
+function Invoke-PwshScript {
+    param(
+        [string]$ScriptPath,
+        [string[]]$Arguments,
+        [string]$ErrorPrefix
+    )
+
+    & powershell -NoProfile -ExecutionPolicy Bypass -File $ScriptPath @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "$ErrorPrefix failed with exit code $LASTEXITCODE"
+    }
+}
+
+function Seed-KbTemplates {
+    param(
+        [string]$ArtifactsRoot,
+        [string]$KbRoot,
+        [string]$AppName,
+        [string]$RunFolder,
+        [string[]]$Modules
+    )
+
+    $generatedAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+    $commonTokens = @{
+        APP_NAME = $AppName
+        GENERATED_AT_UTC = $generatedAt
+        RUN_FOLDER = $RunFolder
+        KB_FORMAT_VERSION = "1.0"
+        MODULE_COUNT = [string]$Modules.Count
+        MODULE_INDEX_ROWS = (Get-ModuleIndexRows -Modules $Modules)
+    }
+
+    $artifactDrop = Join-Path $KbRoot "_artifacts"
+    New-Item -ItemType Directory -Path $artifactDrop -Force | Out-Null
+    Get-ChildItem -Path $ArtifactsRoot -File -Filter *.md | ForEach-Object {
+        Copy-Item -Path $_.FullName -Destination (Join-Path $artifactDrop $_.Name) -Force
+    }
+
+    Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "KNOWLEDGEBASE_READER.md") -TargetPath (Join-Path $KbRoot "READER.md") -Tokens $commonTokens
+    Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "ROUTING_TEMPLATE.md") -TargetPath (Join-Path $KbRoot "ROUTING.md") -Tokens $commonTokens
+
+    Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "APP_OVERVIEW_TEMPLATE.md") -TargetPath (Join-Path $KbRoot "app/APP_OVERVIEW.md") -Tokens $commonTokens
+    Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "MODULE_LANDSCAPE_TEMPLATE.md") -TargetPath (Join-Path $KbRoot "app/MODULE_LANDSCAPE.md") -Tokens $commonTokens
+    Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "SECURITY_TEMPLATE.md") -TargetPath (Join-Path $KbRoot "app/SECURITY.md") -Tokens $commonTokens
+    Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "CALL_GRAPH_TEMPLATE.md") -TargetPath (Join-Path $KbRoot "app/CALL_GRAPH.md") -Tokens $commonTokens
+
+    Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "ROUTE_BY_ENTITY_TEMPLATE.md") -TargetPath (Join-Path $KbRoot "routes/by-entity.md") -Tokens $commonTokens
+    Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "ROUTE_BY_PAGE_TEMPLATE.md") -TargetPath (Join-Path $KbRoot "routes/by-page.md") -Tokens $commonTokens
+    Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "ROUTE_BY_FLOW_TEMPLATE.md") -TargetPath (Join-Path $KbRoot "routes/by-flow.md") -Tokens $commonTokens
+    Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "ROUTE_CROSS_MODULE_TEMPLATE.md") -TargetPath (Join-Path $KbRoot "routes/cross-module.md") -Tokens $commonTokens
+
+    foreach ($module in @($Modules)) {
+        $moduleTokens = @{}
+        foreach ($k in $commonTokens.Keys) { $moduleTokens[$k] = $commonTokens[$k] }
+        $moduleTokens["MODULE_NAME"] = $module
+
+        $moduleDir = Join-Path $KbRoot "modules/$module"
+        New-Item -ItemType Directory -Path $moduleDir -Force | Out-Null
+
+        Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "MODULE_README_TEMPLATE.md") -TargetPath (Join-Path $moduleDir "README.md") -Tokens $moduleTokens
+        Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "MODULE_DOMAIN_TEMPLATE.md") -TargetPath (Join-Path $moduleDir "DOMAIN.md") -Tokens $moduleTokens
+        Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "MODULE_FLOWS_TEMPLATE.md") -TargetPath (Join-Path $moduleDir "FLOWS.md") -Tokens $moduleTokens
+        Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "MODULE_PAGES_TEMPLATE.md") -TargetPath (Join-Path $moduleDir "PAGES.md") -Tokens $moduleTokens
+        Apply-Template -TemplatePath (Join-Path $ArtifactsRoot "MODULE_RESOURCES_TEMPLATE.md") -TargetPath (Join-Path $moduleDir "RESOURCES.md") -Tokens $moduleTokens
+    }
+}
+
 if (-not (Test-Path $envPath -PathType Leaf)) {
     throw "Missing .env file: $envPath"
 }
 
 $settings = Read-DotEnv -Path $envPath
-$mxExe = Resolve-MxExe -Settings $settings
-$appPath = Get-RequiredSetting -Settings $settings -Key "MENDIX_APP_PATH"
-$explicitMprPath = Get-Setting -Settings $settings -Key "MENDIX_MPR_PATH"
-$mprPath = Resolve-MprPath -AppPath $appPath -ExplicitMpr $explicitMprPath
 
 $configuredDataRoot = Get-Setting -Settings $settings -Key "MENDIX_DATA_ROOT"
 $dataRoot = if ([string]::IsNullOrWhiteSpace($configuredDataRoot)) {
@@ -239,15 +358,10 @@ $dataRoot = if ([string]::IsNullOrWhiteSpace($configuredDataRoot)) {
     $configuredDataRoot
 }
 
-$configuredAppName = Get-Setting -Settings $settings -Key "APP_NAME"
-$appName = if ([string]::IsNullOrWhiteSpace($configuredAppName)) {
-    [IO.Path]::GetFileNameWithoutExtension($mprPath)
-} else {
-    $configuredAppName
-}
-
+$appName = Get-RequiredSettingAny -Settings $settings -Keys @("APP_NAME")
 $moduleFilter = Get-Setting -Settings $settings -Key "MENDIX_MODULES" -Default "*"
-$strictQuality = Get-BoolSetting -Settings $settings -Key "STRICT_QUALITY_GATE" -Default $true
+$strictMode = Get-BoolSettingAny -Settings $settings -Keys @("STRICT_MODE", "STRICT_QUALITY_GATE") -Default $false
+$customScenariosPath = Get-SettingAny -Settings $settings -Keys @("CUSTOM_SCENARIOS_PATH", "CUSTOM_SCENARIOS")
 
 $parserExe = Join-Path $packageRoot "Mendix-model-overview-parser\bin\win-x64\ModelOverviewCli.exe"
 $parserSourceProject = Join-Path $packageRoot "Mendix-model-overview-parser\src\model-overview-cli\ModelOverviewCli.csproj"
@@ -256,18 +370,10 @@ $composeScript = Join-Path $packageRoot "run-kb-compose.ps1"
 $qualityGateScript = Join-Path $packageRoot "run-kb-quality-gate.ps1"
 $semanticBenchmarkScript = Join-Path $packageRoot "run-kb-semantic-benchmark.ps1"
 
-if (-not (Test-Path $scaffoldScript -PathType Leaf)) {
-    throw "Missing scaffold script: $scaffoldScript"
-}
-if (-not (Test-Path $composeScript -PathType Leaf)) {
-    throw "Missing composer script: $composeScript"
-}
-if (-not (Test-Path $qualityGateScript -PathType Leaf)) {
-    throw "Missing quality gate script: $qualityGateScript"
-}
-if (-not (Test-Path $semanticBenchmarkScript -PathType Leaf)) {
-    throw "Missing semantic benchmark script: $semanticBenchmarkScript"
-}
+if (-not (Test-Path $scaffoldScript -PathType Leaf)) { throw "Missing scaffold script: $scaffoldScript" }
+if (-not (Test-Path $composeScript -PathType Leaf)) { throw "Missing composer script: $composeScript" }
+if (-not (Test-Path $qualityGateScript -PathType Leaf)) { throw "Missing quality gate script: $qualityGateScript" }
+if (-not (Test-Path $semanticBenchmarkScript -PathType Leaf)) { throw "Missing semantic benchmark script: $semanticBenchmarkScript" }
 
 $dumpsRoot = Join-Path $dataRoot "dumps"
 $appOverviewRoot = Join-Path $dataRoot "app-overview"
@@ -281,143 +387,177 @@ $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH-mm-ss.fffZ")
 $appToken = Sanitize-Token -Value $appName
 $dumpFolder = Join-Path $dumpsRoot "${timestamp}_$appToken"
 $dumpPath = Join-Path $dumpFolder "working-dump.json"
-$runFolder = Join-Path $appOverviewRoot "cli_$timestamp"
+$resolvedRunFolder = $null
 
-New-Item -ItemType Directory -Path $dumpFolder -Force | Out-Null
+if (-not [string]::IsNullOrWhiteSpace($RunFolder)) {
+    $resolvedRunFolder = Resolve-ExistingRunFolder -Path $RunFolder
+} elseif ($SkipParser -or $SkipDump) {
+    $resolvedRunFolder = Get-LatestRunFolder -Root $appOverviewRoot
+    if (-not $resolvedRunFolder) {
+        throw "No existing run folder found in $appOverviewRoot. Provide -RunFolder explicitly."
+    }
+} else {
+    $resolvedRunFolder = Join-Path $appOverviewRoot "cli_$timestamp"
+}
+
+$mxExe = $null
+$mprPath = $null
+if (-not $SkipDump) {
+    $mxExe = Resolve-MxExe -Settings $settings
+    $mprPath = Resolve-MprPath -Settings $settings
+    New-Item -ItemType Directory -Path $dumpFolder -Force | Out-Null
+} else {
+    $dumpPath = Get-SettingAny -Settings $settings -Keys @("DUMP_FILE_PATH", "DUMP_PATH")
+}
 
 Write-Host ""
 Write-Host "=== KnowledgeBase Creator ===" -ForegroundColor Cyan
-Write-Host "mx.exe:   $mxExe"
-Write-Host "mpr:      $mprPath"
-Write-Host "dump:     $dumpPath"
-Write-Host "overview: $runFolder"
-Write-Host "kb root:  $knowledgeBaseRoot"
-
-Write-Host ""
-Write-Host "[1/8] Dumping .mpr..." -ForegroundColor Yellow
-& $mxExe dump-mpr $mprPath --output-file $dumpPath
-if ($LASTEXITCODE -ne 0) {
-    throw "mx dump-mpr failed with exit code $LASTEXITCODE"
+Write-Host "App name:      $appName"
+Write-Host "Data root:     $dataRoot"
+Write-Host "Run folder:    $resolvedRunFolder"
+Write-Host "Skip dump:     $SkipDump"
+Write-Host "Skip parser:   $SkipParser"
+Write-Host "Skip scaffold: $SkipScaffold"
+if (-not $SkipDump) {
+    Write-Host "mx.exe:        $mxExe"
+    Write-Host "mpr:           $mprPath"
+    Write-Host "dump:          $dumpPath"
+}
+if (-not [string]::IsNullOrWhiteSpace($customScenariosPath)) {
+    Write-Host "Custom bench:  $customScenariosPath"
 }
 
-Write-Host "[2/8] Building app-overview export..." -ForegroundColor Yellow
-if (Test-Path $parserExe -PathType Leaf) {
-    $args = @("--dump", $dumpPath, "--output", $runFolder)
-    if (-not [string]::IsNullOrWhiteSpace($moduleFilter) -and $moduleFilter -ne "*") {
-        $args += @("--modules", $moduleFilter)
-    }
-    & $parserExe @args
+if (-not $SkipDump) {
+    Write-Host ""
+    Write-Host "[1/8] Dumping .mpr..." -ForegroundColor Yellow
+    & $mxExe dump-mpr $mprPath --output-file $dumpPath
     if ($LASTEXITCODE -ne 0) {
-        throw "Parser executable failed with exit code $LASTEXITCODE"
+        throw "mx dump-mpr failed with exit code $LASTEXITCODE"
     }
-}
-elseif (Test-Path $parserSourceProject -PathType Leaf) {
-    $args = @("run", "--project", $parserSourceProject, "--configuration", "Release", "--", "--dump", $dumpPath, "--output", $runFolder)
-    if (-not [string]::IsNullOrWhiteSpace($moduleFilter) -and $moduleFilter -ne "*") {
-        $args += @("--modules", $moduleFilter)
-    }
-    & dotnet @args
-    if ($LASTEXITCODE -ne 0) {
-        throw "Parser fallback (dotnet run) failed with exit code $LASTEXITCODE"
-    }
-}
-else {
-    throw "No parser binary or source project found in package."
+} else {
+    Write-Host ""
+    Write-Host "[1/8] Dump step skipped." -ForegroundColor DarkYellow
 }
 
-$manifestPath = Join-Path $runFolder "manifest.json"
+if (-not $SkipParser) {
+    Write-Host "[2/8] Building app-overview export..." -ForegroundColor Yellow
+    if ($SkipDump) {
+        if ([string]::IsNullOrWhiteSpace($dumpPath)) {
+            throw "SkipDump was used without SkipParser. Set DUMP_FILE_PATH in .env."
+        }
+        if (-not (Test-Path $dumpPath -PathType Leaf)) {
+            throw "Configured dump file does not exist: $dumpPath"
+        }
+    }
+
+    if (-not (Test-Path $resolvedRunFolder -PathType Container)) {
+        New-Item -ItemType Directory -Path $resolvedRunFolder -Force | Out-Null
+    }
+
+    if (Test-Path $parserExe -PathType Leaf) {
+        $args = @("--dump", $dumpPath, "--output", $resolvedRunFolder)
+        if (-not [string]::IsNullOrWhiteSpace($moduleFilter) -and $moduleFilter -ne "*") {
+            $args += @("--modules", $moduleFilter)
+        }
+        & $parserExe @args
+        if ($LASTEXITCODE -ne 0) {
+            throw "Parser executable failed with exit code $LASTEXITCODE"
+        }
+    }
+    elseif (Test-Path $parserSourceProject -PathType Leaf) {
+        $args = @("run", "--project", $parserSourceProject, "--configuration", "Release", "--", "--dump", $dumpPath, "--output", $resolvedRunFolder)
+        if (-not [string]::IsNullOrWhiteSpace($moduleFilter) -and $moduleFilter -ne "*") {
+            $args += @("--modules", $moduleFilter)
+        }
+        & dotnet @args
+        if ($LASTEXITCODE -ne 0) {
+            throw "Parser fallback (dotnet run) failed with exit code $LASTEXITCODE"
+        }
+    }
+    else {
+        throw "No parser binary or source project found in package."
+    }
+} else {
+    Write-Host "[2/8] Parser step skipped." -ForegroundColor DarkYellow
+}
+
+$manifestPath = Join-Path $resolvedRunFolder "manifest.json"
 if (-not (Test-Path $manifestPath -PathType Leaf)) {
     throw "Parser output manifest missing: $manifestPath"
+}
+
+$manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
+if ($manifest.schemaVersion -ne "2.0") {
+    throw "Expected parser schemaVersion 2.0, got $($manifest.schemaVersion)"
 }
 
 $modules = Get-ModulesFromManifest -ManifestPath $manifestPath
 $kbRoot = Join-Path $knowledgeBaseRoot $appName
 
-Write-Host "[3/8] Scaffolding knowledge-base..." -ForegroundColor Yellow
-& powershell -NoProfile -ExecutionPolicy Bypass -File $scaffoldScript -RunFolder $runFolder -OutputRoot $knowledgeBaseRoot -AppName $appName
-if ($LASTEXITCODE -ne 0) {
-    throw "run-kb-scaffold.ps1 failed with exit code $LASTEXITCODE"
-}
+if (-not $SkipScaffold) {
+    Write-Host "[3/8] Scaffolding knowledge-base..." -ForegroundColor Yellow
+    Invoke-PwshScript -ScriptPath $scaffoldScript -Arguments @("-RunFolder", $resolvedRunFolder, "-OutputRoot", $knowledgeBaseRoot, "-AppName", $appName) -ErrorPrefix "run-kb-scaffold.ps1"
 
-Write-Host "[4/8] Seeding KB templates..." -ForegroundColor Yellow
-$generatedAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-$commonTokens = @{
-    APP_NAME = $appName
-    GENERATED_AT_UTC = $generatedAt
-    RUN_FOLDER = $runFolder
-    MODULE_COUNT = [string]$modules.Count
-    MODULE_INDEX_ROWS = (Get-ModuleIndexRows -Modules $modules)
-}
-
-$artifactDrop = Join-Path $kbRoot "_artifacts"
-New-Item -ItemType Directory -Path $artifactDrop -Force | Out-Null
-Get-ChildItem -Path $artifactsRoot -File -Filter *.md | ForEach-Object {
-    Copy-Item -Path $_.FullName -Destination (Join-Path $artifactDrop $_.Name) -Force
-}
-
-Apply-Template -TemplatePath (Join-Path $artifactsRoot "KNOWLEDGEBASE_READER.md") -TargetPath (Join-Path $kbRoot "READER.md") -Tokens $commonTokens
-Apply-Template -TemplatePath (Join-Path $artifactsRoot "ROUTING_TEMPLATE.md") -TargetPath (Join-Path $kbRoot "ROUTING.md") -Tokens $commonTokens
-
-Apply-Template -TemplatePath (Join-Path $artifactsRoot "APP_OVERVIEW_TEMPLATE.md") -TargetPath (Join-Path $kbRoot "app/APP_OVERVIEW.md") -Tokens $commonTokens
-Apply-Template -TemplatePath (Join-Path $artifactsRoot "MODULE_LANDSCAPE_TEMPLATE.md") -TargetPath (Join-Path $kbRoot "app/MODULE_LANDSCAPE.md") -Tokens $commonTokens
-Apply-Template -TemplatePath (Join-Path $artifactsRoot "SECURITY_TEMPLATE.md") -TargetPath (Join-Path $kbRoot "app/SECURITY.md") -Tokens $commonTokens
-Apply-Template -TemplatePath (Join-Path $artifactsRoot "CALL_GRAPH_TEMPLATE.md") -TargetPath (Join-Path $kbRoot "app/CALL_GRAPH.md") -Tokens $commonTokens
-
-Apply-Template -TemplatePath (Join-Path $artifactsRoot "ROUTE_BY_ENTITY_TEMPLATE.md") -TargetPath (Join-Path $kbRoot "routes/by-entity.md") -Tokens $commonTokens
-Apply-Template -TemplatePath (Join-Path $artifactsRoot "ROUTE_BY_PAGE_TEMPLATE.md") -TargetPath (Join-Path $kbRoot "routes/by-page.md") -Tokens $commonTokens
-Apply-Template -TemplatePath (Join-Path $artifactsRoot "ROUTE_BY_FLOW_TEMPLATE.md") -TargetPath (Join-Path $kbRoot "routes/by-flow.md") -Tokens $commonTokens
-Apply-Template -TemplatePath (Join-Path $artifactsRoot "ROUTE_CROSS_MODULE_TEMPLATE.md") -TargetPath (Join-Path $kbRoot "routes/cross-module.md") -Tokens $commonTokens
-
-foreach ($module in $modules) {
-    $moduleTokens = @{}
-    foreach ($k in $commonTokens.Keys) { $moduleTokens[$k] = $commonTokens[$k] }
-    $moduleTokens["MODULE_NAME"] = $module
-
-    $moduleDir = Join-Path $kbRoot "modules/$module"
-    New-Item -ItemType Directory -Path $moduleDir -Force | Out-Null
-
-    Apply-Template -TemplatePath (Join-Path $artifactsRoot "MODULE_README_TEMPLATE.md") -TargetPath (Join-Path $moduleDir "README.md") -Tokens $moduleTokens
-    Apply-Template -TemplatePath (Join-Path $artifactsRoot "MODULE_DOMAIN_TEMPLATE.md") -TargetPath (Join-Path $moduleDir "DOMAIN.md") -Tokens $moduleTokens
-    Apply-Template -TemplatePath (Join-Path $artifactsRoot "MODULE_FLOWS_TEMPLATE.md") -TargetPath (Join-Path $moduleDir "FLOWS.md") -Tokens $moduleTokens
-    Apply-Template -TemplatePath (Join-Path $artifactsRoot "MODULE_PAGES_TEMPLATE.md") -TargetPath (Join-Path $moduleDir "PAGES.md") -Tokens $moduleTokens
-    Apply-Template -TemplatePath (Join-Path $artifactsRoot "MODULE_RESOURCES_TEMPLATE.md") -TargetPath (Join-Path $moduleDir "RESOURCES.md") -Tokens $moduleTokens
+    Write-Host "[4/8] Seeding KB templates..." -ForegroundColor Yellow
+    Seed-KbTemplates -ArtifactsRoot $artifactsRoot -KbRoot $kbRoot -AppName $appName -RunFolder $resolvedRunFolder -Modules $modules
+} else {
+    Write-Host "[3/8] Scaffold step skipped." -ForegroundColor DarkYellow
+    Write-Host "[4/8] Template seeding skipped." -ForegroundColor DarkYellow
+    if (-not (Test-Path $kbRoot -PathType Container)) {
+        throw "SkipScaffold was used but KB root does not exist: $kbRoot"
+    }
 }
 
 Write-Host "[5/8] Composing behaviour-rich KB content..." -ForegroundColor Yellow
-& powershell -NoProfile -ExecutionPolicy Bypass -File $composeScript -RunFolder $runFolder -OutputRoot $knowledgeBaseRoot -AppName $appName
-if ($LASTEXITCODE -ne 0) {
-    throw "run-kb-compose.ps1 failed with exit code $LASTEXITCODE"
-}
+$composeArgs = @("-RunFolder", $resolvedRunFolder, "-OutputRoot", $knowledgeBaseRoot, "-AppName", $appName)
+if ($SkipScaffold) { $composeArgs += "-SkipScaffold" }
+Invoke-PwshScript -ScriptPath $composeScript -Arguments $composeArgs -ErrorPrefix "run-kb-compose.ps1"
 
 Write-Host "[6/8] Running scaffold validation..." -ForegroundColor Yellow
-& powershell -NoProfile -ExecutionPolicy Bypass -File $scaffoldScript -Validate -OutputRoot $knowledgeBaseRoot -AppName $appName
-if ($LASTEXITCODE -ne 0) {
-    throw "Scaffold validation failed with exit code $LASTEXITCODE"
-}
+Invoke-PwshScript -ScriptPath $scaffoldScript -Arguments @("-Validate", "-OutputRoot", $knowledgeBaseRoot, "-AppName", $appName) -ErrorPrefix "Scaffold validation"
+$structuralValidationStatus = "pass"
 
+$qualityGateStatus = "pass"
 Write-Host "[7/8] Running hybrid quality gate..." -ForegroundColor Yellow
-& powershell -NoProfile -ExecutionPolicy Bypass -File $qualityGateScript -OutputRoot $knowledgeBaseRoot -AppName $appName
-if ($LASTEXITCODE -ne 0) {
-    if ($strictQuality) {
-        throw "Quality gate failed with exit code $LASTEXITCODE"
+try {
+    Invoke-PwshScript -ScriptPath $qualityGateScript -Arguments @("-OutputRoot", $knowledgeBaseRoot, "-AppName", $appName) -ErrorPrefix "Quality gate"
+} catch {
+    $qualityGateStatus = "fail"
+    if ($strictMode) {
+        throw $_
     }
-    Write-Warning "Quality gate failed. Set STRICT_QUALITY_GATE=true in .env to fail hard."
+    Write-Warning "Quality gate failed in non-strict mode."
 }
 
+$benchmarkStatus = "pass"
 Write-Host "[8/8] Running semantic benchmark..." -ForegroundColor Yellow
-& powershell -NoProfile -ExecutionPolicy Bypass -File $semanticBenchmarkScript -OutputRoot $knowledgeBaseRoot -AppName $appName
-if ($LASTEXITCODE -ne 0) {
-    if ($strictQuality) {
-        throw "Semantic benchmark failed with exit code $LASTEXITCODE"
+$benchmarkArgs = @("-OutputRoot", $knowledgeBaseRoot, "-AppName", $appName)
+if (-not [string]::IsNullOrWhiteSpace($customScenariosPath)) {
+    if (-not (Test-Path $customScenariosPath -PathType Leaf)) {
+        throw "Custom scenarios file configured but not found: $customScenariosPath"
     }
-    Write-Warning "Semantic benchmark failed. Set STRICT_QUALITY_GATE=true in .env to fail hard."
+    $benchmarkArgs += @("-CustomScenarios", $customScenariosPath)
+}
+try {
+    Invoke-PwshScript -ScriptPath $semanticBenchmarkScript -Arguments $benchmarkArgs -ErrorPrefix "Semantic benchmark"
+} catch {
+    $benchmarkStatus = "fail"
+    if ($strictMode) {
+        throw $_
+    }
+    Write-Warning "Semantic benchmark failed in non-strict mode."
 }
 
 Write-Host ""
 Write-Host "Completed." -ForegroundColor Green
-Write-Host "Overview run: $runFolder"
-Write-Host "KB folder:    $kbRoot"
-Write-Host "Start AI with: agents.md"
+Write-Host "App name:                    $appName"
+Write-Host "Run folder:                  $resolvedRunFolder"
+Write-Host "Module count:                $($modules.Count)"
+Write-Host "Structural validation status: $structuralValidationStatus"
+Write-Host "Quality gate status:         $qualityGateStatus"
+Write-Host "Benchmark status:            $benchmarkStatus"
+Write-Host "KB folder:                   $kbRoot"
+Write-Host "Start AI with:               agents.md"
 
 if ($OpenOutput -and (Test-Path $kbRoot -PathType Container)) {
     explorer.exe $kbRoot

@@ -13,7 +13,9 @@ param(
     [string]$RunFolder,
     [string]$OutputRoot = "mendix-data/knowledge-base",
     [Parameter(Mandatory = $true)]
-    [string]$AppName
+    [string]$AppName,
+    [switch]$SkipScaffold,
+    [string]$GeneratedAtUtc
 )
 
 $ErrorActionPreference = "Stop"
@@ -43,6 +45,24 @@ function Join-OrDefault {
     return ($clean -join ", ")
 }
 
+function Join-OrUnknown {
+    param(
+        [object[]]$Items,
+        [string]$UnknownScope,
+        [string]$UnknownField,
+        [string]$Reason,
+        [string]$FixHint
+    )
+
+    $clean = @($Items | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } | Sort-Object -Unique)
+    if ($clean.Count -gt 0) {
+        return ($clean -join ", ")
+    }
+
+    Add-UnknownTodo -Scope $UnknownScope -Field $UnknownField -Reason $Reason -FixHint $FixHint
+    return "Unknown"
+}
+
 function Write-Utf8NoBom {
     param(
         [string]$Path,
@@ -54,6 +74,29 @@ function Write-Utf8NoBom {
     }
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
     [System.IO.File]::WriteAllText($Path, $Content.TrimEnd() + "`n", $utf8NoBom)
+}
+
+function Add-UnknownTodo {
+    param(
+        [string]$Scope,
+        [string]$Field,
+        [string]$Reason,
+        [string]$FixHint
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Scope)) { $Scope = "global" }
+    if ([string]::IsNullOrWhiteSpace($Field)) { $Field = "unknown-field" }
+
+    $key = "$Scope|$Field|$Reason"
+    if ($unknownTodoKeys.Contains($key)) { return }
+    [void]$unknownTodoKeys.Add($key)
+
+    $unknownTodos.Add([pscustomobject]@{
+        Scope = $Scope
+        Field = $Field
+        Reason = $Reason
+        FixHint = $FixHint
+    }) | Out-Null
 }
 
 function Get-ModuleNameFromQualified {
@@ -190,7 +233,12 @@ if (-not (Test-Path $kbRoot -PathType Container)) {
     throw "KB root does not exist. Run scaffold first: $kbRoot"
 }
 
-$generatedAtUtc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+$generatedAtUtc = if ([string]::IsNullOrWhiteSpace($GeneratedAtUtc)) {
+    (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+} else {
+    $GeneratedAtUtc
+}
+$kbFormatVersion = "1.0"
 $runFolderName = Split-Path $RunFolder -Leaf
 
 $allModulesPath = Join-Path $RunFolder "general/all-modules.json"
@@ -207,6 +255,9 @@ foreach ($m in @($allModules.modules)) {
 }
 
 $moduleNames = @($moduleMetaByName.Keys | Sort-Object)
+
+$unknownTodos = New-Object "System.Collections.Generic.List[object]"
+$unknownTodoKeys = New-Object System.Collections.Generic.HashSet[string]
 
 $domainsByModule = @{}
 $flowsByModule = @{}
@@ -450,8 +501,8 @@ Confidence: Export-backed
 
 - Start at [ROUTING.md](ROUTING.md) for index-style lookup.
 - Use [app/APP_OVERVIEW.md](app/APP_OVERVIEW.md) for app mission and key behaviours.
-- Use `modules/<Module>/` files for module-level behaviour, domain, pages, and resources.
-- Use `routes/` files for cross-cut indexes by entity, page, and flow.
+- Use ``modules/<Module>/`` files for module-level behaviour, domain, pages, and resources.
+- Use ``routes/`` files for cross-cut indexes by entity, page, and flow.
 
 Confidence: Export-backed
 
@@ -465,15 +516,17 @@ Confidence: Inferred
 
 ## Confidence levels
 
-- `Export-backed`: direct from JSON export.
-- `Inferred`: deterministic synthesis from export data (for example tier ranking, capability grouping).
-- `Unknown`: source data is absent or non-derivable.
+- ``Export-backed``: direct from JSON export.
+- ``Inferred``: deterministic synthesis from export data (for example tier ranking, capability grouping).
+- ``Unknown``: source data is absent or non-derivable.
 
 ## Source
 
 - Generated at: $generatedAtUtc
 - Run folder: $RunFolder
+- KB Format Version: $kbFormatVersion
 - Schema version: $($manifest.schemaVersion)
+- Unknown TODO backlog: [_reports/UNKNOWN_TODO.md](_reports/UNKNOWN_TODO.md)
 "@
 Write-Utf8NoBom -Path $readerPath -Content $readerContent
 
@@ -509,10 +562,13 @@ $($moduleIndexRows -join "`n")
 
 ## Completeness
 
+- App-level status: generated
+- Module count: $($moduleNames.Count)
 - Custom module flows: $($qualityMetrics.CustomFlowCount)
 - Tier 1 custom flows: $($qualityMetrics.CustomTier1Count)
 - Cross-module call edges: $($qualityMetrics.CrossModuleEdgeCount)
 - Derived page-flow links: $($qualityMetrics.PageLinksDerived)
+- Known gaps: pending (computed after composition)
 
 ## Source
 
@@ -769,7 +825,12 @@ foreach ($module in $moduleNames) {
     if ($category -eq "Custom") {
         $tier1 = @($moduleFlows | Where-Object { $_.tier -eq 1 } | Select-Object -First 8)
         foreach ($f in $tier1) {
-            $journeyRows.Add("| $($f.qualifiedName) | $(Join-OrDefault -Items $f.shownPages -Default "no page") | $(Join-OrDefault -Items $f.touchesEntities -Default "no entity evidence") |") | Out-Null
+            $entitiesTouched = Join-OrUnknown -Items $f.touchesEntities `
+                -UnknownScope "$module.$($f.localName)" `
+                -UnknownField "Primary User Journeys.Entities touched" `
+                -Reason "Tier 1 flow has no explicit entity evidence in exported nodes." `
+                -FixHint "Improve extraction rules or add parser entityMentions metadata."
+            $journeyRows.Add("| $($f.qualifiedName) | $(Join-OrDefault -Items $f.shownPages -Default "none") | $entitiesTouched |") | Out-Null
         }
         if ($journeyRows.Count -eq 0) {
             $journeyRows.Add("| none | none | none |") | Out-Null
@@ -979,13 +1040,18 @@ $($enumRows -join "`n")
     if ($category -eq "Custom") {
         foreach ($f in @($moduleFlows | Where-Object { $_.tier -eq 1 } | Sort-Object localName)) {
             $intent = if ($f.localName.StartsWith("ACT_")) { "User action flow" } elseif ($f.localName.StartsWith("VAL_")) { "Validation flow" } elseif ($f.localName.StartsWith("ACR_")) { "Access/creation orchestration flow" } else { "Behaviour-critical flow" }
+            $tier1Entities = Join-OrUnknown -Items $f.touchesEntities `
+                -UnknownScope "$module.$($f.localName)" `
+                -UnknownField "Tier 1 Deep Narratives.Read/write entities" `
+                -Reason "Tier 1 narrative has no explicit entity touch evidence." `
+                -FixHint "Improve regex extraction or add parser actionTags/entityMentions metadata."
             $tier1Sections.Add(@"
 ### $($f.qualifiedName)
 
 - Intent: $intent.
 - Trigger/entry: microflow/nanoflow entry based on caller or UI action.
 - Inputs/outputs: derived from flow node graph; explicit parameter typing is not fully exported.
-- Read/write entities: $(Join-OrDefault -Items $f.touchesEntities -Default "none from export token evidence").
+- Read/write entities: $tier1Entities.
 - UI interactions (shown pages): $(Join-OrDefault -Items $f.shownPages -Default "none").
 - Calls/called-by: out=$($f.fanOut), in=$($f.fanIn).
 - Security constraints touched: module roles derived via page permissions and entity access rules.
@@ -1055,7 +1121,12 @@ $($tier1Sections -join "`n")
     $pageFlowRows = New-Object System.Collections.Generic.List[string]
     foreach ($p in $modulePages) {
         $shownBy = if ($shownByPage.ContainsKey($p.qualifiedName)) { @($shownByPage[$p.qualifiedName] | Sort-Object -Unique) } else { @() }
-        $pageFlowRows.Add("| $($p.qualifiedName) | $(Join-OrDefault -Items $shownBy -Default "none (no show-page evidence)") |") | Out-Null
+        $shownByText = Join-OrUnknown -Items $shownBy `
+            -UnknownScope "$module.$([string]$p.name)" `
+            -UnknownField "PAGES.Page-Flow Links.Shown by flows" `
+            -Reason "No explicit ShowPageAction evidence found for page routing." `
+            -FixHint "Add parser page navigation metadata or extend show-page extraction patterns."
+        $pageFlowRows.Add("| $($p.qualifiedName) | $shownByText |") | Out-Null
     }
     if ($pageFlowRows.Count -eq 0) { $pageFlowRows.Add("| none | none |") | Out-Null }
 
@@ -1109,7 +1180,13 @@ Snippet-level page widget behaviour is not exported in current overview contract
     foreach ($s in @($moduleResources.scheduledEvents)) {
         $target = [string]$s.microflow
         if ([string]::IsNullOrWhiteSpace($target)) { $target = [string]$s.nanoflow }
-        if ([string]::IsNullOrWhiteSpace($target)) { $target = "unknown target flow" }
+        if ([string]::IsNullOrWhiteSpace($target)) {
+            Add-UnknownTodo -Scope "$module.$([string]$s.name)" `
+                -Field "RESOURCES.Scheduled Events.Target flow" `
+                -Reason "Scheduled event target flow is missing in export payload." `
+                -FixHint "Add parser enrichment for scheduled event target flow."
+            $target = "Unknown"
+        }
         $scheduleRows.Add("| $([string]$s.name) | $(Escape-Md ([string]$s.schedule)) | $target |") | Out-Null
     }
     if ($scheduleRows.Count -eq 0) { $scheduleRows.Add("| none | none | none |") | Out-Null }
@@ -1172,7 +1249,12 @@ Write-Utf8NoBom -Path $byEntityPath -Content $byEntityContent
 $byPageRows = New-Object System.Collections.Generic.List[string]
 foreach ($page in @($pageFacts | Sort-Object qualifiedName)) {
     $shownBy = if ($shownByPage.ContainsKey($page.qualifiedName)) { @($shownByPage[$page.qualifiedName] | Sort-Object -Unique) } else { @() }
-    $byPageRows.Add("| $($page.qualifiedName) | [$($page.module)](../modules/$($page.module)/PAGES.md) | $(Join-OrDefault -Items $page.allowedRoles -Default "none") | $(Join-OrDefault -Items $shownBy -Default "none (no show-page evidence)") |") | Out-Null
+    $shownByText = Join-OrUnknown -Items $shownBy `
+        -UnknownScope "$($page.module).$([string]$page.name)" `
+        -UnknownField "routes/by-page.Shown by flows" `
+        -Reason "Page appears in model, but no ShowPageAction evidence was derived from flows." `
+        -FixHint "Improve show-page extraction or enrich parser output with resolved page-route links."
+    $byPageRows.Add("| $($page.qualifiedName) | [$($page.module)](../modules/$($page.module)/PAGES.md) | $(Join-OrDefault -Items $page.allowedRoles -Default "none") | $shownByText |") | Out-Null
 }
 
 $byPagePath = Join-Path $kbRoot "routes/by-page.md"
@@ -1187,7 +1269,19 @@ Write-Utf8NoBom -Path $byPagePath -Content $byPageContent
 
 $byFlowRows = New-Object System.Collections.Generic.List[string]
 foreach ($flow in @($flowList | Sort-Object qualifiedName)) {
-    $byFlowRows.Add("| $($flow.qualifiedName) | $($flow.kind) | [$($flow.module)](../modules/$($flow.module)/FLOWS.md) | $($flow.tier) | $($flow.fanOut) | $($flow.fanIn) | $(Join-OrDefault -Items $flow.shownPages -Default "none") | $(Join-OrDefault -Items $flow.touchesEntities -Default "none (no entity action evidence)") |") | Out-Null
+    $touchesEntitiesText = if (@($flow.touchesEntities).Count -gt 0) {
+        Join-OrDefault -Items $flow.touchesEntities -Default "none"
+    } elseif ($flow.hasBehaviouralAction) {
+        Join-OrUnknown -Items @() `
+            -UnknownScope "$($flow.module).$($flow.localName)" `
+            -UnknownField "routes/by-flow.Touches Entities" `
+            -Reason "Flow has behavioural actions but no explicit entity mention evidence." `
+            -FixHint "Improve entity extraction patterns or add parser action/entity tags."
+    } else {
+        "none"
+    }
+
+    $byFlowRows.Add("| $($flow.qualifiedName) | $($flow.kind) | [$($flow.module)](../modules/$($flow.module)/FLOWS.md) | $($flow.tier) | $($flow.fanOut) | $($flow.fanIn) | $(Join-OrDefault -Items $flow.shownPages -Default "none") | $touchesEntitiesText |") | Out-Null
 }
 
 $byFlowPath = Join-Path $kbRoot "routes/by-flow.md"
@@ -1208,12 +1302,66 @@ if ($edgeRowsDetailed.Count -eq 0) {
     $edgeRowsDetailed.Add("| none | none | none | none |") | Out-Null
 }
 
+$dependencyMatrixMap = @{}
+foreach ($edge in @($crossModuleEdges)) {
+    $key = "$($edge.sourceModule)|$($edge.targetModule)"
+    if (-not $dependencyMatrixMap.ContainsKey($key)) {
+        $dependencyMatrixMap[$key] = [ordered]@{
+            Source = $edge.sourceModule
+            Target = $edge.targetModule
+            FlowCallCount = 0
+            AssociationLinkCount = 0
+        }
+    }
+    $dependencyMatrixMap[$key].FlowCallCount++
+}
+
+$associationLinkRows = New-Object System.Collections.Generic.List[string]
+foreach ($assoc in @($associationRows | Sort-Object module, name)) {
+    $parentModule = Get-ModuleNameFromQualified -QualifiedName $assoc.parentEntity
+    $childModule = Get-ModuleNameFromQualified -QualifiedName $assoc.childEntity
+    if ([string]::IsNullOrWhiteSpace($parentModule) -or [string]::IsNullOrWhiteSpace($childModule)) { continue }
+    if ($parentModule -eq $childModule) { continue }
+
+    $associationLinkRows.Add("| $($assoc.name) | $parentModule | $childModule | $($assoc.parentEntity) | $($assoc.childEntity) |") | Out-Null
+
+    $key = "$parentModule|$childModule"
+    if (-not $dependencyMatrixMap.ContainsKey($key)) {
+        $dependencyMatrixMap[$key] = [ordered]@{
+            Source = $parentModule
+            Target = $childModule
+            FlowCallCount = 0
+            AssociationLinkCount = 0
+        }
+    }
+    $dependencyMatrixMap[$key].AssociationLinkCount++
+}
+if ($associationLinkRows.Count -eq 0) {
+    $associationLinkRows.Add("| none | none | none | none | none |") | Out-Null
+}
+
+$dependencyMatrixRows = New-Object System.Collections.Generic.List[string]
+foreach ($entry in @($dependencyMatrixMap.Values | Sort-Object Source, Target)) {
+    $dependencyMatrixRows.Add("| $($entry.Source) | $($entry.Target) | $($entry.FlowCallCount) | $($entry.AssociationLinkCount) |") | Out-Null
+}
+if ($dependencyMatrixRows.Count -eq 0) {
+    $dependencyMatrixRows.Add("| none | none | 0 | 0 |") | Out-Null
+}
+
 $hubRows = New-Object System.Collections.Generic.List[string]
+$hubModules = New-Object System.Collections.Generic.List[string]
+$leafModules = New-Object System.Collections.Generic.List[string]
 foreach ($module in $moduleNames) {
     $out = @($crossModuleEdges | Where-Object { $_.sourceModule -eq $module }).Count
     $in = @($crossModuleEdges | Where-Object { $_.targetModule -eq $module }).Count
     $role = if ($out -gt 0 -and $in -gt 0) { "hub" } elseif ($out -gt 0) { "source-leaf" } elseif ($in -gt 0) { "sink-leaf" } else { "isolated" }
     $hubRows.Add("| $module | $out | $in | $role |") | Out-Null
+    if ($role -eq "hub") {
+        $hubModules.Add($module) | Out-Null
+    }
+    if ($role -eq "source-leaf" -or $role -eq "sink-leaf") {
+        $leafModules.Add("$module ($role)") | Out-Null
+    }
 }
 
 $boundaryRowsRoute = New-Object System.Collections.Generic.List[string]
@@ -1230,6 +1378,12 @@ $crossModulePath = Join-Path $kbRoot "routes/cross-module.md"
 $crossModuleContent = @"
 # Cross-Module Dependencies
 
+## Dependency matrix
+
+| Source module | Target module | Flow call count | Association link count |
+|---|---|---:|---:|
+$($dependencyMatrixRows -join "`n")
+
 ## Flow-call edges
 
 | Source flow | Target flow | Source module | Target module |
@@ -1242,6 +1396,20 @@ $($edgeRowsDetailed -join "`n")
 |---|---:|---:|---|
 $($hubRows -join "`n")
 
+## Hub Modules
+
+- $(Join-OrDefault -Items @($hubModules) -Default "none")
+
+## Leaf Modules
+
+- $(Join-OrDefault -Items @($leafModules) -Default "none")
+
+## Association Links
+
+| Association | From module | To module | Parent entity | Child entity |
+|---|---|---|---|---|
+$($associationLinkRows -join "`n")
+
 ## Custom-boundary dependency lens
 
 | Custom module | Depends on | Used by |
@@ -1250,8 +1418,51 @@ $($boundaryRowsRoute -join "`n")
 "@
 Write-Utf8NoBom -Path $crossModulePath -Content $crossModuleContent
 
+$todoRows = New-Object System.Collections.Generic.List[string]
+foreach ($todo in @($unknownTodos | Sort-Object Scope, Field, Reason)) {
+    $todoRows.Add("| $(Escape-Md $todo.Scope) | $(Escape-Md $todo.Field) | $(Escape-Md $todo.Reason) | $(Escape-Md $todo.FixHint) |") | Out-Null
+}
+if ($todoRows.Count -eq 0) {
+    $todoRows.Add("| none | none | No unknown evidence gaps recorded by the composer. | none |") | Out-Null
+}
+
+$unknownTodoReportPath = Join-Path $kbRoot "_reports/UNKNOWN_TODO.md"
+$unknownTodoContent = @"
+# Unknown Evidence TODO Backlog
+
+## Summary
+
+- Total unknown items: $($unknownTodos.Count)
+- Generated at: $generatedAtUtc
+- Run folder: $RunFolder
+
+## TODO Items
+
+| Scope | Field | Reason | Suggested fix |
+|---|---|---|---|
+$($todoRows -join "`n")
+"@
+Write-Utf8NoBom -Path $unknownTodoReportPath -Content $unknownTodoContent
+
+$knownGapsSummary = if ($unknownTodos.Count -eq 0) {
+    "none"
+} else {
+    "$($unknownTodos.Count) unresolved Unknown items (see [_reports/UNKNOWN_TODO.md](_reports/UNKNOWN_TODO.md))"
+}
+
+if (Test-Path $routingPath -PathType Leaf) {
+    $routingText = Get-Content -Raw $routingPath
+    if ($routingText -match "- Known gaps:") {
+        $routingText = [regex]::Replace($routingText, "- Known gaps:.*", "- Known gaps: $knownGapsSummary")
+    } else {
+        $routingText = $routingText.TrimEnd() + "`n`n- Known gaps: $knownGapsSummary`n"
+    }
+    Write-Utf8NoBom -Path $routingPath -Content $routingText
+}
+
 Write-Host ""
 Write-Host "KB composition complete." -ForegroundColor Green
 Write-Host "App: $AppName"
 Write-Host "Run folder: $RunFolder"
 Write-Host "Output: $kbRoot"
+Write-Host "Unknown TODO report: $unknownTodoReportPath"

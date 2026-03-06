@@ -22,6 +22,12 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$artifactsRoot = Join-Path $scriptRoot "artifacts"
+
+$thresholdPageCoverage = 95.0
+$thresholdFlowCoverage = 90.0
+$thresholdEntityCoverage = 90.0
 
 if (-not $AppName) {
     Write-Error "AppName is required."
@@ -65,6 +71,48 @@ function Assert-Headings {
     foreach ($h in $Headings) {
         if ($text -notmatch [regex]::Escape($h)) {
             Add-Issue -Severity "error" -File $File -Message "Missing required heading: $h"
+        }
+    }
+}
+
+function Get-TemplateHeadings {
+    param([string]$TemplatePath)
+
+    if (-not (Test-Path $TemplatePath -PathType Leaf)) { return @() }
+    $lines = Get-Content $TemplatePath
+    $headings = @()
+    foreach ($line in $lines) {
+        $trimmed = $line.Trim()
+        if ($trimmed -match "^#{1,6}\s+") {
+            if ($trimmed -match "{{.+}}") { continue }
+            $headings += $trimmed
+        }
+    }
+    return @($headings | Sort-Object -Unique)
+}
+
+function Assert-TemplateHeadings {
+    param(
+        [string]$FilePath,
+        [string]$TemplatePath
+    )
+
+    if (-not (Test-Path $FilePath -PathType Leaf)) {
+        Add-Issue -Severity "error" -File $FilePath -Message "Missing file."
+        return
+    }
+    if (-not (Test-Path $TemplatePath -PathType Leaf)) {
+        Add-Issue -Severity "error" -File $TemplatePath -Message "Missing template file used for heading contract."
+        return
+    }
+
+    $requiredHeadings = Get-TemplateHeadings -TemplatePath $TemplatePath
+    if ($requiredHeadings.Count -eq 0) { return }
+
+    $text = Get-Content -Raw $FilePath
+    foreach ($heading in $requiredHeadings) {
+        if ($text -notmatch [regex]::Escape($heading)) {
+            Add-Issue -Severity "error" -File $FilePath -Message "Missing template-derived heading: $heading"
         }
     }
 }
@@ -191,6 +239,13 @@ Assert-Headings -File $readerFile -Headings @(
     "## Source"
 )
 
+if (Test-Path $readerFile -PathType Leaf) {
+    $readerText = Get-Content -Raw $readerFile
+    if ($readerText -notmatch "KB Format Version:\s*\d+\.\d+") {
+        Add-Issue -Severity "error" -File $readerFile -Message "Missing KB Format Version field (for example: KB Format Version: 1.0)."
+    }
+}
+
 Assert-Headings -File $routingFile -Headings @(
     "# Knowledge Base Routing",
     "## Quick lookup",
@@ -296,6 +351,50 @@ Assert-Headings -File (Join-Path $routesDir "by-page.md") -Headings @("# Page In
 Assert-Headings -File (Join-Path $routesDir "by-flow.md") -Headings @("# Flow Index")
 Assert-Headings -File (Join-Path $routesDir "cross-module.md") -Headings @("# Cross-Module Dependencies")
 
+# Template-derived heading contract (single source of truth in artifacts/)
+Assert-TemplateHeadings -FilePath $readerFile -TemplatePath (Join-Path $artifactsRoot "KNOWLEDGEBASE_READER.md")
+Assert-TemplateHeadings -FilePath $routingFile -TemplatePath (Join-Path $artifactsRoot "ROUTING_TEMPLATE.md")
+Assert-TemplateHeadings -FilePath (Join-Path $appFolder "APP_OVERVIEW.md") -TemplatePath (Join-Path $artifactsRoot "APP_OVERVIEW_TEMPLATE.md")
+Assert-TemplateHeadings -FilePath (Join-Path $appFolder "MODULE_LANDSCAPE.md") -TemplatePath (Join-Path $artifactsRoot "MODULE_LANDSCAPE_TEMPLATE.md")
+Assert-TemplateHeadings -FilePath (Join-Path $appFolder "SECURITY.md") -TemplatePath (Join-Path $artifactsRoot "SECURITY_TEMPLATE.md")
+Assert-TemplateHeadings -FilePath (Join-Path $appFolder "CALL_GRAPH.md") -TemplatePath (Join-Path $artifactsRoot "CALL_GRAPH_TEMPLATE.md")
+Assert-TemplateHeadings -FilePath (Join-Path $routesDir "by-entity.md") -TemplatePath (Join-Path $artifactsRoot "ROUTE_BY_ENTITY_TEMPLATE.md")
+Assert-TemplateHeadings -FilePath (Join-Path $routesDir "by-page.md") -TemplatePath (Join-Path $artifactsRoot "ROUTE_BY_PAGE_TEMPLATE.md")
+Assert-TemplateHeadings -FilePath (Join-Path $routesDir "by-flow.md") -TemplatePath (Join-Path $artifactsRoot "ROUTE_BY_FLOW_TEMPLATE.md")
+Assert-TemplateHeadings -FilePath (Join-Path $routesDir "cross-module.md") -TemplatePath (Join-Path $artifactsRoot "ROUTE_CROSS_MODULE_TEMPLATE.md")
+
+if (Test-Path $modulesDir -PathType Container) {
+    foreach ($mod in @(Get-ChildItem $modulesDir -Directory | Sort-Object Name)) {
+        Assert-TemplateHeadings -FilePath (Join-Path $mod.FullName "README.md") -TemplatePath (Join-Path $artifactsRoot "MODULE_README_TEMPLATE.md")
+        Assert-TemplateHeadings -FilePath (Join-Path $mod.FullName "DOMAIN.md") -TemplatePath (Join-Path $artifactsRoot "MODULE_DOMAIN_TEMPLATE.md")
+        Assert-TemplateHeadings -FilePath (Join-Path $mod.FullName "FLOWS.md") -TemplatePath (Join-Path $artifactsRoot "MODULE_FLOWS_TEMPLATE.md")
+        Assert-TemplateHeadings -FilePath (Join-Path $mod.FullName "PAGES.md") -TemplatePath (Join-Path $artifactsRoot "MODULE_PAGES_TEMPLATE.md")
+        Assert-TemplateHeadings -FilePath (Join-Path $mod.FullName "RESOURCES.md") -TemplatePath (Join-Path $artifactsRoot "MODULE_RESOURCES_TEMPLATE.md")
+    }
+}
+
+# ROUTING known-gaps honesty check
+if (Test-Path $routingFile -PathType Leaf) {
+    $routingText = Get-Content -Raw $routingFile
+    $knownGapsMatch = [regex]::Match($routingText, "- Known gaps:\s*(.+)")
+    if (-not $knownGapsMatch.Success) {
+        Add-Issue -Severity "error" -File $routingFile -Message "Missing 'Known gaps' line in ROUTING completeness section."
+    } else {
+        $knownGapsValue = $knownGapsMatch.Groups[1].Value.Trim()
+        $unknownTodoPath = Join-Path $kbRoot "_reports/UNKNOWN_TODO.md"
+        if (Test-Path $unknownTodoPath -PathType Leaf) {
+            $unknownTodoText = Get-Content -Raw $unknownTodoPath
+            $countMatch = [regex]::Match($unknownTodoText, "Total unknown items:\s*(\d+)")
+            if ($countMatch.Success) {
+                $unknownCount = [int]$countMatch.Groups[1].Value
+                if ($unknownCount -gt 0 -and $knownGapsValue -match "^(none|None)\b") {
+                    Add-Issue -Severity "error" -File $routingFile -Message "Known gaps says 'none' while UNKNOWN_TODO reports $unknownCount unresolved items."
+                }
+            }
+        }
+    }
+}
+
 # Semantic completeness checks for custom modules
 $semanticMetrics = [ordered]@{
     PageCoveragePercent = 100.0
@@ -304,6 +403,12 @@ $semanticMetrics = [ordered]@{
     ExpectedCustomPages = 0
     ExpectedCustomFlows = 0
     ExpectedCustomEntities = 0
+    PageThreshold = $thresholdPageCoverage
+    FlowThreshold = $thresholdFlowCoverage
+    EntityThreshold = $thresholdEntityCoverage
+    PagePass = $true
+    FlowPass = $true
+    EntityPass = $true
 }
 
 $runFolder = Resolve-RunFolderFromSources -KbRootPath $kbRoot
@@ -444,14 +549,17 @@ else {
         $semanticMetrics["ExpectedCustomFlows"] = $expectedFlowCount
         $semanticMetrics["ExpectedCustomEntities"] = $expectedEntityCount
 
-        if ($pageCoverage -lt 95.0) {
-            Add-Issue -Severity "error" -File (Join-Path $routesDir "by-page.md") -Message "Semantic completeness below threshold: custom page shown-by coverage $pageCoverage% (expected >=95%, evidence pages=$expectedPageCount)."
+        if ($pageCoverage -lt $thresholdPageCoverage) {
+            $semanticMetrics["PagePass"] = $false
+            Add-Issue -Severity "error" -File (Join-Path $routesDir "by-page.md") -Message "Semantic completeness below threshold: custom page shown-by coverage $pageCoverage% (expected >=$thresholdPageCoverage%, evidence pages=$expectedPageCount)."
         }
-        if ($flowCoverage -lt 90.0) {
-            Add-Issue -Severity "error" -File (Join-Path $routesDir "by-flow.md") -Message "Semantic completeness below threshold: custom flow touches-entities coverage $flowCoverage% (expected >=90%, evidence flows=$expectedFlowCount)."
+        if ($flowCoverage -lt $thresholdFlowCoverage) {
+            $semanticMetrics["FlowPass"] = $false
+            Add-Issue -Severity "error" -File (Join-Path $routesDir "by-flow.md") -Message "Semantic completeness below threshold: custom flow touches-entities coverage $flowCoverage% (expected >=$thresholdFlowCoverage%, evidence flows=$expectedFlowCount)."
         }
-        if ($entityCoverage -lt 90.0) {
-            Add-Issue -Severity "error" -File (Join-Path $routesDir "by-entity.md") -Message "Semantic completeness below threshold: custom entity lifecycle coverage $entityCoverage% (expected >=90%, evidence entities=$expectedEntityCount)."
+        if ($entityCoverage -lt $thresholdEntityCoverage) {
+            $semanticMetrics["EntityPass"] = $false
+            Add-Issue -Severity "error" -File (Join-Path $routesDir "by-entity.md") -Message "Semantic completeness below threshold: custom entity lifecycle coverage $entityCoverage% (expected >=$thresholdEntityCoverage%, evidence entities=$expectedEntityCount)."
         }
     }
 }
@@ -467,10 +575,19 @@ Write-Host "=== KB Quality Gate: $AppName ==="
 Write-Host "Root: $kbRoot"
 Write-Host "Files checked: $($allMd.Count)"
 Write-Host "Issues: $($issues.Count)"
-Write-Host ("Semantic coverage (custom evidence): by-page={0}% (n={1}), by-flow={2}% (n={3}), by-entity={4}% (n={5})" -f `
-    $semanticMetrics["PageCoveragePercent"], $semanticMetrics["ExpectedCustomPages"], `
-    $semanticMetrics["FlowCoveragePercent"], $semanticMetrics["ExpectedCustomFlows"], `
-    $semanticMetrics["EntityCoveragePercent"], $semanticMetrics["ExpectedCustomEntities"])
+$structuralIssueCount = @($issues | Where-Object { $_.Severity -eq "error" }).Count
+$overallPass = ($issues.Count -eq 0)
+Write-Host "Structural issue count: $structuralIssueCount"
+Write-Host ("Metric A (Page-flow linkage): {0}% (threshold >= {1}%, n={2}) -> {3}" -f `
+    $semanticMetrics["PageCoveragePercent"], $semanticMetrics["PageThreshold"], $semanticMetrics["ExpectedCustomPages"], `
+    $(if ($semanticMetrics["PagePass"]) { "PASS" } else { "FAIL" }))
+Write-Host ("Metric B (Flow entity coverage): {0}% (threshold >= {1}%, n={2}) -> {3}" -f `
+    $semanticMetrics["FlowCoveragePercent"], $semanticMetrics["FlowThreshold"], $semanticMetrics["ExpectedCustomFlows"], `
+    $(if ($semanticMetrics["FlowPass"]) { "PASS" } else { "FAIL" }))
+Write-Host ("Metric C (Entity lifecycle mapping): {0}% (threshold >= {1}%, n={2}) -> {3}" -f `
+    $semanticMetrics["EntityCoveragePercent"], $semanticMetrics["EntityThreshold"], $semanticMetrics["ExpectedCustomEntities"], `
+    $(if ($semanticMetrics["EntityPass"]) { "PASS" } else { "FAIL" }))
+Write-Host "Final verdict: $(if ($overallPass) { "PASS" } else { "FAIL" })"
 
 if ($issues.Count -gt 0) {
     Write-Host ""

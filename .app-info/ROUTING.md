@@ -9,9 +9,11 @@ Read this file after `.agents/AGENTS.md` and `.agents/FRAMEWORK.md` to understan
 
 | Folder | Purpose | Key files |
 |---|---|---|
-| `agents/` | KB pipeline agents | `KNOWLEDGEBASE_CREATOR.md`, `OVERVIEW_KB_BUILDER.md`, `OVERVIEW_KB_READER.md` |
+| `agents/` | KB pipeline agents | `KNOWLEDGEBASE_CREATOR.md`, `OVERVIEW_KB_BUILDER.md`, `OVERVIEW_KB_READER.md`, `GAPSMITH.md` |
 | `skills/` | Mendix-specific interpretation skills | `OVERVIEW.md`, per-skill `SKILL.md` |
 | `features/` | Product direction and feature registry | `FEATURES.md`, `knowledgebase-creator-artifact.md` |
+| `product-plan/` | Product plan and spec documents | `00-INDEX.md` (start here) |
+| `development/prompts/` | Implementation prompts for gap fixes | `INDEX.md` (start here) |
 
 ## Navigation Rules
 
@@ -23,6 +25,8 @@ Read this file after `.agents/AGENTS.md` and `.agents/FRAMEWORK.md` to understan
 - Generate a KB: `agents/KNOWLEDGEBASE_CREATOR.md`
 - Build KB content: `agents/OVERVIEW_KB_BUILDER.md`
 - Query a KB: `agents/OVERVIEW_KB_READER.md`
+- Plan context interview agent: `product-plan/11-CONTEXT_CONVERSATION_AGENT_SPEC.md` and `development/prompts/11-CONTEXT_AGENT_ROLE_AND_BOUNDARY.md`
+- Investigate structural gaps: `agents/GAPSMITH.md`
 - Find a skill: `skills/OVERVIEW.md`
 - Run portable drop-in package: `../KnowledgeBase-Creator/run-dump-parser.ps1`
 - Build downloadable artifact package: `../.github/workflows/build-knowledgebase-creator-artifact.yml` (`workflow_dispatch`)
@@ -35,6 +39,7 @@ Mendix .mpr file
 Model Overview Export (v2.0) -> mendix-data/app-overview/<run>/
   -> (KNOWLEDGEBASE_CREATOR)
 AI-Navigable Knowledge Base -> mendix-data/knowledge-base/<app-name>/
+  -> (GAPSMITH structural gap audit)
 
 Portable package output -> KnowledgeBase-Creator/
 ```

@@ -88,6 +88,62 @@ Responsibilities:
 2. Existing consumers can continue using current pointer structure.
 3. New scripts are additive and integrated through `run-dump-parser.ps1`.
 
+## Configuration Contract (`.env`)
+
+`run-dump-parser.ps1` reads a `.env` file in the `KnowledgeBase-Creator/` root. Required variables:
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `STUDIO_PRO_PATH` | Yes (for dump step) | none | Path to Mendix Studio Pro installation containing `mx.exe` |
+| `MPR_FILE_PATH` | Yes | none | Absolute path to the `.mpr` file to dump |
+| `APP_NAME` | Yes | none | Logical app name used as KB output folder name |
+| `MENDIX_DATA_ROOT` | No | `../mendix-data` | Root for `app-overview/` and `knowledge-base/` output |
+| `STRICT_MODE` | No | `false` | When `true`, quality gate warnings become errors |
+
+Validation:
+
+1. `run-dump-parser.ps1` must fail early with a clear message if required variables are missing.
+2. Path variables must be validated for existence before proceeding.
+
+## Partial Re-Run Strategy
+
+The pipeline supports skip flags to allow resuming from a specific step:
+
+1. `-SkipDump` — skip `mx dump-mpr` (step 1). Requires an existing run folder.
+2. `-SkipParser` — skip `ModelOverviewCli` (step 2). Requires parsed JSON already present.
+3. `-SkipScaffold` — skip scaffold creation (step 3). Requires KB folder structure to exist.
+4. `-RunFolder` — explicit run folder path, bypassing auto-detection of latest run.
+
+Usage pattern for re-running only composition and validation:
+
+```powershell
+.\run-dump-parser.ps1 -SkipDump -SkipParser -SkipScaffold -RunFolder "path/to/run"
+```
+
+## Template and Composer Relationship
+
+Templates in `artifacts/` serve two purposes:
+
+1. **Scaffold seeding** (step 4): templates are copied with token substitution to create initial file structure. This ensures the KB folder is immediately navigable even before composition runs.
+2. **Contract reference**: template headings define the structural contract that the quality gate enforces.
+
+The composer (step 5) **overwrites** template-seeded files with fully derived content. Templates are therefore not redundant — they provide the fallback structure when composition is skipped or partially fails, and they are the source of truth for required heading contracts.
+
+Rule: when adding new required headings, update both the relevant template in `artifacts/` and the composer's rendering logic.
+
+## Parser Build and Distribution
+
+The C# parser (`Mendix-model-overview-parser/`) is distributed as:
+
+1. **Pre-built binary**: `ModelOverviewCli.exe` included in the portable package for Windows.
+2. **Source fallback**: `dotnet run` against the project file when the binary is absent or on non-Windows platforms.
+
+Build and versioning rules:
+
+1. Parser version is tracked in the project's `.csproj` file.
+2. The GitHub Actions artifact workflow (`build-knowledgebase-creator-artifact.yml`) must include a `dotnet publish` step.
+3. Schema version (`2.0`) is embedded in parser output and validated by both scaffold and composer.
+
 ## Operational Logging
 
 Each run should print:
