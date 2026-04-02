@@ -29,7 +29,6 @@ Single source of truth for prompt-refinement linting, ambiguity handling, confli
 | Studio Pro integration, dockable UI, routes, mx tooling, `.mpr` runtime behaviour | `.app-info/skills/mendix-studio-pro-10/SKILL.md` |
 | Mendix SDK model operations and repository integration | `.app-info/skills/mendix-sdk/SKILL.md` |
 | Dump diff semantics, parser extraction, rule alignment | `.app-info/skills/mendix-model-dump-inspection/SKILL.md` |
-| Full model overview export architecture and pseudocode outputs | `.app-info/skills/mendix-model-overview-export/SKILL.md` |
 | Parser structuring and schema pipeline (`schemaVersion: 2.0`) | `.app-info/skills/mendix-commit-structuring/SKILL.md` |
 | Technical commit message generation from export payloads | `.app-info/skills/mendix-technical-commit-message/SKILL.md` |
 | Cross-cutting validation and documentation quality | `.agents/skills/testing/SKILL.md`, `.agents/skills/documentation/SKILL.md` |

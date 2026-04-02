@@ -8,7 +8,6 @@ internal static class ExtensionDataPaths
     private const string DataRootMetadataKey = "MendixDataRoot";
     private const string DataRootFolderName = "mendix-data";
     private const string RawChangesFolderName = "raw-changes";
-    private const string AppOverviewFolderName = "app-overview";
     private const string CommitMessagesFolderName = "Commit messages";
 
     private static readonly string? BuildConfiguredDataRoot = ResolveBuildConfiguredDataRoot();
@@ -17,7 +16,6 @@ internal static class ExtensionDataPaths
     public static string ExportFolder => Path.Combine(DataRoot, RawChangesFolderName);
     public static string ProcessedFolder => Path.Combine(DataRoot, "processed");
     public static string ErrorsFolder => Path.Combine(DataRoot, "errors");
-    public static string StructuredFolder => Path.Combine(DataRoot, AppOverviewFolderName);
     public static string DumpsFolder => Path.Combine(DataRoot, "dumps");
 
     public static string ResolveDataRoot(string projectPath, string? dataRootBasePath = null)
@@ -59,9 +57,6 @@ internal static class ExtensionDataPaths
 
     public static string GetErrorsFolder(string projectPath, string? dataRootBasePath = null) =>
         Path.Combine(ResolveDataRoot(projectPath, dataRootBasePath), "errors");
-
-    public static string GetStructuredFolder(string projectPath, string? dataRootBasePath = null) =>
-        Path.Combine(ResolveDataRoot(projectPath, dataRootBasePath), AppOverviewFolderName);
 
     public static string GetDumpsFolder(string projectPath, string? dataRootBasePath = null) =>
         Path.Combine(ResolveDataRoot(projectPath, dataRootBasePath), "dumps");

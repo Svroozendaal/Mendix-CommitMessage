@@ -11,14 +11,11 @@ Deep runtime implementation docs for the Studio Pro extension are maintained in:
 - `studio-pro-extension-csharp/Docs/ARCHITECTURE.md`
 - `studio-pro-extension-csharp/Docs/PROCESSING_PIPELINE.md`
 - `studio-pro-extension-csharp/Docs/EXPORT_CONTRACT.md`
-- `studio-pro-extension-csharp/Docs/MODEL_OVERVIEW_EXPORT_CONTRACT.md`
 - `studio-pro-extension-csharp/Docs/REPOSITORY_WORKFLOWS.md`
 - `studio-pro-extension-csharp/Docs/OPEN_QUESTIONS.md`
 
 ## App-level documents in this folder
 
-- `APPLICATION_WORKINGS_2026-02-28.md`: complete technical walkthrough of current runtime behaviour.
-- `CHATGPT_FEATURE_BRAINSTORM_CONTEXT.md`: paste-ready context pack and prompt for feature brainstorming.
 - `MODEL_DUMP_PARSER_GAPS_2026-02-27.md`: parser coverage gap analysis from sampled dump set.
 
 ## What belongs here

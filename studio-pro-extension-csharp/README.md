@@ -73,10 +73,9 @@ Deployment target:
 
 The extension writes data to `<DataRootPath>` folders:
 
-- `exports`
+- `raw-changes`
 - `processed`
 - `errors`
-- `structured`
 - `dumps`
 
 ## Start the Mendix app quickly

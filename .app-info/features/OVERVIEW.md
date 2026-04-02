@@ -15,7 +15,6 @@ Current per-feature files:
 - `git-changes-panel.md`
 - `model-diff-analysis.md`
 - `data-export-pipeline.md`
-- `model-overview-export-pipeline.md`
 - `commit-parser-agent.md`
 - `developer-workflow-env.md`
 

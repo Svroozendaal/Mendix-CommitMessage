@@ -29,16 +29,6 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
             request.Url,
             ExtensionConstants.PersistRawChangesQueryKey,
             defaultValue: true);
-        var persistOverviewStructured = ReadBooleanQueryParameter(
-            request.Url,
-            ExtensionConstants.PersistOverviewStructuredQueryKey,
-            defaultValue: true);
-        var persistOverviewPseudocode = ReadBooleanQueryParameter(
-            request.Url,
-            ExtensionConstants.PersistOverviewPseudocodeQueryKey,
-            defaultValue: true);
-        var selectedModule = ReadQueryParameter(request.Url, ExtensionConstants.ModuleQueryKey);
-        var selectedModules = ParseModuleList(ReadQueryParameter(request.Url, ExtensionConstants.ModulesQueryKey));
         var headDumpCacheEnabled = ReadBooleanQueryParameter(
             request.Url,
             ExtensionConstants.HeadDumpCacheEnabledQueryKey,
@@ -52,8 +42,6 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
                 dataRootBasePath,
                 persistDumps,
                 persistRawChanges,
-                persistOverviewStructured,
-                persistOverviewPseudocode,
                 response,
                 cancellationToken,
                 headDumpCacheEnabled,
@@ -75,73 +63,6 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
         if (string.Equals(action, ExtensionConstants.RefreshActionValue, StringComparison.OrdinalIgnoreCase))
         {
             await HandleRefreshRequestAsync(projectPath, response, cancellationToken, headDumpCacheEnabled, moduleFilter);
-            return;
-        }
-
-        if (string.Equals(action, ExtensionConstants.GenerateOverviewAppActionValue, StringComparison.OrdinalIgnoreCase))
-        {
-            await HandleGenerateOverviewRequestAsync(
-                projectPath,
-                ModelOverviewGenerationMode.App,
-                response,
-                cancellationToken,
-                null,
-                null,
-                persistOverviewStructured,
-                persistOverviewPseudocode,
-                dataRootBasePath);
-            return;
-        }
-
-        if (string.Equals(action, ExtensionConstants.GenerateOverviewModulesActionValue, StringComparison.OrdinalIgnoreCase))
-        {
-            await HandleGenerateOverviewRequestAsync(
-                projectPath,
-                ModelOverviewGenerationMode.Modules,
-                response,
-                cancellationToken,
-                null,
-                selectedModules,
-                persistOverviewStructured,
-                persistOverviewPseudocode,
-                dataRootBasePath);
-            return;
-        }
-
-        if (string.Equals(action, ExtensionConstants.GenerateOverviewModuleActionValue, StringComparison.OrdinalIgnoreCase))
-        {
-            await HandleGenerateOverviewRequestAsync(
-                projectPath,
-                ModelOverviewGenerationMode.Modules,
-                response,
-                cancellationToken,
-                selectedModule,
-                selectedModules,
-                persistOverviewStructured,
-                persistOverviewPseudocode,
-                dataRootBasePath);
-            return;
-        }
-
-        if (string.Equals(action, ExtensionConstants.GenerateOverviewBothActionValue, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(action, ExtensionConstants.GenerateOverviewActionValue, StringComparison.OrdinalIgnoreCase))
-        {
-            await HandleGenerateOverviewRequestAsync(
-                projectPath,
-                ModelOverviewGenerationMode.Both,
-                response,
-                cancellationToken,
-                null,
-                null,
-                persistOverviewStructured,
-                persistOverviewPseudocode,
-                dataRootBasePath);
-            return;
-        }
-
-        if (string.Equals(action, ExtensionConstants.ListOverviewModulesActionValue, StringComparison.OrdinalIgnoreCase))
-        {
-            await HandleListOverviewModulesRequestAsync(projectPath, response, cancellationToken);
             return;
         }
 
@@ -204,14 +125,12 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
         string? dataRootBasePath,
         bool persistDumps,
         bool persistRawChanges,
-        bool persistOverviewStructured,
-        bool persistOverviewPseudocode,
         HttpListenerResponse response,
         CancellationToken cancellationToken,
         bool headDumpCacheEnabled = true,
         IReadOnlyList<string>? moduleFilter = null)
     {
-        if (!persistDumps && !persistRawChanges && !persistOverviewStructured && !persistOverviewPseudocode)
+        if (!persistDumps && !persistRawChanges)
         {
             await WriteJsonResponseAsync(
                 response,
@@ -262,36 +181,11 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
         try
         {
             string? rawChangesOutputPath = null;
-            ModelOverviewGenerationResult? overviewResult = null;
             if (persistRawChanges)
             {
                 rawChangesOutputPath = await Task.Run(
                     () => AutoCommitMessageExportService.ExportChanges(payload, projectPath, dataRootBasePath),
                     cancellationToken);
-            }
-
-            if (persistOverviewStructured || persistOverviewPseudocode)
-            {
-                overviewResult = await Task.Run(
-                    () => AutoCommitMessageModelOverviewService.GenerateOverview(
-                        projectPath,
-                        ModelOverviewGenerationMode.App,
-                        selectedModule: null,
-                        selectedModules: null,
-                        includeStructuredOutput: persistOverviewStructured,
-                        includePseudocodeOutput: persistOverviewPseudocode,
-                        dataRootBasePath),
-                    cancellationToken);
-
-                if (!overviewResult.Success)
-                {
-                    await WriteJsonResponseAsync(
-                        response,
-                        500,
-                        new { success = false, message = overviewResult.Message },
-                        cancellationToken);
-                    return;
-                }
             }
 
             var outputLabels = new List<string>();
@@ -305,11 +199,6 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
                 outputLabels.Add("Dumps");
             }
 
-            if (persistOverviewStructured || persistOverviewPseudocode)
-            {
-                outputLabels.Add("App overview");
-            }
-
             await WriteJsonResponseAsync(
                 response,
                 200,
@@ -321,8 +210,6 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
                     changeCount = payload.Changes.Count,
                     exportFolder = ExtensionDataPaths.GetExportFolder(projectPath, dataRootBasePath),
                     dumpsFolder = ExtensionDataPaths.GetDumpsFolder(projectPath, dataRootBasePath),
-                    overviewOutputFolder = overviewResult?.OutputFolderPath ?? string.Empty,
-                    overviewOutputPaths = overviewResult?.OutputPaths ?? Array.Empty<string>(),
                 },
                 cancellationToken);
         }
@@ -332,65 +219,6 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
                 response,
                 500,
                 new { success = false, message = exception.Message },
-                cancellationToken);
-        }
-    }
-
-    private static async Task HandleGenerateOverviewRequestAsync(
-        string projectPath,
-        ModelOverviewGenerationMode mode,
-        HttpListenerResponse response,
-        CancellationToken cancellationToken,
-        string? selectedModule = null,
-        IReadOnlyList<string>? selectedModules = null,
-        bool includeStructuredOutput = true,
-        bool includePseudocodeOutput = true,
-        string? dataRootBasePath = null)
-    {
-        try
-        {
-            var result = await Task.Run(
-                () => AutoCommitMessageModelOverviewService.GenerateOverview(
-                    projectPath,
-                    mode,
-                    selectedModule,
-                    selectedModules,
-                    includeStructuredOutput,
-                    includePseudocodeOutput,
-                    dataRootBasePath),
-                cancellationToken);
-
-            var statusCode = result.Success ? 200 : 400;
-            await WriteJsonResponseAsync(
-                response,
-                statusCode,
-                new
-                {
-                    success = result.Success,
-                    message = result.Message,
-                    overviewText = result.OverviewText,
-                    changedFileCount = result.ChangedFileCount,
-                    changedModelFileCount = result.ChangedModelFileCount,
-                    mprFileCount = result.MprFileCount,
-                    outputFolderPath = result.OutputFolderPath,
-                    outputPaths = result.OutputPaths,
-                    mode = result.Mode,
-                    generatedAtUtc = result.GeneratedAtUtc,
-                    selectedModule = result.SelectedModule,
-                    selectedModules = result.SelectedModules,
-                },
-                cancellationToken);
-        }
-        catch (Exception exception)
-        {
-            await WriteJsonResponseAsync(
-                response,
-                500,
-                new
-                {
-                    success = false,
-                    message = exception.Message,
-                },
                 cancellationToken);
         }
     }
@@ -475,53 +303,6 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
                 response,
                 500,
                 new { success = false, message = exception.Message },
-                cancellationToken);
-        }
-    }
-
-    private static async Task HandleListOverviewModulesRequestAsync(
-        string projectPath,
-        HttpListenerResponse response,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var result = await Task.Run(
-                () => AutoCommitMessageModelOverviewService.ListOverviewModules(projectPath),
-                cancellationToken);
-
-            var statusCode = result.Success ? 200 : 400;
-            await WriteJsonResponseAsync(
-                response,
-                statusCode,
-                new
-                {
-                    success = result.Success,
-                    message = result.Message,
-                    mprFileCount = result.MprFileCount,
-                    appName = result.AppName,
-                    moduleCount = result.Modules.Count,
-                    modules = result.Modules.Select(module => new
-                    {
-                        name = module.Name,
-                        sourceMprPath = module.SourceMprPath,
-                        category = module.Category,
-                        appName = module.AppName,
-                    }),
-                    generatedAtUtc = result.GeneratedAtUtc,
-                },
-                cancellationToken);
-        }
-        catch (Exception exception)
-        {
-            await WriteJsonResponseAsync(
-                response,
-                500,
-                new
-                {
-                    success = false,
-                    message = exception.Message,
-                },
                 cancellationToken);
         }
     }

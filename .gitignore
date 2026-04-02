@@ -17,14 +17,12 @@ temp-write-test.txt
 tmp*/
 
 # Mendix runtime data (keep folder structure, ignore generated content)
-mendix-data/exports/*
-!mendix-data/exports/.gitkeep
+mendix-data/raw-changes/*
+!mendix-data/raw-changes/.gitkeep
 mendix-data/processed/*
 !mendix-data/processed/.gitkeep
 mendix-data/errors/*
 !mendix-data/errors/.gitkeep
-mendix-data/structured/*
-!mendix-data/structured/.gitkeep
 mendix-data/dumps/*
 !mendix-data/dumps/.gitkeep
 mendix-data/tmp*/

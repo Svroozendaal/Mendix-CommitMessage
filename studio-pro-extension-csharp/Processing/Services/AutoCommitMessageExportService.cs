@@ -92,7 +92,6 @@ internal static class AutoCommitMessageExportService
         Directory.CreateDirectory(ExtensionDataPaths.GetExportFolder(projectPath, dataRootBasePath));
         Directory.CreateDirectory(ExtensionDataPaths.GetProcessedFolder(projectPath, dataRootBasePath));
         Directory.CreateDirectory(ExtensionDataPaths.GetErrorsFolder(projectPath, dataRootBasePath));
-        Directory.CreateDirectory(ExtensionDataPaths.GetStructuredFolder(projectPath, dataRootBasePath));
         Directory.CreateDirectory(ExtensionDataPaths.GetDumpsFolder(projectPath, dataRootBasePath));
     }
 

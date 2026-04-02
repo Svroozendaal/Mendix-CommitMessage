@@ -83,7 +83,6 @@ $DataRootPath = [System.IO.Path]::GetFullPath($DataRootPath)
 $rawChangesPath = Join-Path $DataRootPath 'raw-changes'
 $processedPath = Join-Path $DataRootPath 'processed'
 $errorsPath = Join-Path $DataRootPath 'errors'
-$appOverviewPath = Join-Path $DataRootPath 'app-overview'
 $dumpsPath = Join-Path $DataRootPath 'dumps'
 $commitMessagesPath = Join-Path $DataRootPath 'Commit messages'
 
@@ -108,7 +107,6 @@ if (-not (Test-Path $projectPath -PathType Leaf)) {
 New-Item -ItemType Directory -Force -Path $rawChangesPath | Out-Null
 New-Item -ItemType Directory -Force -Path $processedPath | Out-Null
 New-Item -ItemType Directory -Force -Path $errorsPath | Out-Null
-New-Item -ItemType Directory -Force -Path $appOverviewPath | Out-Null
 New-Item -ItemType Directory -Force -Path $dumpsPath | Out-Null
 New-Item -ItemType Directory -Force -Path $commitMessagesPath | Out-Null
 New-Item -ItemType Directory -Force -Path $buildBaseOutputPath | Out-Null
@@ -171,7 +169,6 @@ Write-Host "Data root:          $DataRootPath"
 Write-Host "Raw changes:        $rawChangesPath"
 Write-Host "Processed:          $processedPath"
 Write-Host "Errors:             $errorsPath"
-Write-Host "App overview:       $appOverviewPath"
 Write-Host "Dumps:              $dumpsPath"
 Write-Host "Commit messages:    $commitMessagesPath"
 Write-Host "DLL:                $targetDll"

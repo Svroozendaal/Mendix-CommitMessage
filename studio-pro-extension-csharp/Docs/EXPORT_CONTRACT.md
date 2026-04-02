@@ -104,50 +104,6 @@ Top-level fields:
 | `workingDumpPath` | `string` | Working dump JSON path |
 | `headDumpPath` | `string` | HEAD dump JSON path |
 
-## Example payload (abridged)
-
-```json
-{
-  "schemaVersion": "1.0",
-  "timestamp": "2026-02-28T13:20:11.2040000+00:00",
-  "projectName": "Smart Expenses app-main",
-  "branchName": "feature/model-overview",
-  "userName": "Dev User",
-  "userEmail": "dev@example.com",
-  "changes": [
-    {
-      "filePath": "App.mpr",
-      "status": "Modified",
-      "isStaged": false,
-      "diffText": "Binary file changed - diff not available",
-      "modelChangesByModule": [
-        {
-          "module": "MyFirstModule",
-          "domainModel": [
-            {
-              "changeType": "Modified",
-              "elementType": "Entity",
-              "elementName": "MyFirstModule.Order",
-              "details": "attributes added (1): totalAmount",
-              "displayText": "Order : attributes added (1): totalAmount"
-            }
-          ],
-          "microflows": [],
-          "pages": [],
-          "nanoflows": [],
-          "resources": []
-        }
-      ],
-      "modelDumpArtifact": {
-        "folderPath": "C:\\Repo\\mendix-data\\dumps\\...",
-        "workingDumpPath": "C:\\Repo\\mendix-data\\dumps\\...\\working-dump.json",
-        "headDumpPath": "C:\\Repo\\mendix-data\\dumps\\...\\head-dump.json"
-      }
-    }
-  ]
-}
-```
-
 ## Folder contract around export
 
 When export runs, these folders are ensured:
@@ -155,13 +111,11 @@ When export runs, these folders are ensured:
 - `raw-changes`
 - `processed`
 - `errors`
-- `app-overview`
 - `dumps`
 
 Current writer responsibilities:
 
 - Raw-change export writer: `raw-changes`
-- Overview writer: `app-overview`
 - Dump artefact writer: `dumps`
 
 ## Consumer guidance
@@ -170,10 +124,3 @@ Current writer responsibilities:
 - Use structured fields as canonical semantics.
 - Treat `displayText` as deterministic presentation-friendly text.
 - Gate strict parsing by `schemaVersion`.
-
-## Improvement opportunities
-
-- Publish machine-readable JSON Schema in-repo.
-- Add explicit export correlation ID for cross-stage traceability.
-- Add compatibility test fixtures shared with downstream parser.
-

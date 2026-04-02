@@ -68,15 +68,13 @@ What it does:
 1. Open pane (`Open AutoCommitMessage`).
 2. Press `Refresh` to load repository + model analysis.
 3. Inspect grouped model changes and optional diff drawer.
-4. Optional `Model overview` view:
-   - load module list from committed model state
-   - select modules
-   - generate selected overview artefacts
-5. Optional `Export` to persist selected outputs:
+4. Optional `Export` to persist selected outputs:
    - raw changes
    - dumps
-   - overview structured output
-   - overview pseudocode output
+5. Optional commit-message flows:
+   - create/copy from model changes
+   - store to disk
+   - browse history
 
 ## Data-output workflow
 
@@ -85,29 +83,11 @@ Current runtime output folders under `mendix-data`:
 - `raw-changes`
 - `processed` (reserved)
 - `errors` (reserved)
-- `app-overview`
 - `dumps`
 
 Commit-message storage folder:
 
 - `<base>/Commit messages`
-
-Note:
-
-- The current deploy script still pre-creates legacy `exports` and `structured` folders for compatibility with older workflows. Runtime services now write to `raw-changes` and `app-overview`.
-
-## Documentation workflow
-
-Intended split:
-
-- Deep runtime docs: `studio-pro-extension-csharp/Docs/`
-- App-level context and feature registry: `.app-info/`
-
-Update order:
-
-1. Update runtime docs in `studio-pro-extension-csharp/Docs`.
-2. Update `.app-info/docs` and `.app-info/features` indices.
-3. Confirm links and folder names remain accurate.
 
 ## Release hygiene
 
@@ -115,4 +95,3 @@ Update order:
 - Do not commit generated `bin/` and `obj/` artefacts.
 - Rebuild when `MendixDataRoot` or contract-affecting behaviour changes.
 - Coordinate schema changes with downstream parser owners.
-

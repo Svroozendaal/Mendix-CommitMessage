@@ -25,8 +25,6 @@ Design and implement a second-pass analyser that detects cross-module dependenci
 5. Read:
    - `studio-pro-extension-csharp/Processing/Services/AutoCommitMessageChangeService.cs`
    - `studio-pro-extension-csharp/Processing/Services/AutoCommitMessageExportService.cs`
-   - `studio-pro-extension-csharp/Processing/ModelDiff/MendixModelOverviewParser.cs`
-   - `studio-pro-extension-csharp/Processing/Services/AutoCommitMessageModelOverviewService.cs`
    - `studio-pro-extension-csharp/Processing/Contracts/MendixModelChange.cs`
    - `studio-pro-extension-csharp/UI/Web/AutoCommitMessagePanelHtml.cs`
    - `studio-pro-extension-csharp/Docs/PROCESSING_PIPELINE.md`
@@ -38,7 +36,6 @@ Ask: "Which skills should be used for this prompt?"
 
 Default suggestions:
 - `.app-info/skills/mendix-model-dump-inspection/SKILL.md`
-- `.app-info/skills/mendix-model-overview-export/SKILL.md`
 - `.app-info/skills/mendix-studio-pro-10/SKILL.md`
 - `.agents/skills/testing/SKILL.md`
 - `.agents/skills/documentation/SKILL.md`
@@ -71,13 +68,9 @@ Submit this design for review and approval before coding.
    - `studio-pro-extension-csharp/Processing/Services/AutoCommitMessageChangeService.cs`
 2. Export serialization and schema constant:
    - `studio-pro-extension-csharp/Processing/Services/AutoCommitMessageExportService.cs`
-3. Overview parsing (candidate source for reusable parsed structures):
-   - `studio-pro-extension-csharp/Processing/ModelDiff/MendixModelOverviewParser.cs`
-4. Overview generation/listing flow:
-   - `studio-pro-extension-csharp/Processing/Services/AutoCommitMessageModelOverviewService.cs`
-5. Model-change contract:
+3. Model-change contract:
    - `studio-pro-extension-csharp/Processing/Contracts/MendixModelChange.cs`
-6. UI model-change rendering:
+4. UI model-change rendering:
    - `studio-pro-extension-csharp/UI/Web/AutoCommitMessagePanelHtml.cs`
 
 ---
@@ -130,7 +123,7 @@ Responsibilities:
    - `studio-pro-extension-csharp/Processing/Services/AutoCommitMessageChangeService.cs`
    - after primary diff
    - before payload return
-2. Reuse existing overview parsing flow where feasible to avoid duplicate parsing.
+2. Reuse existing dump parsing flow where feasible to avoid duplicate parsing.
 3. Update export payload in:
    - `studio-pro-extension-csharp/Processing/Services/AutoCommitMessageExportService.cs`
 
