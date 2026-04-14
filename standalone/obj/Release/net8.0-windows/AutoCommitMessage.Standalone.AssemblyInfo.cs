@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AutoCommitMessage.Standalone")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+57ae9e596fc2b8d05641705ede66083753d13062")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e396cc602a4ef1c3ace2e6b6791dede2f4891ebd")]
 [assembly: System.Reflection.AssemblyProductAttribute("AutoCommitMessage.Standalone")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AutoCommitMessage.Standalone")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

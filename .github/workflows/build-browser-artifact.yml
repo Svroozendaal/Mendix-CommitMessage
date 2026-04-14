@@ -1,0 +1,35 @@
+name: Build Browser Artifact
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish standalone
+        run: dotnet publish standalone/ -c Release -o ./artifact/app --nologo
+
+      - name: Copy distribution files
+        shell: pwsh
+        run: |
+          Copy-Item .env.example ./artifact/.env.example
+          Copy-Item open-browser-app.ps1 ./artifact/open-browser-app.ps1
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AutoCommitMessage-browser
+          path: ./artifact/
+          retention-days: 30

@@ -19,6 +19,7 @@ internal static class AutoCommitMessagePanelHtml
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AutoCommitMessage</title>
+  <link rel="icon" type="image/png" href="faviconACM.png" />
   <style>
     :root {
       color-scheme: dark;
@@ -2980,7 +2981,15 @@ internal static class AutoCommitMessagePanelHtml
       root.replaceChildren();
 
       const topbar = element("div", "topbar");
-      topbar.appendChild(element("div", "title", "AutoCommitMessage"));
+      const titleDiv = element("div", "title");
+      const logoImg = document.createElement("img");
+      logoImg.src = "logoACM.png";
+      logoImg.alt = "AutoCommitMessage";
+      logoImg.style.height = "32px";
+      logoImg.style.width = "auto";
+      logoImg.style.display = "block";
+      titleDiv.appendChild(logoImg);
+      topbar.appendChild(titleDiv);
       const meta = element("div", "meta");
       const pathLabel = projectPath && projectPath.length > 0 ? projectPath : "Project path unavailable";
       meta.appendChild(element("span", "badge", pathLabel));

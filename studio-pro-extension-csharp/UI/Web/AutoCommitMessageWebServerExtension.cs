@@ -86,6 +86,20 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
             return;
         }
 
+        // Serve embedded image assets.
+        var absPath = request.Url?.AbsolutePath ?? string.Empty;
+        if (absPath.EndsWith("/faviconACM.png", StringComparison.OrdinalIgnoreCase))
+        {
+            await ServeEmbeddedResourceAsync("AutoCommitMessage.UI.Web.faviconACM.png", "image/png", response, cancellationToken);
+            return;
+        }
+
+        if (absPath.EndsWith("/logoACM.png", StringComparison.OrdinalIgnoreCase))
+        {
+            await ServeEmbeddedResourceAsync("AutoCommitMessage.UI.Web.logoACM.png", "image/png", response, cancellationToken);
+            return;
+        }
+
         if (string.Equals(action, ExtensionConstants.BrowseFolderActionValue, StringComparison.OrdinalIgnoreCase))
         {
             await HandleBrowseFolderRequestAsync(response, cancellationToken);
@@ -559,6 +573,29 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
                 },
                 cancellationToken);
         }
+    }
+
+    private static async Task ServeEmbeddedResourceAsync(
+        string resourceName,
+        string contentType,
+        HttpListenerResponse response,
+        CancellationToken cancellationToken)
+    {
+        var assembly = typeof(AutoCommitMessageWebServerExtension).Assembly;
+        await using var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream is null)
+        {
+            response.StatusCode = 404;
+            return;
+        }
+
+        var buffer = new byte[stream.Length];
+        _ = await stream.ReadAsync(buffer, cancellationToken);
+
+        response.ContentType = contentType;
+        response.StatusCode = 200;
+        response.ContentLength64 = buffer.Length;
+        await response.OutputStream.WriteAsync(buffer, cancellationToken);
     }
 
     private static Task HandleBrowseFolderRequestAsync(
