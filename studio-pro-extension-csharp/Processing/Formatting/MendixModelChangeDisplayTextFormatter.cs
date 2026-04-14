@@ -355,6 +355,20 @@ internal static class MendixModelChangeDisplayTextFormatter
 
         if (sections.Count == 0)
         {
+            var widgetCountSummary = BuildFunctionalPageWidgetCountSummary(details);
+            if (!string.IsNullOrWhiteSpace(widgetCountSummary))
+            {
+                const string functionalPrefix = "functional widgets: ";
+                var counts = widgetCountSummary.StartsWith(functionalPrefix, StringComparison.OrdinalIgnoreCase)
+                    ? widgetCountSummary[functionalPrefix.Length..]
+                    : widgetCountSummary;
+
+                var verb = string.Equals(changeType, "Added", StringComparison.OrdinalIgnoreCase) ? "added"
+                    : string.Equals(changeType, "Deleted", StringComparison.OrdinalIgnoreCase) ? "deleted"
+                    : "modified";
+                return $"{verb}: {counts}";
+            }
+
             return null;
         }
 

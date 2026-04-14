@@ -75,6 +75,7 @@ public static class MendixModelDiffService
     private const string ScheduledEventModelType = "System$ScheduledEvent";
     private const string ConsumedRestServiceModelType = "System$ConsumedRestService";
     private const string PublishedRestServiceModelType = "System$PublishedRestService";
+    private const string PublishedODataServiceModelType = "ODataPublish$PublishedODataService2";
     private const string JavaActionModelType = "System$JavaAction";
 
     private static readonly HashSet<string> LayoutOnlyNestedModelTypes = new(StringComparer.OrdinalIgnoreCase)
@@ -381,6 +382,8 @@ public static class MendixModelDiffService
     {
         return string.Equals(modelType, DomainEntityModelType, StringComparison.OrdinalIgnoreCase) ||
                string.Equals(modelType, DomainAssociationModelType, StringComparison.OrdinalIgnoreCase) ||
+               IsEnumerationModelType(modelType) ||
+               IsODataServiceModelType(modelType) ||
                IsPageLikeModelType(modelType);
     }
 
@@ -487,6 +490,11 @@ public static class MendixModelDiffService
             return string.IsNullOrWhiteSpace(details)
                 ? BuildGenericResourceDetails(changeType, reference.ModelType, workingDescriptor?.Object, headDescriptor?.Object)
                 : details;
+        }
+
+        if (IsODataServiceModelType(reference.ModelType))
+        {
+            return BuildODataServiceDetails(changeType, workingDescriptor?.Object, headDescriptor?.Object);
         }
 
         if (string.Equals(reference.ModelType, JavaActionModelType, StringComparison.OrdinalIgnoreCase))
@@ -2659,6 +2667,68 @@ public static class MendixModelDiffService
         return details.Count == 0 ? null : string.Join("; ", details);
     }
 
+    private static string? BuildODataServiceDetails(
+        string changeType,
+        JsonElement? workingResource,
+        JsonElement? headResource)
+    {
+        var details = new List<string>();
+
+        var workingEntityCount = workingResource is null ? 0 : TryGetArrayPropertyCount(workingResource.Value, "entityTypes") ?? 0;
+        var headEntityCount = headResource is null ? 0 : TryGetArrayPropertyCount(headResource.Value, "entityTypes") ?? 0;
+        var workingEnumCount = workingResource is null ? 0 : TryGetArrayPropertyCount(workingResource.Value, "enumerations") ?? 0;
+        var headEnumCount = headResource is null ? 0 : TryGetArrayPropertyCount(headResource.Value, "enumerations") ?? 0;
+
+        if (string.Equals(changeType, "Added", StringComparison.OrdinalIgnoreCase))
+        {
+            if (workingEntityCount > 0)
+            {
+                details.Add($"entityTypes={workingEntityCount}");
+            }
+
+            if (workingEnumCount > 0)
+            {
+                details.Add($"enumerations={workingEnumCount}");
+            }
+        }
+        else if (string.Equals(changeType, "Deleted", StringComparison.OrdinalIgnoreCase))
+        {
+            if (headEntityCount > 0)
+            {
+                details.Add($"entityTypes={headEntityCount}");
+            }
+
+            if (headEnumCount > 0)
+            {
+                details.Add($"enumerations={headEnumCount}");
+            }
+        }
+        else
+        {
+            if (workingEnumCount != headEnumCount)
+            {
+                details.Add($"enumerations {headEnumCount}\u2192{workingEnumCount}");
+            }
+
+            if (workingEntityCount != headEntityCount)
+            {
+                details.Add($"entityTypes {headEntityCount}\u2192{workingEntityCount}");
+            }
+            else if (workingEntityCount > 0)
+            {
+                var working = workingResource?.GetProperty("entityTypes");
+                var head = headResource?.GetProperty("entityTypes");
+                if (working is not null && head is not null &&
+                    !ElementsSemanticallyEqual(working.Value, head.Value))
+                {
+                    details.Add("entityTypes updated");
+                }
+            }
+        }
+
+        return details.Count == 0 ? null : string.Join("; ", details);
+    }
+
     private static string? BuildJavaActionDetails(
         string changeType,
         JsonElement? workingResource,
@@ -3116,8 +3186,8 @@ public static class MendixModelDiffService
                 return null;
             }
 
-            var details = $"values added ({workingValues.Count}): {FormatNameList(workingValues.Values.Select(value => value.Name))}";
-            return MergeDetailTexts(details, BuildEnumerationCaptionMismatchDetails(workingValues.Values));
+            var details = $"values added ({workingValues.Count}): {FormatNameList(workingValues.Values.Select(FormatEnumValueWithCaption))}";
+            return details;
         }
 
         if (string.Equals(changeType, "Deleted", StringComparison.OrdinalIgnoreCase))
@@ -3146,33 +3216,24 @@ public static class MendixModelDiffService
             return null;
         }
 
-        var parts = new List<string>
-        {
-            $"values delta: added {addedKeys.Length}, removed {removedKeys.Length}, modified {modifiedKeys.Length}",
-        };
+        var parts = new List<string>();
 
         if (addedKeys.Length > 0)
         {
-            parts.Add($"values added ({addedKeys.Length}): {FormatNameList(addedKeys.Select(key => workingValues[key].Name))}");
+            var names = FormatNameList(addedKeys.Select(key => FormatEnumValueWithCaption(workingValues[key])));
+            parts.Add($"added {addedKeys.Length}: {names}");
         }
 
         if (removedKeys.Length > 0)
         {
-            parts.Add($"values removed ({removedKeys.Length}): {FormatNameList(removedKeys.Select(key => headValues[key].Name))}");
+            var names = FormatNameList(removedKeys.Select(key => FormatEnumValueWithCaption(headValues[key])));
+            parts.Add($"removed {removedKeys.Length}: {names}");
         }
 
         if (modifiedKeys.Length > 0)
         {
-            parts.Add($"values modified ({modifiedKeys.Length}): {FormatNameList(modifiedKeys.Select(key => workingValues[key].Name))}");
-        }
-
-        var mismatchCandidates = addedKeys
-            .Concat(modifiedKeys)
-            .Select(key => workingValues[key]);
-        var captionMismatchDetails = BuildEnumerationCaptionMismatchDetails(mismatchCandidates);
-        if (!string.IsNullOrWhiteSpace(captionMismatchDetails))
-        {
-            parts.Add(captionMismatchDetails);
+            var names = FormatNameList(modifiedKeys.Select(key => FormatEnumValueWithCaption(workingValues[key])));
+            parts.Add($"modified {modifiedKeys.Length}: {names}");
         }
 
         return string.Join("; ", parts);
@@ -3216,33 +3277,15 @@ public static class MendixModelDiffService
         return valuesById;
     }
 
-    private static string? BuildEnumerationCaptionMismatchDetails(
-        IEnumerable<EnumerationValueInfo> values,
-        int maxEntries = 5)
+    private static string FormatEnumValueWithCaption(EnumerationValueInfo value)
     {
-        var mismatches = values
-            .Where(value =>
-                !string.IsNullOrWhiteSpace(value.Name) &&
-                !string.IsNullOrWhiteSpace(value.PrimaryCaption) &&
-                !string.Equals(value.Name, value.PrimaryCaption, StringComparison.OrdinalIgnoreCase))
-            .Select(value => $"{value.Name}(caption={NormalizeInlineText(value.PrimaryCaption!, 90)})")
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        if (mismatches.Length == 0)
+        if (!string.IsNullOrWhiteSpace(value.PrimaryCaption) &&
+            !string.Equals(value.Name, value.PrimaryCaption, StringComparison.OrdinalIgnoreCase))
         {
-            return null;
+            return $"{value.Name} ({NormalizeInlineText(value.PrimaryCaption, 90)})";
         }
 
-        var visible = mismatches.Take(maxEntries).ToList();
-        var remaining = mismatches.Length - visible.Count;
-        if (remaining > 0)
-        {
-            visible.Add($"+{remaining} more");
-        }
-
-        return $"caption mismatch: {string.Join(", ", visible)}";
+        return value.Name;
     }
 
     private static string? BuildPageLayoutMetadataDetails(
@@ -4608,6 +4651,9 @@ public static class MendixModelDiffService
                string.Equals(modelType, LegacyDomainEnumerationModelType, StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool IsODataServiceModelType(string? modelType) =>
+        string.Equals(modelType, PublishedODataServiceModelType, StringComparison.OrdinalIgnoreCase);
+
     private static string? ResolveOwningResourceId(DumpSnapshot snapshot, string objectId)
     {
         if (string.IsNullOrWhiteSpace(objectId))
@@ -5031,8 +5077,19 @@ public static class MendixModelDiffService
 
     private static bool ShouldIgnorePropertyForDetailSummary(string? modelType, string propertyName)
     {
-        return string.Equals(propertyName, "allowedRoles", StringComparison.OrdinalIgnoreCase) &&
-               string.Equals(modelType, PageModelType, StringComparison.OrdinalIgnoreCase);
+        if (string.Equals(propertyName, "allowedRoles", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(modelType, PageModelType, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (string.Equals(propertyName, "values", StringComparison.OrdinalIgnoreCase) &&
+            IsEnumerationModelType(modelType))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private static bool IsMicroflowRelatedModelType(string? modelType) =>

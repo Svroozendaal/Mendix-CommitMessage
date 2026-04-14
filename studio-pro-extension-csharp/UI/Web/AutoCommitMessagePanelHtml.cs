@@ -142,6 +142,27 @@ internal static class AutoCommitMessagePanelHtml
       left: 3px;
       top: -4px;
     }
+    .folder-icon {
+      position: relative;
+      width: 13px;
+      height: 10px;
+      border: 1.6px solid currentColor;
+      border-radius: 0 2px 2px 2px;
+      box-sizing: border-box;
+      display: inline-block;
+    }
+    .folder-icon::before {
+      content: "";
+      position: absolute;
+      top: -4px;
+      left: 0;
+      width: 6px;
+      height: 3px;
+      border: 1.6px solid currentColor;
+      border-bottom: none;
+      border-radius: 2px 2px 0 0;
+      box-sizing: border-box;
+    }
     .settings-icon {
       position: relative;
       width: 11px;
@@ -908,9 +929,23 @@ internal static class AutoCommitMessagePanelHtml
 </head>
 <body>
   <div id="root"></div>
+  <div id="acm-setup-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:var(--bg-surface); border:1px solid var(--border-primary); border-radius:8px; padding:24px; max-width:480px; width:90%;">
+      <div style="font-weight:700; font-size:14px; color:var(--text-strong); margin-bottom:8px;">Set Mendix Project Path</div>
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Select your Mendix project folder (the folder containing the <code>.mpr</code> file and <code>.git</code> directory).</div>
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <input id="acm-setup-path-input" type="text" placeholder="e.g. C:\Projects\MyMendixApp"
+          style="flex:1; box-sizing:border-box; padding:8px; font-size:13px; border:1px solid var(--border-primary); border-radius:6px; background:var(--bg-surface-soft); color:var(--text-primary);" />
+        <button id="acm-browse-btn" type="button" onclick="acmBrowseFolder()" class="btn btn-secondary" style="white-space:nowrap;">Browse...</button>
+      </div>
+      <button onclick="acmConfirmSetup()" class="btn" style="width:100%;">Confirm Path</button>
+    </div>
+  </div>
   <script>
     const initialPayload = {{payloadJson}};
-    const projectPath = {{projectPathJson}};
+    const _injectedProjectPath = {{projectPathJson}};
+    let projectPath = _injectedProjectPath || localStorage.getItem("autocommitmessage.projectPath") || "";
+    if (projectPath) localStorage.setItem("autocommitmessage.projectPath", projectPath);
     const actionQueryKey = "{{ExtensionConstants.ActionQueryKey}}";
     const exportActionValue = "{{ExtensionConstants.ExportActionValue}}";
     const storeCommitMessageActionValue = "{{ExtensionConstants.StoreCommitMessageActionValue}}";
@@ -940,6 +975,42 @@ internal static class AutoCommitMessagePanelHtml
     const commitMessagesBasePathStorageKey = "autocommitmessage.commitMessagesBasePath";
     const headDumpCacheEnabledStorageKey = "autocommitmessage.headDumpCacheEnabled";
     const changeModuleFilterStorageKey = "changeModuleFilter";
+    const projectPathStorageKey = "autocommitmessage.projectPath";
+    function acmShowSetupOverlay() {
+      const overlay = document.getElementById("acm-setup-overlay");
+      if (overlay) {
+        overlay.style.display = "flex";
+        const input = document.getElementById("acm-setup-path-input");
+        if (input) { input.value = projectPath || ""; }
+      }
+    }
+    async function acmBrowseFolder() {
+      try {
+        const url = new URL(location.href);
+        url.searchParams.set(actionQueryKey, "{{ExtensionConstants.BrowseFolderActionValue}}");
+        const resp = await fetch(url.toString());
+        if (!resp.ok) return;
+        const data = await resp.json();
+        if (data.success && data.path) {
+          const input = document.getElementById("acm-setup-path-input");
+          if (input) input.value = data.path;
+        }
+      } catch (err) {
+        // Server unavailable or user cancelled — do nothing
+      }
+    }
+    function acmConfirmSetup() {
+      const input = document.getElementById("acm-setup-path-input");
+      const val = (input ? input.value : "").trim();
+      if (!val) return;
+      projectPath = val;
+      localStorage.setItem(projectPathStorageKey, val);
+      const overlay = document.getElementById("acm-setup-overlay");
+      if (overlay) overlay.style.display = "none";
+    }
+    if (!projectPath) {
+      document.addEventListener("DOMContentLoaded", acmShowSetupOverlay);
+    }
     let currentPayload = initialPayload;
     let hasLoadedChanges = false;
     let refreshInProgress = false;
@@ -947,6 +1018,7 @@ internal static class AutoCommitMessagePanelHtml
     let activeView = "model-changes";
     let changeModulesLoadInProgress = false;
     let changeModulesLoadAttempted = false;
+    let commitDialogState = { storyId: "", comments: "" };
     let settingsState = {
       theme: "dark",
       dataRootBasePath: defaultDataRootBasePath,
@@ -1694,6 +1766,8 @@ internal static class AutoCommitMessagePanelHtml
       const storyInput = document.createElement("input");
       storyInput.type = "text";
       storyInput.className = "compose-input";
+      storyInput.value = commitDialogState.storyId;
+      storyInput.addEventListener("input", () => { commitDialogState.storyId = storyInput.value; });
       storyField.appendChild(storyInput);
       row1.appendChild(storyField);
 
@@ -1712,6 +1786,8 @@ internal static class AutoCommitMessagePanelHtml
       const commentsInput = document.createElement("textarea");
       commentsInput.className = "compose-textarea";
       commentsInput.rows = 3;
+      commentsInput.value = commitDialogState.comments;
+      commentsInput.addEventListener("input", () => { commitDialogState.comments = commentsInput.value; });
       row2.appendChild(commentsInput);
       modal.appendChild(row2);
 
@@ -2183,6 +2259,25 @@ internal static class AutoCommitMessagePanelHtml
       footer.appendChild(saveButton);
       footer.appendChild(resetButton);
 
+      const projectPathGroup = element("section", "settings-group");
+      projectPathGroup.appendChild(element("div", "settings-label", "Mendix project path"));
+      projectPathGroup.appendChild(element("div", "settings-help", "The folder containing the .mpr file and .git directory."));
+      const projectPathRow = element("div", "settings-inline");
+      projectPathRow.style.gap = "8px";
+      const projectPathDisplay = element("span", "settings-preview");
+      projectPathDisplay.style.flex = "1";
+      projectPathDisplay.style.overflow = "hidden";
+      projectPathDisplay.style.textOverflow = "ellipsis";
+      projectPathDisplay.style.whiteSpace = "nowrap";
+      projectPathDisplay.textContent = projectPath || "(not set)";
+      const changePathBtn = element("button", "btn btn-sm", "Change");
+      changePathBtn.type = "button";
+      changePathBtn.addEventListener("click", acmShowSetupOverlay);
+      projectPathRow.appendChild(projectPathDisplay);
+      projectPathRow.appendChild(changePathBtn);
+      projectPathGroup.appendChild(projectPathRow);
+
+      content.appendChild(projectPathGroup);
       content.appendChild(themeGroup);
       content.appendChild(signatureGroup);
       content.appendChild(mendixGroup);
@@ -2963,6 +3058,17 @@ internal static class AutoCommitMessagePanelHtml
       navRefreshIcon.setAttribute("aria-hidden", "true");
       navRefreshButton.appendChild(navRefreshIcon);
       navActions.appendChild(navRefreshButton);
+
+      const navFolderButton = element("button", "icon-btn");
+      navFolderButton.type = "button";
+      navFolderButton.title = "Change project path";
+      navFolderButton.setAttribute("aria-label", "Change project path");
+      const navFolderIcon = element("span", "folder-icon");
+      navFolderIcon.setAttribute("aria-hidden", "true");
+      navFolderButton.appendChild(navFolderIcon);
+      navFolderButton.addEventListener("click", acmShowSetupOverlay);
+      navActions.appendChild(navFolderButton);
+
       navBar.appendChild(navActions);
       root.appendChild(navBar);
 
@@ -3222,7 +3328,19 @@ internal static class AutoCommitMessagePanelHtml
       }
 
       if (!hasLoadedChanges) {
-        content.appendChild(renderCard("No change data loaded. Press Refresh to start analysis."));
+        const noDataCard = element("div", "card");
+        noDataCard.style.display = "flex";
+        noDataCard.style.alignItems = "center";
+        noDataCard.style.justifyContent = "space-between";
+        noDataCard.style.gap = "12px";
+        const noDataLabel = element("span", "", "No change data loaded. Press Refresh to start analysis.");
+        const noDataRefreshBtn = element("button", "btn btn-sm", "Refresh");
+        noDataRefreshBtn.type = "button";
+        noDataRefreshBtn.disabled = refreshInProgress || isOperationInProgress();
+        noDataRefreshBtn.addEventListener("click", async () => { await runRefresh(); });
+        noDataCard.appendChild(noDataLabel);
+        noDataCard.appendChild(noDataRefreshBtn);
+        content.appendChild(noDataCard);
         statusLine.textContent = "Press Refresh to load change analysis.";
         return;
       }

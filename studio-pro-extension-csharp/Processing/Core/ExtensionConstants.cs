@@ -22,5 +22,6 @@ internal static class ExtensionConstants
     public const string FilePathQueryKey = "filePath";
     public const string HeadDumpCacheEnabledQueryKey = "headDumpCacheEnabled";
     public const string ModuleFilterQueryKey = "moduleFilter";
+    public const string BrowseFolderActionValue = "browse-folder";
 }
 

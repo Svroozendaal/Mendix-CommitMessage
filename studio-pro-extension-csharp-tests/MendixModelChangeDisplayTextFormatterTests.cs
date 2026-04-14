@@ -216,4 +216,53 @@ public class MendixModelChangeDisplayTextFormatterTests
         Assert.Contains("DG Order", displayText);
         Assert.DoesNotContain("functional widgets", displayText, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public void DisplayText_PageModified_WidgetsUsedStyle_ProducesCompactModifiedSummary()
+    {
+        // Matches real raw-changes output: Modified page with "layoutCall updated; widgets used (N): ..." details
+        var details =
+            "layoutCall updated; layout=General.VU_PopupLayout; title=Page Title; url=<empty>; popup=0x0 resizable=true; " +
+            "actions used (6): CallNanoflowClientAction x4, CancelChangesClientAction x1, MicroflowClientAction x1; " +
+            "action targets: microflow=TWK.ACT_JournalItem_Save, nanoflow=TWK.OCh_JournalItem_AmountChange; " +
+            "widgets used (67): ConditionalVisibilitySettings x10, WidgetValidation x10, DataView x2, DataGrid x1, +13 more";
+
+        var change = new MendixModelChange(
+            ChangeType: "Modified",
+            ElementType: "Page",
+            ElementName: "TWK.JournalItem_Edit",
+            Details: details);
+
+        var displayText = change.DisplayText;
+
+        Assert.Contains("modified:", displayText);
+        Assert.Contains("dataview x2", displayText);
+        Assert.Contains("datagrid x1", displayText);
+        Assert.DoesNotContain("url=<empty>", displayText, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("layoutCall updated", displayText, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("widgets used", displayText, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("actions used", displayText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void DisplayText_PageAdded_WidgetsUsedStyle_ProducesCompactAddedSummary()
+    {
+        // Added page where details only have "widgets used" (no "functional widgets" segment)
+        var details =
+            "layout=Atlas_Core.Atlas_Default; title=Overview; url=<empty>; popup=0x0 resizable=true; " +
+            "widgets used (10): DataGrid x1, ActionButton x2, PageSettings x3, IconCollectionIcon x4";
+
+        var change = new MendixModelChange(
+            ChangeType: "Added",
+            ElementType: "Page",
+            ElementName: "Module.Overview_Page",
+            Details: details);
+
+        var displayText = change.DisplayText;
+
+        Assert.Contains("added:", displayText);
+        Assert.Contains("datagrid x1", displayText);
+        Assert.DoesNotContain("url=<empty>", displayText, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("widgets used", displayText, StringComparison.OrdinalIgnoreCase);
+    }
 }

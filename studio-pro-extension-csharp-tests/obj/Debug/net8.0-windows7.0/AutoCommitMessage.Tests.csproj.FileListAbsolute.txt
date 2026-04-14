@@ -132,3 +132,12 @@ C:\Workspaces\Mendix-CommitMessage\studio-pro-extension-csharp-tests\obj\Debug\n
 C:\Workspaces\Mendix-CommitMessage\studio-pro-extension-csharp-tests\obj\Debug\net8.0-windows7.0\AutoCommitMessage.Tests.pdb
 C:\Workspaces\Mendix-CommitMessage\studio-pro-extension-csharp-tests\obj\Debug\net8.0-windows7.0\AutoCommitMessage.Tests.genruntimeconfig.cache
 C:\Workspaces\Mendix-CommitMessage\studio-pro-extension-csharp-tests\obj\Debug\net8.0-windows7.0\ref\AutoCommitMessage.Tests.dll
+C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp-tests\obj\Debug\net8.0-windows7.0\AutoCommitMessage.Tests.csproj.AssemblyReference.cache
+C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp-tests\obj\Debug\net8.0-windows7.0\AutoCommitMessage.Tests.GeneratedMSBuildEditorConfig.editorconfig
+C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp-tests\obj\Debug\net8.0-windows7.0\AutoCommitMessage.Tests.AssemblyInfoInputs.cache
+C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp-tests\obj\Debug\net8.0-windows7.0\AutoCommitMessage.Tests.AssemblyInfo.cs
+C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp-tests\obj\Debug\net8.0-windows7.0\AutoCommitMessage.Tests.csproj.CoreCompileInputs.cache
+C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp-tests\obj\Debug\net8.0-windows7.0\AutoCommitMessage.Tests.sourcelink.json
+C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp-tests\obj\Debug\net8.0-windows7.0\AutoCommitMessage.Tests.dll
+C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp-tests\obj\Debug\net8.0-windows7.0\refint\AutoCommitMessage.Tests.dll
+C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp-tests\obj\Debug\net8.0-windows7.0\AutoCommitMessage.Tests.pdb

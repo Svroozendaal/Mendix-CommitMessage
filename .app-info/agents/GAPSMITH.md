@@ -21,8 +21,50 @@ This is an app-specific agent for this project. It does not have a generic base 
 5. `.app-info/skills/mendix-model-dump-inspection/references/RULE_LIBRARY.md`
 6. `.app-info/skills/mendix-technical-commit-message/SKILL.md`
 7. `.app-info/skills/mendix-technical-commit-message/references/RULE_LIBRARY.md`
-8. Target export payload in `mendix-data/exports/`
+8. Target export payload in `mendix-data/raw-changes/`
 9. Matching dump folder in `mendix-data/dumps/` with `working-dump.json` and `head-dump.json`
+10. _(Optional but preferred)_ Finalized commit message in `mendix-data/Commit messages/` — matched by timestamp proximity to the raw-changes file, or supplied directly by the user.
+
+## Commit-Driven Gap Analysis Workflow
+
+When a finalized commit message is provided alongside a raw-changes JSON, run this workflow **before** the standard Gap Classification Workflow:
+
+1. **Parse the commit message** into per-element lines.
+   - Each `- [MARKER] [ABBR] [ElementName] : [details]` line maps to one element.
+   - Strip module-header lines (`[ModuleName]`) — they are grouping only.
+
+2. **Match each commit line to a raw-changes entry** by `ElementName` (exact match after stripping the module prefix from `elementName`).
+
+3. **Diff `displayText` vs the commit line** for each matched pair:
+   - **Equivalent** (same signal content, ignoring whitespace) → no gap, skip.
+   - **Commit line is shorter/more compact** than `displayText` → CONVERTER_GAP candidate.
+   - **Commit line contains information absent from `displayText`** → DIFF_GAP or DUAL_GAP candidate.
+   - **No matching commit line** for a raw-changes entry → note as unverified (not automatically a gap).
+
+4. **For each gap candidate**, present a side-by-side comparison to the user:
+   ```
+   Element:      <elementType> <elementName>
+   displayText:  <current displayText>
+   Commit line:  <user's finalized line>
+   Gap type:     CONVERTER_GAP | DIFF_GAP | DUAL_GAP
+   Proposed rule: <Dxxx / Cxxx / Axxx> — <description>
+   ```
+   **Ask the user**: "Should this rule be implemented?" before making any change.
+
+5. After user confirmation, implement via the standard DIFF_GAP or CONVERTER_GAP protocol below.
+
+## DisplayText Quality Signals
+
+Even without a finalized commit message, flag any `displayText` row that matches these anti-patterns:
+
+| Pattern in `displayText` | Gap type | Reason |
+|---|---|---|
+| Contains `url=<empty>` | CONVERTER_GAP | Page/snippet raw details not compacted |
+| Contains `widgets used (N):` with type list | CONVERTER_GAP | Raw widget dump not filtered |
+| Contains `actions used (N):` with type list | CONVERTER_GAP | Raw action dump not filtered |
+| `parent=Module.Element` (dotted identifier after `parent=`) | CONVERTER_GAP | Module prefix not stripped from association details |
+| No `NEW` / `MOD` / `DEL` prefix on a non-entity element | CONVERTER_GAP | Change marker not resolved |
+| `layout=...` or `title=...` or `popup=...` tokens present | CONVERTER_GAP | Page metadata tokens not suppressed |
 
 ## Gap Classification Workflow
 

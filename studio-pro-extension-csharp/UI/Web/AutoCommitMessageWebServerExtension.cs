@@ -2,6 +2,7 @@ using System.ComponentModel.Composition;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using System.Windows.Forms;
 using LibGit2Sharp;
 using Mendix.StudioPro.ExtensionsAPI.UI.WebServer;
 
@@ -15,7 +16,7 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
         webServer.AddRoute(ExtensionConstants.WebServerRoutePrefix, HandleRequestAsync);
     }
 
-    private static async Task HandleRequestAsync(
+    public static async Task HandleRequestAsync(
         HttpListenerRequest request,
         HttpListenerResponse response,
         CancellationToken cancellationToken)
@@ -82,6 +83,12 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
         if (string.Equals(action, ExtensionConstants.ListChangeModulesActionValue, StringComparison.OrdinalIgnoreCase))
         {
             await HandleListChangeModulesRequestAsync(projectPath, response, cancellationToken);
+            return;
+        }
+
+        if (string.Equals(action, ExtensionConstants.BrowseFolderActionValue, StringComparison.OrdinalIgnoreCase))
+        {
+            await HandleBrowseFolderRequestAsync(response, cancellationToken);
             return;
         }
 
@@ -554,6 +561,54 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
         }
     }
 
+    private static Task HandleBrowseFolderRequestAsync(
+        HttpListenerResponse response,
+        CancellationToken cancellationToken)
+    {
+        var tcs = new TaskCompletionSource<string?>();
+
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                using var dialog = new FolderBrowserDialog
+                {
+                    Description = "Select Mendix project folder",
+                    UseDescriptionForTitle = true,
+                    ShowNewFolderButton = false,
+                };
+                var result = dialog.ShowDialog();
+                tcs.SetResult(result == DialogResult.OK ? dialog.SelectedPath : null);
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+        });
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+
+        return tcs.Task.ContinueWith(async task =>
+        {
+            if (task.Exception is not null)
+            {
+                await WriteJsonResponseAsync(
+                    response,
+                    500,
+                    new { success = false, path = (string?)null, message = task.Exception.InnerException?.Message ?? task.Exception.Message },
+                    cancellationToken);
+                return;
+            }
+
+            var selectedPath = task.Result;
+            await WriteJsonResponseAsync(
+                response,
+                200,
+                new { success = selectedPath is not null, path = selectedPath },
+                cancellationToken);
+        }, cancellationToken).Unwrap();
+    }
+
     private static string? FindMprFile(string projectPath)
     {
         try
@@ -720,7 +775,9 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
     }
 
     private static string NormalizeProjectPath(string? projectPath) =>
-        string.IsNullOrWhiteSpace(projectPath) ? Environment.CurrentDirectory : projectPath;
+        string.IsNullOrWhiteSpace(projectPath)
+            ? Environment.GetEnvironmentVariable("MENDIX_APP_PATH") ?? Environment.CurrentDirectory
+            : projectPath;
 
     private static IReadOnlyList<string> ParseModuleList(string? rawValue)
     {

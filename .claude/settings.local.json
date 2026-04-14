@@ -17,7 +17,10 @@
       "Bash(echo \"Found System$Constant\")",
       "Bash(echo \"System$Constant not found\")",
       "Bash(awk 'NR>=10 && NR<=20')",
-      "Bash(dotnet build)"
+      "Bash(dotnet build)",
+      "Bash(grep -l \"PublishedOData\\\\|entityTypes\" \"c:/Workspace/Mendix-AutoCommitMessage/mendix-data/raw-changes/\"*.json)",
+      "Bash(grep -o '\"\\\\\\\\$Type\":\"[^\"]*OData[^\"]*\"' c:/Workspace/Mendix-AutoCommitMessage/mendix-data/dumps/head-cache/851c940d883ea9b0eca2b78c0bba89e05bb14daf/SelektBouw.json)",
+      "Bash(dotnet test:*)"
     ]
   }
 }

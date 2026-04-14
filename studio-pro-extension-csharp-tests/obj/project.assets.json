@@ -5957,19 +5957,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Simon\\.nuget\\packages\\": {}
+    "C:\\Users\\SimonvanRoozendaal\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Workspaces\\Mendix-CommitMessage\\studio-pro-extension-csharp-tests\\AutoCommitMessage.Tests.csproj",
+      "projectUniqueName": "C:\\Workspace\\Mendix-AutoCommitMessage\\studio-pro-extension-csharp-tests\\AutoCommitMessage.Tests.csproj",
       "projectName": "AutoCommitMessage.Tests",
-      "projectPath": "C:\\Workspaces\\Mendix-CommitMessage\\studio-pro-extension-csharp-tests\\AutoCommitMessage.Tests.csproj",
-      "packagesPath": "C:\\Users\\Simon\\.nuget\\packages\\",
-      "outputPath": "C:\\Workspaces\\Mendix-CommitMessage\\studio-pro-extension-csharp-tests\\obj\\",
+      "projectPath": "C:\\Workspace\\Mendix-AutoCommitMessage\\studio-pro-extension-csharp-tests\\AutoCommitMessage.Tests.csproj",
+      "packagesPath": "C:\\Users\\SimonvanRoozendaal\\.nuget\\packages\\",
+      "outputPath": "C:\\Workspace\\Mendix-AutoCommitMessage\\studio-pro-extension-csharp-tests\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Simon\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\SimonvanRoozendaal\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0-windows7.0"
@@ -5981,8 +5981,8 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows7.0",
           "projectReferences": {
-            "C:\\Workspaces\\Mendix-CommitMessage\\studio-pro-extension-csharp\\AutoCommitMessage.csproj": {
-              "projectPath": "C:\\Workspaces\\Mendix-CommitMessage\\studio-pro-extension-csharp\\AutoCommitMessage.csproj"
+            "C:\\Workspace\\Mendix-AutoCommitMessage\\studio-pro-extension-csharp\\AutoCommitMessage.csproj": {
+              "projectPath": "C:\\Workspace\\Mendix-AutoCommitMessage\\studio-pro-extension-csharp\\AutoCommitMessage.csproj"
             }
           }
         }
@@ -5996,8 +5996,7 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "10.0.100"
+      }
     },
     "frameworks": {
       "net8.0-windows7.0": {
@@ -6029,26 +6028,12 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[8.0.24, 8.0.24]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Ref",
-            "version": "[8.0.24, 8.0.24]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[8.0.24, 8.0.24]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.419/PortableRuntimeIdentifierGraph.json"
       }
     }
   },
@@ -6057,7 +6042,7 @@
       "code": "NU1603",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "AutoCommitMessage.Tests depends on Microsoft.NET.Test.Sdk (>= 17.8.2) but Microsoft.NET.Test.Sdk 17.8.2 was not found. Microsoft.NET.Test.Sdk 17.9.0 was resolved instead.",
+      "message": "AutoCommitMessage.Tests depends on Microsoft.NET.Test.Sdk (>= 17.8.2) but Microsoft.NET.Test.Sdk 17.8.2 was not found. An approximate best match of Microsoft.NET.Test.Sdk 17.9.0 was resolved.",
       "libraryId": "Microsoft.NET.Test.Sdk",
       "targetGraphs": [
         "net8.0-windows7.0"

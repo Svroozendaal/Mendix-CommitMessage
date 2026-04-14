@@ -27,3 +27,7 @@ mendix-data/dumps/*
 !mendix-data/dumps/.gitkeep
 mendix-data/tmp*/
 mendix-data/*.log
+
+Commit messages/*
+.claude
+
