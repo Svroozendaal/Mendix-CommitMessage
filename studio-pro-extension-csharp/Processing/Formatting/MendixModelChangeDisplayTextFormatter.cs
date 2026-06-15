@@ -100,6 +100,13 @@ internal static class MendixModelChangeDisplayTextFormatter
         if (!string.IsNullOrWhiteSpace(details))
         {
             var normalizedDetails = RemoveSuppressedDetails(details.Trim());
+
+            var exportMappingCompactSummary = TryBuildExportMappingCompactSummary(changeType, elementType, normalizedDetails);
+            if (!string.IsNullOrWhiteSpace(exportMappingCompactSummary))
+            {
+                return exportMappingCompactSummary;
+            }
+
             var entityAccessRulesSummary = TryBuildEntityAccessRulesSummary(changeType, elementType, normalizedDetails);
             if (!string.IsNullOrWhiteSpace(entityAccessRulesSummary))
             {
@@ -212,6 +219,35 @@ internal static class MendixModelChangeDisplayTextFormatter
 
         var normalized = string.Join(", ", parts).Trim();
         return normalized.EndsWith(":", StringComparison.Ordinal) ? string.Empty : normalized;
+    }
+
+    private static string? TryBuildExportMappingCompactSummary(string changeType, string elementType, string details)
+    {
+        if (!string.Equals(changeType, "Modified", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var isExportMapping = string.Equals(elementType, "ExportMapping", StringComparison.OrdinalIgnoreCase);
+        var isJsonStructure = string.Equals(elementType, "JsonStructure", StringComparison.OrdinalIgnoreCase);
+        if (!isExportMapping && !isJsonStructure)
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(details))
+        {
+            return null;
+        }
+
+        if (details.Contains("modelType=", StringComparison.OrdinalIgnoreCase) ||
+            details.Contains("resource metadata:", StringComparison.OrdinalIgnoreCase) ||
+            details.Contains("nested types", StringComparison.OrdinalIgnoreCase))
+        {
+            return "updated";
+        }
+
+        return null;
     }
 
     private static string? TryBuildEntityAccessRulesSummary(string changeType, string elementType, string details)
@@ -1379,10 +1415,10 @@ internal static class MendixModelChangeDisplayTextFormatter
         working = working.Trim(' ', ',', ';');
         if (working.Length == 0 || string.Equals(working, "annotation", StringComparison.OrdinalIgnoreCase))
         {
-            return "updated";
+            return null;
         }
 
-        return NormalizeInlineToken(working);
+        return null;
     }
 
     private static string? ParseCallTarget(string? descriptor, string flowKind)

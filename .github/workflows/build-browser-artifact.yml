@@ -18,14 +18,21 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Publish standalone
-        run: dotnet publish standalone/ -c Release -o ./artifact/app --nologo
+      - name: Publish standalone (self-contained, win-x64)
+        run: >
+          dotnet publish standalone/
+          -c Release
+          -r win-x64
+          --self-contained true
+          -o ./artifact/app
+          --nologo
+          -v quiet
 
       - name: Copy distribution files
         shell: pwsh
         run: |
-          Copy-Item .env.example ./artifact/.env.example
-          Copy-Item open-browser-app.ps1 ./artifact/open-browser-app.ps1
+          Copy-Item .env.example        ./artifact/.env.example
+          Copy-Item Start-AutoCommitMessage.bat ./artifact/Start-AutoCommitMessage.bat
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

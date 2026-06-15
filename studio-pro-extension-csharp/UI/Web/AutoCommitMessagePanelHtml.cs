@@ -1685,9 +1685,11 @@ internal static class AutoCommitMessagePanelHtml
         }
 
         lines.push(`[${moduleName}]`);
-        lines.push("Domain mode:");
-        domainRows.forEach((row) => lines.push(`- ${row}`));
-        lines.push("");
+        if (domainRows.length > 0) {
+          lines.push("Domain model:");
+          domainRows.forEach((row) => lines.push(`- ${row}`));
+          lines.push("");
+        }
         otherRows.forEach((row) => lines.push(`- ${row}`));
         lines.push("");
       });
@@ -2185,6 +2187,22 @@ internal static class AutoCommitMessagePanelHtml
         };
         saveSettingsToStorage();
         render(settingsState.exportAdditionalData ? "Export additional data enabled." : "Export additional data disabled.");
+      });
+
+      persistDumpsInput.addEventListener("change", () => {
+        settingsState = {
+          ...settingsState,
+          persistDumps: persistDumpsInput.checked,
+        };
+        saveSettingsToStorage();
+      });
+
+      persistRawChangesInput.addEventListener("change", () => {
+        settingsState = {
+          ...settingsState,
+          persistRawChanges: persistRawChangesInput.checked,
+        };
+        saveSettingsToStorage();
       });
 
       themeSelect.addEventListener("change", () => {

@@ -608,13 +608,29 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
         {
             try
             {
+                Application.EnableVisualStyles();
+
+                // A zero-opacity, off-taskbar form gives the folder picker a valid
+                // foreground-capable owner HWND. Without one, the native dialog opens
+                // behind the browser window (especially in the standalone console app
+                // where the process has no main window of its own).
+                using var ownerForm = new Form
+                {
+                    ShowInTaskbar = false,
+                    Opacity = 0,
+                    FormBorderStyle = FormBorderStyle.None,
+                    WindowState = FormWindowState.Minimized,
+                };
+                ownerForm.Show();
+
                 using var dialog = new FolderBrowserDialog
                 {
                     Description = "Select Mendix project folder",
                     UseDescriptionForTitle = true,
                     ShowNewFolderButton = false,
                 };
-                var result = dialog.ShowDialog();
+
+                var result = dialog.ShowDialog(ownerForm);
                 tcs.SetResult(result == DialogResult.OK ? dialog.SelectedPath : null);
             }
             catch (Exception ex)

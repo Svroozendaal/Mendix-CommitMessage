@@ -238,6 +238,7 @@ If `elementType` is not in the dictionary, leave abbreviation empty.
     - standalone bucket summary: `added annotation`, `modified annotation`, `removed annotation`
     - mixed bucket summary (with other items): `annotation`
   - Do not emit a standalone `annotations:` section.
+  - Do not parse annotation text content (e.g. `text=...`); extract only the presence indicator.
 - Example input:
   - `annotations delta: added 1, removed 0, modified 0; annotations added (1): text=Need validation`
 - Example output:
@@ -364,6 +365,27 @@ If `elementType` is not in the dictionary, leave abbreviation empty.
   - `allowedModuleRoles count 2->3; modelType=Microflow; resource metadata: excluded=false, markAsUsed=false, applyEntityAccess=true, allowConcurrentExecution=true, allowedModuleRoles=3, flows=6; nested types (33): BezierCurve x6, SequenceFlow x6`
 - Example output:
   - `modified allowed roles`
+
+### C020 - Export Mapping and JSON Structure Compaction
+
+- Rule ID: `C020`
+- Purpose: suppress low-signal metadata noise in export mappings and JSON structures.
+- Applies to:
+  - `elementType = ExportMapping|JsonStructure`
+  - `changeType = Modified`
+- Match anchors:
+  - `modelType=ExportMapping` or `modelType=JsonStructure`
+  - `resource metadata: ...`
+  - `nested types (...): ...`
+- Logic:
+  - Suppress verbose model metadata and nested type inventories.
+  - Render a compact summary:
+    - `updated`
+  - Ignore all baseline, resource metadata, and type inventory segments in this rendering path.
+- Example input:
+  - `rootMappingElements entries updated; modelType=ExportMapping; resource metadata: excluded=false; nested types (19): ExportValueMappingElement x7, StringType x6, ExportObjectMappingElement x5, IntegerType x1`
+- Example output:
+  - `updated`
 
 
 

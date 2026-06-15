@@ -6,8 +6,6 @@ C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8
 C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8.0-windows\Mendix.StudioPro.ExtensionsAPI.dll
 C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8.0-windows\Microsoft.Extensions.ObjectPool.dll
 C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8.0-windows\System.ComponentModel.Composition.dll
-C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8.0-windows\System.Security.Cryptography.Pkcs.dll
-C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8.0-windows\System.Security.Cryptography.Xml.dll
 C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8.0-windows\System.ServiceModel.Primitives.dll
 C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8.0-windows\cs\System.ServiceModel.Primitives.resources.dll
 C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8.0-windows\de\System.ServiceModel.Primitives.resources.dll
@@ -33,7 +31,6 @@ C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8
 C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8.0-windows\runtimes\win-arm64\native\git2-a418d9d.dll
 C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8.0-windows\runtimes\win-x64\native\git2-a418d9d.dll
 C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8.0-windows\runtimes\win-x86\native\git2-a418d9d.dll
-C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\bin\Debug\net8.0-windows\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
 C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\obj\Debug\net8.0-windows\AutoCommitMessage.csproj.AssemblyReference.cache
 C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\obj\Debug\net8.0-windows\AutoCommitMessage.GeneratedMSBuildEditorConfig.editorconfig
 C:\Workspace\Mendix-AutoCommitMessage\studio-pro-extension-csharp\obj\Debug\net8.0-windows\AutoCommitMessage.AssemblyInfoInputs.cache
