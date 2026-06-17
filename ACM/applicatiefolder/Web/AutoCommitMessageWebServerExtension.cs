@@ -1,23 +1,15 @@
-using System.ComponentModel.Composition;
 using System.Net;
 using System.Text;
 using System.Text.Json;
 using LibGit2Sharp;
-using Mendix.StudioPro.ExtensionsAPI.UI.WebServer;
 
 namespace AutoCommitMessage;
 
-[Export(typeof(WebServerExtension))]
-public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
+public sealed class AutoCommitMessageWebServerExtension
 {
-    public override void InitializeWebServer(IWebServer webServer)
-    {
-        webServer.AddRoute(ExtensionConstants.WebServerRoutePrefix, HandleRequestAsync);
-    }
-
     /// <summary>
-    /// Entry point used by the Mendix Studio Pro web server, whose route delegate hands us
-    /// <see cref="HttpListener"/> types. Wraps them in adapters and delegates to the shared core.
+    /// Entry point that wraps <see cref="HttpListener"/> types in adapters and delegates to the
+    /// shared core. Retained as a generic <see cref="HttpListener"/> host helper.
     /// </summary>
     public static Task HandleRequestAsync(
         HttpListenerRequest httpListenerRequest,

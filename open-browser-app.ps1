@@ -1,7 +1,7 @@
 # open-browser-app.ps1
 # Builds and starts the AutoCommitMessage standalone web version, then opens the browser.
 # For developers working from source. End users should run the published
-# AutoCommitMessage.Standalone.exe (see standalone/dist-README.txt).
+# AutoCommitMessage.Standalone.exe (see ACM/applicatiefolder/dist-README.txt).
 #
 # Usage: .\open-browser-app.ps1 [--path "C:\Projects\MyMendixApp"] [--port 3109]
 
@@ -12,10 +12,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 $url = "http://localhost:$Port"
-$standaloneDir = Join-Path $PSScriptRoot "standalone"
+$appDir = Join-Path $PSScriptRoot "ACM/applicatiefolder"
 
 Write-Host "Building standalone..."
-dotnet build "$standaloneDir" -c Release --nologo -v quiet
+dotnet build "$appDir" -c Release --nologo -v quiet
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Build failed. Check errors above."
     exit 1
@@ -25,7 +25,7 @@ Write-Host "Starting AutoCommitMessage at $url ..."
 
 # --no-browser: the exe can open a browser itself, but this script opens it below
 # (after polling for readiness), so suppress the duplicate tab.
-$dotnetArgs = @("run", "--project", $standaloneDir, "--no-build", "-c", "Release", "--", "--no-browser")
+$dotnetArgs = @("run", "--project", $appDir, "--no-build", "-c", "Release", "--", "--no-browser")
 if ($Port -ne 3109) { $dotnetArgs += "--port"; $dotnetArgs += "$Port" }
 if ($Path -ne "") { $dotnetArgs += "--path"; $dotnetArgs += $Path }
 

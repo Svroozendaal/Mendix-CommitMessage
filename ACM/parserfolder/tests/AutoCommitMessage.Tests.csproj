@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\studio-pro-extension-csharp\AutoCommitMessage.csproj" />
+    <ProjectReference Include="..\AutoCommitMessage.Parser.csproj" />
   </ItemGroup>
 
 </Project>

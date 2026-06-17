@@ -171,7 +171,7 @@ internal static class Program
     /// </summary>
     private static void LoadDotEnv()
     {
-        // Walk up from the standalone/ directory to find .env next to the solution
+        // Walk up from the app directory to find the repo-root .env
         var dir = Path.GetDirectoryName(AppContext.BaseDirectory);
         string? envFile = null;
         while (dir is not null)

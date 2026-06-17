@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <AssemblyName>AutoCommitMessage.Parser</AssemblyName>
+    <RootNamespace>AutoCommitMessage</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <MendixDataRoot Condition="'$(MendixDataRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\mendix-data'))</MendixDataRoot>
+  </PropertyGroup>
+
+  <!-- The test project lives in tests/ with its own csproj; keep it out of this compilation. -->
+  <ItemGroup>
+    <Compile Remove="tests\**" />
+    <EmbeddedResource Remove="tests\**" />
+    <None Remove="tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LibGit2Sharp" Version="0.30.0" />
+  </ItemGroup>
+
+  <!-- Default mendix-data root, read back at runtime by ExtensionDataPaths via assembly metadata. -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MendixDataRoot</_Parameter1>
+      <_Parameter2>$(MendixDataRoot)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>
