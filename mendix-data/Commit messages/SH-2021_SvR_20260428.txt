@@ -1,0 +1,37 @@
+#commit:5f220aeb
+
+SH-2021 SvR
+
+
+changes:
+[Hubspot]
+Domain mode:
+- NEW EmailReceiver : attributes added (2): Email, EmailType
+- NEW NP CC : attributes added (1): Value; associations added (1): [*-1] Message
+
+- NEW CC_Message : parent=Hubspot.CC; association=[*-1] Message
+- ENUM Enum_HubspotEmailType : added 1: OpleveringGereed
+- EM EM_HubspotMessage : rootMappingElements entries updated; modelType=ExportMapping; resource metadata: excluded=false; nested types (19): ExportValueMappingElement x7, StringType x6, ExportObjectMappingElement x5, IntegerType x1
+- JSON_HubspotInterface : elements entries updated; jsonSnippet updated; modelType=JsonStructure; resource metadata: excluded=false; nested types (12): JsonElement x12
+- NEW MF ACT_EmailReciever_create : added: create object EmailReceiver, show page EmailReceiver_NewEdit
+- MF SUB_Hubspot_CreateEmailiD_MF : added: change variable
+- MF SUB_Hubspot_CreateRoot_MF : added: change object IteratorCC, decision cc filled?; loops: iterate CC as IteratorCC (source=IterableList)
+- MF SUB_HubspotMessage_Create_MF : modified: call MF
+- NEW MF SUB_HubspotMessage_CreateOpleveringGereed : added: change list CCList, create list, create object CC, call MF GetEnvironment, call MF SUB_Hubspot_CreateEmailiD_MF, call MF SUB_Hubspot_CreateRoot_MF, retrieve, decision Production?, decision text=Retrieves the configurable list of recievers for the CC. configure this in the hubspot admin page, decision text=SHA 6-6-23 Here we create the root for sending a hubspotmessage. First we create the EmailId for determining the correct..., annotation; loops: iterate EmailReceiversList as IteratorEmailReceivers (source=IterableList)
+- MF SUB_HubspotMessage_CreateRootForInspection : modified: call MF
+- NEW PG ApplicationConfiguration_Overview_Hubspot : added: button, DG, list, snippet; widget details: button call MF ACT_EmailReciever_create, button show page EmailReceiver_NewEdit, DG <unknown source>, list <unknown source>, snippet
+- NEW PG EmailReceiver_NewEdit : added: button, list; widget details: button <action unknown>, list <unknown source>
+- Rule_HubspotMessageReceiver : flows count 15->16
+
+[Projects]
+Domain mode:
+- Oplevering : attributes added (1): needsSendingEmail; after commit=ACo_Oplevering
+
+- NEW MF ACo_Oplevering : added: call MF SUB_Oplevering_sendMail; , annotation
+- NEW MF SUB_Oplevering_sendMail : added: change object Oplevering, create variable, call MF SUB_HubspotMessage_CreateOpleveringGereed, call MF SUB_HubspotMessage_Send, decision send oplevering mail?, annotation
+- NF ACT_Oplevering_Submit : added annotation; modified: change object Oplevering
+
+[Settings]
+Domain mode:
+
+- PG Settings_Overview : modified: buttons x1

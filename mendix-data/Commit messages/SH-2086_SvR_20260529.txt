@@ -1,0 +1,15 @@
+#commit:7a29a015
+
+SH-2086 SvR
+WorkOrders statuschange is now done using the SUB_LogMoment_Create flow.
+Visibility of WorkOrder_detail buttons is now set to proper status
+
+changes:
+[Service]
+- NF ACT_WorkOrder_StartTaskForm_WEB : objectCollection updated; name ACT_WorkOrder_StartTaskForm->ACT_WorkOrder_StartTaskForm_...
+- NF DSS_WorkOrder_RetrieveLatestWorkInterval : added: list operation; modified: list operation
+- NF SUB_Bundle_AssociateSelectedWorkOrder : added: call NF SUB_LogMoment_Create; modified: change object IteratorWorkOrder; loops: loop payload changed; annotations delta: added 1, removed 0, modified 0; annotations added (1): text=TODO: We should decide on what status the workorder must get when bundling. The status of current bundle? What if one of...
+- NF SUB_Bundle_Plan : added: call NF SUB_LogMoment_Create; modified: change object; loops: loop payload changed
+- NF SUB_Workorder_ConfirmAppointment : objectCollection updated; annotations added (1): text=29/05/2026 SvR When creating hte bundle, the workOrder status is logged
+- PG WorkOrder_Detail : modified: dataview x3
+- PG WorkOrder_Overview_WEB : modified: buttons x1, dataview x1

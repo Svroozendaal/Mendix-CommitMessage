@@ -1,0 +1,33 @@
+#commit:e30d75a5
+
+SH-1891 SvR
+
+
+changes:
+[PDFGenerator]
+- WorkOrder_Werkbon_Template : toplevels entries updated; modelType=DocumentTemplate; resource metadata: excluded=false; nested types (492): Style x131, TableCell x75, ConditionSettings x48, TableRow x48, Condition x20, AttributeRef x19, +18 more
+- MF SUB_Werkbon_Create : added: change list documentList, create list, java action call, log message, retrieve object WorkOrder, decision normal Werkbon?, decision text=SH werkbon should be added as first pages in the document; modified: generate document
+
+[Projects]
+Domain model:
+- Signature : Accessrules changed
+- NP DashboardHelper : Accessrules changed
+
+- SNP_WorkOrder : modified
+- NEW SNP_WorkOrder_Taskform : added
+
+[Service]
+Domain model:
+- Appointment : Accessrules changed
+- NEW WerkbonOA : Generalization of System.FileDocument; associations added (1): [1-1] WorkOrder (owner=Both)
+- WorkOrder : attributes added (1): hasOAWerkbon
+
+- NEW WerkbonOA_WorkOrder : parent=Service.WerkbonOA; association=[1-1] WorkOrder (owner=Both)
+- NEW MF ACT_WerkbonOA_Download : added: download file
+- NF ACT_WorkOrder_finishTaskForm : modified: change object WorkOrder
+- NEW NF DSS_WorkOrder_RetrieveOAWerkbon : added: retrieve object WorkOrder
+- NF VAL_WorkOrder : modified: validation feedback, decision Werkbon attached?; removed: list operation, call NF VAL_WorkOrder_Signature, retrieve object WorkOrder
+- DEL NF VAL_WorkOrder_Signature : deleted
+- PG WorkOrder_Overview_WEB : added: button, list, snippet; widget details: button call MF ACT_WerkbonOA_Download, button call MF ACT_WorkOrder_StartTaskForm, list WorkOrder, list <unknown source>, list DSS_WorkOrder_RetrieveOAWerkbon, snippet
+- PG WorkOrder_Plan_WEB : modified: buttons x1, dataview x1
+- SNP_WorkOrder_Information : modified

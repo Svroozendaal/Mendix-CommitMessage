@@ -1,0 +1,25 @@
+#commit:d69cbbce
+
+FIN-1552 SvR
+Altered dummy creation flow
+
+changes:
+[General]
+- NEW MF SCRIPT_BookingsAttachment_openDummyPage : added: retrieve object DummyWBS, show message, show page AccountingDocuments_Overview_Files, show page AccountingDocuments_Overview_Finance, decision financial Overview?, decision found?
+- PG Script_Overview : added: button; widget details: button call MF SCRIPT_BookingsAttachment_openDummyPageFinancial, button call MF SCRIPT_ResearcherProfile_DeleteforAllEmployees
+
+[Integration]
+- MF ACT_ZPPM_GET : added: call MF SUB_BookingDocumentsAttachments_GET, retrieve object NewDummyWBS, show message, decision financial Overview?, decision Found?, decision Succes?; modified: call MF, show page, decision Succes?; removed: decision financial Overview?
+- DEL MF ACT_ZPPM_retrieveDummy : deleted
+- DEL MF ACT_ZPPM_retrieveDummy_2 : deleted
+- NEW MF SUB_BookingDocuments_retrieveWithAttachments : added: call MF SUB_BookingDocumentsAttachments_GET
+- MF SUB_ZipAndDownloadFiles : added: show message; modified: java action call
+- PG AccountingDocuments_Overview_Files : modified: dataview x2
+- PG AccountingDocuments_Overview_Finance : modified: buttons x1, dataview x2; removed: dataview x1
+- PG ZPPM_Overview : modified: dataview x1
+
+[Unknown]
+- bd6f65bd-2393-539d-9388-4684a54d0646 : userRoles entries updated; modelType=ProjectSecurity; nested types (28): UserRole x19, DemoUser x6, FileDocumentAccessRuleContainer x1, ImageAccessRuleContainer x1, PasswordPolicySettings x1
+
+[WorkflowCustomization]
+- MF OCh_Workflow_State : annotations delta: added 1, removed 1, modified 0; annotations added (1): text=This microflow was previously used as a state change handler, which are no longer supported in Mendix 11. TODO: Adapt th...; annotations removed (1): text=This microflow was previously used as a state change handler, which are no longer supported in Mendix 11. TODO: Adapt th...

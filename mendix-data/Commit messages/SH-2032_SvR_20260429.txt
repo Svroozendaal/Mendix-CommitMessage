@@ -1,0 +1,18 @@
+#commit:7ac0bb2b
+
+SH-2032 SvR
+WIP: Oplevertask detailscreen is now inside of the overview instead of a new page
+
+changes:
+[Projects]
+Domain mode:
+
+- NF ACT_Oplevering_OpenOplevering : added annotation
+- NF ACT_Oplevering_OpenPostAddress : added annotation
+- NF ACT_Oplevering_Submit : added: change object Task, change object TaskForm, call NF DSS_Task_RetrieveOpleverTask, retrieve object Task, annotation
+- NEW NF ACT_Task_EditOpleverTask : added: change object Oplevering, change object Task, change object TaskForm
+- NF ACT_Task_FinishOpleverTask : added: call NF VAL_Oplevering_PostAddress, decision Valid, annotation; modified: change object Task, change object TaskForm; removed: close page
+- NF ACT_TaskForm_OpenOpleveringForm : added annotation
+- PG Oplevering_Overview : added: button, list, snippet; widget details: button call MF ACT_Oplevering_Sign, button call MF ACT_Task_FinishOpleverTask, button call MF ACT_Task_EditOpleverTask, list <unknown source>, snippet
+- PG Oplevering_PostAddress : modified
+- PG TaskForm_OpleveringForm : modified: buttons x1, dataview x1

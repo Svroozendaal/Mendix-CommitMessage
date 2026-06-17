@@ -1,0 +1,23 @@
+#commit:67c57726
+
+VU-4575 SvR
+deepclone now does not clone the deeplink in a projecft
+script to reset all deepllink urls
+
+changes:
+[General]
+Domain mode:
+
+- NEW MF SCRIPT_Deeplink_setLinkAllProjects : added: log message, call MF SUB_Deepllink_setLinkAllProjects
+- NEW MF SUB_Deepllink_setLinkAllProjects : added: change list DeepLinkList, change object Deeplink, commit object DeepLinkList, create list, create variable, java action call, log message, call MF, retrieve; loops: iterate ProjectList as IteratorProject (source=IterableList)
+- PG Script_Overview : added: button; widget details: button call MF SCRIPT_Deeplink_setLinkAllProjects
+
+[Projects]
+Domain mode:
+
+- MF ACT_Project_Duplicate : modified: java action call
+
+[Unknown]
+Domain mode:
+
+- 4e70063d-53e1-477a-ab92-6b763330c293 : settingsParts entries updated; modelType=ProjectSettings; nested types (64): Configuration x13, ConstantValue x13, SharedValue x13, ActionActivityDefaultColor x8, TracingConfiguration x3, Language x2, +11 more

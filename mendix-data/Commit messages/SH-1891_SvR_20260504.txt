@@ -1,0 +1,19 @@
+#commit:35ff9221
+
+SH-1891 SvR
+WIP: start of creating the web version of the ServiceOrder functionalities. Created overview pages and planning the Workorder
+
+changes:
+[Projects]
+- PG Dashboard_Onderaannemer : modified
+
+[Service]
+- NF ACT_WorkOrder_ConfirmAppointment_Native : added: call NF SUB_Workorder_ConfirmAppointment; removed: change object WorkOrder, commit object WorkOrder, call NF SUB_Bundle_FindOrCreate, call NF SUB_Bundle_Plan
+- NEW NF ACT_WorkOrder_ConfirmAppointment_WEB : added: close page, call NF SUB_Workorder_ConfirmAppointment
+- NEW NF SUB_Workorder_ConfirmAppointment : added: change object WorkOrder, commit object WorkOrder, call NF SUB_Bundle_FindOrCreate, call NF SUB_Bundle_Plan
+- NEW PG WorkOrder_Overview_WEB : added: list, snippet, button; widget details: list <unknown source>, snippet, button call nanoflow OCH_ExpectedEndingDate_CalcDuration, button call nanoflow OCH_ExpectedStartingDate_RetrieveExpectedEndingDate, button show page WorkOrder_Plan_WEB
+- PG WorkOrder_Plan : modified: buttons x2, dataview x1
+- NEW PG WorkOrder_Plan_WEB : added: button, list, snippet; widget details: button call nanoflow ACT_WorkOrder_ConfirmAppointment_WEB, button call nanoflow OCH_Duration_RetrieveExpectedEndTime, button call nanoflow OCH_ExpectedEndingDate_CalcDuration, button call nanoflow OCH_ExpectedStartingDate_RetrieveExpectedEndingDate, list <unknown source>, snippet
+
+[Unknown]
+- b62986ab-1ec9-5c84-9d33-1f0829ffce9b : profiles entries updated; modelType=NavigationDocument; nested types (194): OfflineEntityConfig x49, Translation x28, Text x20, RoleBasedNativeHomePage x19, RoleBasedHomePage x18, BottomBarItem x10, +12 more

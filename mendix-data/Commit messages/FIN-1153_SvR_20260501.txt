@@ -1,0 +1,31 @@
+#commit:005a2716
+
+FIN-1153 SvR
+WIP
+
+reworked retrieval of journalitems when creating request. Now: TWK is retried and sum of mutations to one wbs or kostenplaats is calculated. Only the resulting value is displayed.
+
+changes:
+[Integration]
+Domain mode:
+- YY1_JournalItemsPCS : system members: enabled store created date
+- YY1_JournalItemsPCSType : Accessrules changed
+
+
+[TWK]
+Domain mode:
+
+- MF ACT_JournalItems_Get : modified: call MF
+- MF DS_Request_JournalItemsCurrent : added: retrieve object Request
+- MF SUB_JournalItem_CreateFromTWK : added annotation
+- MF SUB_JournalItems_IsBookable : removed: change list JournalItemCurrentList
+- NEW MF SUB_JournalItems_retrieveSituationS4 : added: change list JournalItemList_FromS4, change object YY1_JournalItemsPCSType, commit object JournalItems_from4ps_InPeriod, commit object NewYY1_JournalItemsPCS, create list, create object YY1_JournalItemsPCS, create variable, retrieve, call MF, list operation, decision Found?, decision Is AU?, decision Not a correction?, decision Relevant?, decision text=If normal booking = costcenter if reversalbooking (correctionbooking) = partnercostcenter, decision text=Making it * 100 will convert the ranges to e.g. 202501 until 202603, decision text=Rechts van de found? zoekt de originele boeking op in S4, decision text=TODO waarom wordt dit commit? Wordt vervoglesn nooit mere gebruikt, annotation; loops: iterate JournalItems_from4ps_InPeriod as YY1_JournalItemsPCSType (source=IterableList)
+- NEW MF SUB_Request_createJournalItemsForRequest : loops: iterate JournalItem_forInRequest as IteratorJournalItem_REQUEST (source=IterableList)
+- MF SUB_Request_GetJournalItems : added: change list JournalItem_forInRequest, create list, call MF SUB_JournalItems_retrieveSituationS4, call MF SUB_Request_createJournalItemsForRequest, retrieve, annotation; modified: list operation, call MF; removed: change list JournalItemList_FromS4, create list, create object JournalItem, create variable, list operation, call MF SUB_JournalItemPCSType_ParseIntegerFiscalPeriod, retrieve, decision Create journalitem?, decision Found?, decision In period?, decision Is AU?, decision Not a correction?, decision text=02/04/2026 SvR Retrieves all journalitems from Employee in the seleted fiscalyear from S4. Filters this down to only the..., decision text=02/04/2026 SvR Retrieves all relevant TWK journalitems, decision text=02/04/2026 SvR Retrieves both the journalitems stored in DB (TWK en reversal) and all journalitems from Employee in the ..., decision text=23/04/2026 SvR For all journalitems relevant to this request period: for each version of Van kostenplaat combined with a..., annotation; loops: iterate YY1_JournalItemsPCSTypeList as YY1_JournalItemsPCSType (source=IterableList)
+- NEW MF SUB_Request_GetJournalItems_OLD : added: change list JournalItemList_FromS4, change object Request, create list, create object JournalItem, create variable, call MF, retrieve, list operation, decision Create journalitem?, decision Found?, decision In period?, decision Is AU?, decision Not a correction?, decision text=Only create JournalItem if amount is positive. Negative JournalItem entries are created when changing cost center: deduc..., decision text=TODO: eventueel ombouwen naar ophalen vanaf het journalitem ipv vanaf de employee costscenter. Antwoord Elsa wachten, annotation; loops: iterate YY1_JournalItemsPCSTypeList as YY1_JournalItemsPCSType (source=IterableList)
+- NF DS_SelectJournalItemListForApproval : modified: create object SelectionHelper, list operation, annotation; removed: list operation; loops: text=26/03/2026 SvR Only display journalitems for approval when: - not approved, or - is already approved but has a new booki...
+- NF OCh_BookingHelper_FTEChange : added: call NF SUB_BookingHelper_UpdateAmountBasedOnFTE; removed: change object BookingHelper, create variable
+- NF OCh_JournalItemHelper_Reversal_FTEChange : added: call NF SUB_BookingHelper_UpdateAmountBasedOnFTE; loops: loop payload changed
+- NEW NF SUB_BookingHelper_UpdateAmountBasedOnFTE : added: change object BookingHelper, create variable
+- PG Request_ApprovalJournalItemByPC : modified: dataview x3
+- SNP_Request_Overview : modified

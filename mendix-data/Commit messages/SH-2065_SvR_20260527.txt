@@ -1,0 +1,31 @@
+#commit:22b18501
+
+SH-2065 SvR
+Workorder - WorkInterval assossiation replaced by Bundle-workinterval to keep track over the whole bundle. Changes are due to other method of retrieving (by using the new assosiation)
+
+changes:
+[Service]
+Domain model:
+- WorkInterval : Accessrules changed
+- NP DatePicker : Accessrules changed
+- NP TimeReportPageHelper : Accessrules changed
+
+- NEW WorkInterval_Bundle : parent=Service.WorkInterval; association=[*-1] Bundle
+- WorkInterval_WorkOrder : parent=Service.WorkInterval; association=[*-1] WorkOrder
+- NF ACT_WorkOrder_ConfirmAppointment_WEB : added: retrieve object WorkOrder; modified: call NF
+- NF ACT_WorkOrder_Debrief_Submit : added: list operation, retrieve object WorkOrder, retrieve object Bundle; modified: call NF, decision Close WorkInterval?; removed: retrieve object WorkOrder, retrieve object WorkInterval
+- NF ACT_WorkOrder_OnRouteToCustomer : modified: create object WorkInterval, retrieve object Bundle
+- NF ACT_WorkOrder_ResumeWorking : modified: create object WorkInterval, java script action call
+- NF ACT_WorkOrder_StartWorking : added: list operation, retrieve object Bundle; modified: create object WorkInterval, call NF; removed: retrieve object WorkInterval
+- NF ACT_WorkOrder_submitTimeReport : added: retrieve object Bundle; modified: call NF; removed: retrieve object Bundle
+- NF DSS_WorkOrder_RetrieveLatestWorkInterval : added: list operation, retrieve object Bundle; removed: retrieve object WorkInterval
+- NF SUB_TimeReportLine_createTravel : added: retrieve object Bundle; modified: list operation; removed: call NF SUB_WorkInterval_retrieveAllFromBundle
+- DEL NF SUB_WorkInterval_retrieveAllFromBundle : deleted
+- NF SUB_WorkOrder_ChangeBundle : modified: retrieve object Bundle
+- NF SUB_WorkOrder_createTimeReport : added: retrieve object Bundle; modified: aggregate list, create variable, list operation, retrieve object Bundle; removed: call NF SUB_WorkInterval_retrieveAllFromBundle
+- PG WorkOrder_Detail : added: list; widget details: list <unknown source>
+- PG WorkOrder_NewEdit : added: list; widget details: list <unknown source>
+
+[TimeReportManagement]
+- NF SUB_TimeReportDay_CreateTimeReportLines : added: retrieve object IteratorWorkOrder; modified: list operation, retrieve; loops: loop payload changed
+- NF SUB_WorkOrder_CalculateHour : added: retrieve object WorkOrder; modified: list operation

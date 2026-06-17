@@ -1,0 +1,23 @@
+#commit:caa7422d
+
+FIN-1153 SvR
+
+
+changes:
+[TWK]
+- MF ACT_Request_Submit : modified: close page
+- MF SUB_FiscalYearPeriodHelper_addBookingHelpers : flows count 17->18; annotations delta: added 1, removed 1, modified 0; annotations added (1): text=Add your annotation here.; annotations removed (1): text=TODO: eventueel ombouwen naar ophalen vanaf het journalitem ipv vanaf de employee costscenter. Antwoord Elsa wachten
+- MF SUB_JournalItem_RetrieveReversableInPeriod : modified: list operation
+- MF SUB_JournalItem_RevertFull : modified: decision Open WBS?
+- MF SUB_Request_createJournalItemsForRequest : modified: list operation; loops: loop payload changed
+- MF SUB_Request_JournalItems_createFromHelper : annotations delta: added 0, removed 0, modified 1; annotations modified (1): text=TODO: Eventueel aanpassen na antwoord elsa. When reversal booking is created, it should always reverse the current alloc... -> text=When reversal booking is created, it should always reverse the current allocation booking.
+- MF SUB_Request_Submit : added: call MF SUB_Request_Submit_PCApproval, call MF SUB_Request_Submit_setAllJournalitemsTrue, call MF SUB_Request_Submit_setPCsInvolved; removed: change list JournalItemList, change list JournalItemList_Selection, change list WBSElementAdded, change object IteratorJournalItem_selected, change object IteratorJournalItem_SetToTrue, change object Request, list operation, retrieve, change variable, commit, create list, create variable, decision Codes Found?, decision Controller found?, decision Is R- or S-project?, decision Requires approval from PC?, decision WBS element double?, decision text=Flag all Research projects as 'open for approval' by setting the boolean, decision text=Require PC approval when the correction is posted TO or FROM a WBS; loops: iterate JournalItemList as IteratorJournalItem (source=IterableList), iterate JournalItemList_Selection as IteratorJournalItem_selected (source=IterableList), iterate JournalItemList_SetToTrue as IteratorJournalItem_SetToTrue (source=IterableList), iterate JournalItemList_WBS_RorS as IteratorJournalItem_forWBS (source=IterableList)
+- NEW MF SUB_Request_Submit_PCApproval : added: change list JournalItemList_copy, change list JournalItemList_Selection, change object IteratorJournalItem_selected, change object Request, commit object JournalItemList_Selection, list operation, create list, retrieve, decision Is R- or S-project?, decision Requires approval from PC?, decision WBS not yet on the list?, decision text=Flag all Research projects as 'open for approval' by setting the boolean, decision text=Require PC approval when the correction is posted TO or FROM a WBS; loops: iterate JournalItemList_copy as IteratorJournalItem (source=IterableList), iterate JournalItemList_Selection as IteratorJournalItem_selected (source=IterableList)
+- NEW MF SUB_Request_Submit_setAllJournalitemsTrue : added: change object IteratorJournalItem_SetToTrue, commit object JournalItemList_SetToTrue, retrieve object JournalItem; loops: iterate JournalItemList_SetToTrue as IteratorJournalItem_SetToTrue (source=IterableList); annotations delta: added 2, removed 0, modified 0; annotations added (2): text=SW 02-02-2023: This loop resets all journalitems isApprovedbyPC back to true such that the next part correctly sets the ...
+- NEW MF SUB_Request_Submit_setPCsInvolved : added: change list WBSElementAdded, change object Request, change variable, create list, create variable, list operation, retrieve, decision Codes Found?, decision Controller found?, decision WBS element double?; loops: iterate JournalItemList_WBS_RorS as IteratorJournalItem_forWBS (source=IterableList)
+- NF DS_SelectJournalItemListForApproval : added: list operation; modified: list operation
+- PG Request_Checkout : added: snippet; widget details: snippet
+- PG Request_CheckoutFromWF : modified: dataview x2; removed: datagrid x1
+
+[WorkflowCustomization]
+- MF OCh_Workflow_State : annotations delta: added 1, removed 1, modified 0; annotations added (1): text=This microflow was previously used as a state change handler, which are no longer supported in Mendix 11. TODO: Adapt th...; annotations removed (1): text=This microflow was previously used as a state change handler, which are no longer supported in Mendix 11. TODO: Adapt th...

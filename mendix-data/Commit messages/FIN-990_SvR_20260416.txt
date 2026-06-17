@@ -1,0 +1,25 @@
+#commit:3b7fb111
+
+FIN-990 SvR
+- added snippet to display aggregate below DG2, added that to ProjectResource page, which now retrieves months and years over nanoflow into dg2
+- salarytier of employee is now logged on project when employee is connected
+
+changes:
+[CustomLogging]
+Domain mode:
+
+- MF SUB_LoggingProjectResource_CreateNew : modified: change object, annotation; removed annotation
+- SNP_LoggingProjectResource_Project : modified
+- SNP_LoggingProjectResource_SingleProjectResource : modified
+
+[General]
+Domain mode:
+
+- NEW SNP_AggegrateGrid : added
+
+[Projects]
+Domain mode:
+
+- NEW NF DS_ProjectResource_getMonthsfromProjectYear : added: list operation, retrieve object ProjectYear
+- NEW NF DS_ProjectResource_getProjectYears : added: list operation, retrieve object ProjectResource
+- PG ProjectResource_NewEdit : added: button, snippet; widget details: button call MF ACT_ProjectResource_ChangeFTE, button call MF ACT_ProjectResource_OpenMonthlyCostEditPage, snippet

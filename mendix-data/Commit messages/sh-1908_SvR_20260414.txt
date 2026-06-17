@@ -1,0 +1,30 @@
+#commit:b112da57
+
+sh-1908 SvR
+modified layout templates of database pages
+
+changes:
+[MxModelReflection]
+Domain mode:
+
+- PG MxObjects_Overview : modified
+
+[Portal]
+Domain mode:
+
+- NEW SelektHuis_settingspages : added
+- SelektHuis_Topbar : modified
+- PG ClickhouseEmployee_Detail : modified: dataview x1
+- PG Home : modified: buttons x1, dataview x1
+- PG Service_Overview : added: button, list, snippet; widget details: button call MF ACT_ServicePoint_Save, list DSS_Trajectory_RetrieveLeadingTrajectoryCurrentUser, list DSS_ServicePointHelper_FindOrCreate, snippet
+
+[SAML20]
+Domain mode:
+
+- PG SAMLConfigOverview : modified
+- SAMLConfiguration_Overview : modified
+
+[TaskQueueHelpers]
+Domain mode:
+
+- PG MonitoringDashboard : modified

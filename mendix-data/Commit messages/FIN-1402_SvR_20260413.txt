@@ -1,0 +1,12 @@
+#commit:f269b60b
+
+FIN-1402 SvR
+Fixed checkbox allignin in transfertoRS popup
+IXAGO project page now displays faculty/department/section when project is attached
+
+changes:
+[IXAGOProject]
+Domain mode:
+
+- PG IXAProject_TransferToRSProject : modified: dataview x1
+- SNP_IXAGOProject_Details : modified
