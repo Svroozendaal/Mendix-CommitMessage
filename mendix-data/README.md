@@ -8,6 +8,12 @@ Subfolders:
 - `processed`: raw files moved after successful downstream processing.
 - `errors`: raw files moved when downstream processing fails.
 - `dumps`: full `mx dump-mpr` working/HEAD artifacts persisted during export for deep model inspection.
+- `Commit messages`: stored commit messages (`<storyId>_<signature>_<date>.txt`, `#commit:` header).
+
+Files (not subfolders):
+
+- `apps-registry.json`: registry of Mendix apps/branches and their on-disk working-copy locations,
+  maintained by `ACM/AI-tools/ACM-Writer.md` so the parser can be driven without re-supplying paths.
 
 Override at runtime with environment variable `MENDIX_GIT_DATA_ROOT`.
 

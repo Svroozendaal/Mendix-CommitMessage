@@ -1,6 +1,10 @@
-# Generic Brain — Setup Guide
+# Dev-brain — ACM AI Brain
 
-A minimal, reusable AI brain for Claude Code. Provides brain development (write/maintain agents + skills) and app development (ad-hoc code changes with review) out of the box. No flow A/B design pipeline, no Jira, no deployment agent — just the bare essentials.
+The AI brain for the **ACM** (`AutoCommitMessage`) project. It combines the generic
+Claude Code brain (write/maintain agents + skills; ad-hoc code changes with review)
+with **ACM application knowledge** under `app-context/` (integrated from the former
+`Dev_brain`). Use it for brain development, grounded ad-hoc development against the
+live `ACM/` codebase, and the ACM-specific gap-closing rule loop.
 
 ---
 
@@ -10,7 +14,8 @@ A minimal, reusable AI brain for Claude Code. Provides brain development (write/
 | Agent | Command | Purpose |
 |---|---|---|
 | `brain-builder` | `/brain` | Write/maintain agents, skills, KB content; explain the brain |
-| `development-agent` | `/dev-task` | Execute ad-hoc code changes with approach approval + diff review |
+| `development-agent` | `/dev-task` | Execute ad-hoc ACM code changes with approach approval + diff review, grounded in app-context |
+| `parser-upgrader` | `/parser-upgrader` | Improve the ACM parser: close DIFF/CONVERTER gaps between dump-diff extraction and displayText formatting (rule-growth loop) |
 | `flow-developer` | `/improve` | Process improvement-backlog entries one by one with approval |
 
 ### Skills
@@ -24,6 +29,15 @@ A minimal, reusable AI brain for Claude Code. Provides brain development (write/
 | `best-practices` | Serve coding standards + platform rules |
 | `code-review` | Self-review before diff presentation |
 | `dev-library` | Registry of per-topic skills (empty — grows with your project) |
+
+### App-context (ACM knowledge)
+| File | Purpose |
+|---|---|
+| `app-context/overview.md` | What ACM is, current shape, and the `ACM/` path map |
+| `app-context/PRODUCT_PLAN.md` | Product intent, capabilities, boundaries, improvement backlog |
+| `app-context/features/` | Per-feature behaviour + implementation references |
+
+Canonical technical docs: `.app-info/docs/`. Mendix domain skills: `ACM/AI-tools/skills/`.
 
 ---
 

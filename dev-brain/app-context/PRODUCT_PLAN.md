@@ -1,11 +1,15 @@
 # PRODUCT_PLAN
-## Mendix Studio Pro 10 Change Analysis and Export Extension
+## Mendix Studio Pro 10 Change Analysis and Export
 
-> This plan describes the current implementation and short-term improvement direction.
+> This plan describes the product intent and improvement direction. For the
+> current code shape and path map, read `overview.md` first — the live
+> implementation is the localhost web app under `ACM/`.
 
 ## Product statement
 
-`AutoCommitMessage` is a Studio Pro 10 extension that helps developers inspect uncommitted Mendix model changes and export structured, deterministic change data for downstream commit-message tooling.
+`AutoCommitMessage` helps Mendix developers inspect uncommitted Mendix model
+changes and export structured, deterministic change data for downstream
+commit-message tooling.
 
 ## Current users
 
@@ -14,28 +18,28 @@
 
 ## Problem addressed
 
-Mendix project changes in `.mpr` are not directly readable in standard Git text diffs. The extension closes this gap by:
+Mendix project changes in `.mpr` are not directly readable in standard Git text diffs. ACM closes this gap by:
 
 1. Detecting relevant uncommitted changes (`.mpr`, `.mprops`).
 2. Deriving model-level semantic changes from dump comparisons.
-3. Presenting grouped model changes in Studio Pro.
+3. Presenting grouped model changes.
 4. Exporting stable JSON that other automation can process.
 
 ## Implemented capabilities (current state)
 
-1. Dockable-pane UI inside Studio Pro for changed files, diff text, and grouped model changes.
+1. UI for changed files, diff text, and grouped model changes.
 2. Internal web routes for initial load, refresh, and export actions.
 3. Filtered Git status and patch analysis via `LibGit2Sharp`.
 4. Working vs HEAD `mx dump-mpr` analysis for changed `.mpr` files.
 5. Module/category grouping of model changes (`DomainModel`, `Microflows`, `Pages`, `Nanoflows`, `Resources`).
 6. Deterministic `displayText` generation for model changes.
 7. JSON export with schema version, metadata, grouped changes, and optional dump artefact paths.
-8. Scripted build/deploy/start workflow with `.env` support.
+8. Scripted build/run workflow with `.env` support.
 
 ## Product boundaries (non-goals)
 
 1. No full Git client replacement (commit history, rebase, push/pull, merge resolution).
-2. No external hosted API calls in extension runtime.
+2. No external hosted API calls in runtime.
 3. No direct commit creation in current UI.
 4. No broad platform integration outside the defined local export pipeline.
 
@@ -50,19 +54,19 @@ Mendix project changes in `.mpr` are not directly readable in standard Git text 
 
 High-level flow:
 
-1. Studio Pro opens extension pane.
-2. Extension reads local repository state.
+1. The app/UI is opened.
+2. ACM reads local repository state.
 3. Changed `.mpr` files are dumped and semantically compared.
-4. UI displays grouped changes.
-5. Export action writes JSON payload to configured data root.
+4. The UI displays grouped changes.
+5. Export action writes JSON payload to the configured data root.
 
-Primary technical docs:
+Primary technical docs (canonical):
 
-- `studio-pro-extension-csharp/Docs/README.md`
-- `studio-pro-extension-csharp/Docs/ARCHITECTURE.md`
-- `studio-pro-extension-csharp/Docs/PROCESSING_PIPELINE.md`
-- `studio-pro-extension-csharp/Docs/EXPORT_CONTRACT.md`
-- `studio-pro-extension-csharp/Docs/REPOSITORY_WORKFLOWS.md`
+- `.app-info/docs/README.md`
+- `.app-info/docs/ARCHITECTURE.md`
+- `.app-info/docs/PROCESSING_PIPELINE.md`
+- `.app-info/docs/EXPORT_CONTRACT.md`
+- `.app-info/docs/REPOSITORY_WORKFLOWS.md`
 
 ## Improvement backlog (based on current implementation)
 
@@ -75,15 +79,14 @@ Primary technical docs:
 
 ## Operational workflow summary
 
-1. Developer builds and deploys extension into app `extensions/AutoCommitMessage`.
-2. Developer starts Studio Pro with extension development enabled.
-3. Developer opens pane and validates change analysis.
-4. Developer exports payload to `mendix-data/exports`.
-5. Downstream parser pipeline consumes and processes exported payloads.
+1. Developer builds and runs the app (`./open-browser-app.ps1`).
+2. Developer opens the UI and validates change analysis.
+3. Developer exports payload to `mendix-data/exports`.
+4. Downstream parser pipeline consumes and processes exported payloads.
 
 Detailed workflow documentation:
 
-- `studio-pro-extension-csharp/Docs/REPOSITORY_WORKFLOWS.md`
+- `.app-info/docs/REPOSITORY_WORKFLOWS.md`
 
 ## Risks and constraints
 
@@ -96,5 +99,4 @@ Detailed workflow documentation:
 
 Pending product-owner input is tracked in:
 
-- `studio-pro-extension-csharp/Docs/OPEN_QUESTIONS.md`
-
+- `.app-info/docs/OPEN_QUESTIONS.md`

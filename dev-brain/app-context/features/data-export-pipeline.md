@@ -22,10 +22,10 @@ Export deterministic JSON payloads representing uncommitted Mendix changes so do
 
 ## Implementation references
 
-- `studio-pro-extension-csharp/Processing/Services/AutoCommitMessageExportService.cs`
-- `studio-pro-extension-csharp/Processing/Core/ExtensionDataPaths.cs`
-- `studio-pro-extension-csharp/UI/Web/AutoCommitMessageWebServerExtension.cs`
-- `studio-pro-extension-csharp/Docs/EXPORT_CONTRACT.md`
+- `ACM/parserfolder/Processing/Services/AutoCommitMessageExportService.cs`
+- `ACM/parserfolder/Processing/Core/ExtensionDataPaths.cs`
+- `ACM/applicatiefolder/Web/AutoCommitMessageWebServerExtension.cs`
+- `.app-info/docs/EXPORT_CONTRACT.md`
 
 ## Contract notes
 

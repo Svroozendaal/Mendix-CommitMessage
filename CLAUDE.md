@@ -16,7 +16,9 @@ change data for commit-message tooling. It runs as a local browser app on
     shared HTTP handler and HTML/asset resources.
   - `ACM/AI-tools/` — Mendix domain knowledge (skills): SDK, Studio Pro 10
     constraints, model-dump inspection, commit-message structuring rules.
-- `Dev_brain/` — product/project knowledge (product plan, features, agents).
+- `dev-brain/` — the AI brain for ACM: agents (`development-agent`, `parser-upgrader`,
+  `brain-builder`, `flow-developer`), skills, and `app-context/` (ACM product plan,
+  features, overview). See `dev-brain/README.md`.
 - `.app-info/docs/` — technical documentation (ARCHITECTURE, PROCESSING_PIPELINE,
   EXPORT_CONTRACT, etc.).
 - `mendix-data/` — runtime data root (exports, dumps, commit messages).

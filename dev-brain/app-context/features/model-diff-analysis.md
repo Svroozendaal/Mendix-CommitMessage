@@ -10,7 +10,7 @@ Generate semantic model-level changes for modified Mendix model files (`.mpr`) b
 
 ## Current behaviour
 
-1. For each changed `.mpr`, the extension creates a working dump using `mx dump-mpr`.
+1. For each changed `.mpr`, ACM creates a working dump using `mx dump-mpr`.
 2. Reconstructs a `HEAD` workspace and dumps the historical `.mpr` snapshot.
 3. Compares dumps semantically and outputs `MendixModelChange` records.
 4. Adds resource-specific details for entities, associations, flows, pages, and enumerations.
@@ -18,11 +18,11 @@ Generate semantic model-level changes for modified Mendix model files (`.mpr`) b
 
 ## Implementation references
 
-- `studio-pro-extension-csharp/Processing/Services/AutoCommitMessageChangeService.cs`
-- `studio-pro-extension-csharp/Processing/Services/MxToolService.cs`
-- `studio-pro-extension-csharp/Processing/ModelDiff/MendixModelDiffService.cs`
-- `studio-pro-extension-csharp/Processing/ModelDiff/MendixModelChangeStructurer.cs`
-- `studio-pro-extension-csharp/Processing/Formatting/MendixModelChangeDisplayTextFormatter.cs`
+- `ACM/parserfolder/Processing/Services/AutoCommitMessageChangeService.cs`
+- `ACM/parserfolder/Processing/Services/MxToolService.cs`
+- `ACM/parserfolder/Processing/ModelDiff/MendixModelDiffService.cs`
+- `ACM/parserfolder/Processing/ModelDiff/MendixModelChangeStructurer.cs`
+- `ACM/parserfolder/Processing/Formatting/MendixModelChangeDisplayTextFormatter.cs`
 
 ## Error and fallback behaviour
 

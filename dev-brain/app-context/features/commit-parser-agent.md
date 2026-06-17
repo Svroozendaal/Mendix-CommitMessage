@@ -6,21 +6,21 @@
 
 ## Goal
 
-Provide predictable exported input for the downstream commit parser and commit-message generation workflow managed through app-specific skills.
+Provide predictable exported input for the downstream commit parser and commit-message generation workflow managed through the Mendix domain skills.
 
 ## Current behaviour
 
-1. Extension export payloads are written to the shared data root (`mendix-data/exports` by default).
+1. Export payloads are written to the shared data root (`mendix-data/exports` by default).
 2. Payload includes grouped model changes and deterministic `displayText` values.
 3. Folder contract reserves `processed`, `errors`, and `structured` for parser pipeline stages.
-4. Feature and workflow documentation links parser owners to the extension export contract.
+4. Feature and workflow documentation links parser owners to the export contract.
 
 ## Integration references
 
-- `studio-pro-extension-csharp/Docs/EXPORT_CONTRACT.md`
-- `.app-info/skills/mendix-commit-structuring/SKILL.md`
-- `.app-info/skills/mendix-technical-commit-message/SKILL.md`
-- `.app-info/features/data-export-pipeline.md`
+- `.app-info/docs/EXPORT_CONTRACT.md`
+- `ACM/AI-tools/skills/mendix-commit-structuring/SKILL.md`
+- `ACM/AI-tools/skills/mendix-technical-commit-message/SKILL.md`
+- `data-export-pipeline.md`
 
 ## Constraints
 

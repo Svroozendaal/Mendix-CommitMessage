@@ -8,7 +8,8 @@ One sentence per command. See [CONVENTIONS.md](CONVENTIONS.md) for the full desc
 
 | Command | Description |
 |---|---|
-| `/dev-task` | Ad-hoc change via development-agent in loose-mode. Requires live codebase. Delivers diff.md review. |
+| `/dev-task` | Ad-hoc change via development-agent in loose-mode against the live ACM codebase. Grounded in app-context. Delivers diff.md review. |
+| `/parser-upgrader` | Activate parser-upgrader: improve the parser by classifying and closing DIFF/CONVERTER gaps between dump-diff extraction and displayText formatting; additive Dxxx/Cxxx/Axxx rules, approved per rule. |
 
 ## Meta commands
 

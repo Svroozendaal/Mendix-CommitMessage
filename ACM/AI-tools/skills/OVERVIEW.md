@@ -19,6 +19,13 @@ App-specific skills are used when:
 | Mendix Model Dump Inspection | `mendix-model-dump-inspection/` | Inspecting dump outputs, maintaining diff parser contracts, and evolving deterministic diff rules (`Dxxx`) |
 | Mendix Commit Structuring | `mendix-commit-structuring/` | Structuring commit data for the parser pipeline |
 | Mendix Technical Commit Message | `mendix-technical-commit-message/` | Rule-driven conversion of module-grouped export data into technical commit message lines |
+| ACM Parser Usage | `acm-parser-usage/` | How to drive the ACM parser end to end: Mendix version, `.mpr` working copy, and where results land in `mendix-data` |
+
+## Agents
+
+| Agent | File | Description |
+|---|---|---|
+| ACM-Writer | `../ACM-Writer.md` | Entry point for any AI using the parser: resolves app/branch locations from the apps registry, runs the parser via `acm-parser-usage`, and writes raw changes + commit messages into `mendix-data` |
 
 ## Adding a New App-Specific Skill
 
