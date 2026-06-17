@@ -20,6 +20,13 @@
     <PackageReference Include="LibGit2Sharp" Version="0.30.0" />
   </ItemGroup>
 
+  <!-- Web handler and tests live in sibling assemblies but use the parser internals
+       (services, ExtensionConstants, ExtensionDataPaths) that were same-assembly before the split. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="AutoCommitMessage.Standalone" />
+    <InternalsVisibleTo Include="AutoCommitMessage.Tests" />
+  </ItemGroup>
+
   <!-- Default mendix-data root, read back at runtime by ExtensionDataPaths via assembly metadata. -->
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
