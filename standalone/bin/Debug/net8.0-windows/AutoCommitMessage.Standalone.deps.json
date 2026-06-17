@@ -97,14 +97,7 @@
           }
         }
       },
-      "Microsoft.Extensions.ObjectPool/6.0.16": {
-        "runtime": {
-          "lib/net6.0/Microsoft.Extensions.ObjectPool.dll": {
-            "assemblyVersion": "6.0.0.0",
-            "fileVersion": "6.0.1623.17406"
-          }
-        }
-      },
+      "Microsoft.Extensions.ObjectPool/6.0.16": {},
       "System.ComponentModel.Composition/8.0.0": {
         "runtime": {
           "lib/net8.0/System.ComponentModel.Composition.dll": {
@@ -118,32 +111,12 @@
       "System.Security.Cryptography.Pkcs/8.0.0": {
         "dependencies": {
           "System.Formats.Asn1": "8.0.0"
-        },
-        "runtime": {
-          "lib/net8.0/System.Security.Cryptography.Pkcs.dll": {
-            "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
-          }
-        },
-        "runtimeTargets": {
-          "runtimes/win/lib/net8.0/System.Security.Cryptography.Pkcs.dll": {
-            "rid": "win",
-            "assetType": "runtime",
-            "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
-          }
         }
       },
       "System.Security.Cryptography.Xml/6.0.1": {
         "dependencies": {
           "System.Security.AccessControl": "6.0.0",
           "System.Security.Cryptography.Pkcs": "8.0.0"
-        },
-        "runtime": {
-          "lib/net6.0/System.Security.Cryptography.Xml.dll": {
-            "assemblyVersion": "6.0.0.0",
-            "fileVersion": "6.0.822.36306"
-          }
         }
       },
       "System.ServiceModel.Primitives/8.0.0": {

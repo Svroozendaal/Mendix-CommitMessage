@@ -144,19 +144,8 @@ internal static class MendixModelChangeStructurer
                 associationDetails));
         }
 
-        // Keep explicit association rows in Resources so grouped output can provide a complete element overview.
-        var existingResourceKeys = moduleBucket.Resources
-            .Select(change => $"{change.ChangeType}|{change.ElementType}|{change.ElementName}")
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        foreach (var associationChange in moduleBucket.Associations)
-        {
-            var associationKey = $"{associationChange.ChangeType}|{associationChange.ElementType}|{associationChange.ElementName}";
-            if (existingResourceKeys.Add(associationKey))
-            {
-                moduleBucket.Resources.Add(associationChange);
-            }
-        }
-
+        // Parseable associations are merged into their parent entity row above; they are not re-emitted
+        // as standalone resource rows. Unparseable associations were already kept in Resources as a fallback.
         moduleBucket.Associations.Clear();
     }
 

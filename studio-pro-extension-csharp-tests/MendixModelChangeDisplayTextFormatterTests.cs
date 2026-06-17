@@ -16,7 +16,7 @@ public class MendixModelChangeDisplayTextFormatterTests
             "actions removed (1): ValidationFeedbackAction x1; " +
             "removed action details: ValidationFeedbackAction: action payload changed; " +
             "decisions delta: added 0, removed 1, modified 1; " +
-            "decisions removed (1): FTE >=0 expression=$JournalItem/Quantity >= 0; " +
+            "decisions removed (1): EntryType is TWK? expression=$JournalItem/EntryType = TWK.Enum.TWK; " +
             "decisions modified (1): is TWK? expression=$JournalItem/EntryType = TWK.Enum_JournalItemType.TWK -> is TWK? expression=$JournalItem/EntryType";
 
         var change = new MendixModelChange(
@@ -27,8 +27,9 @@ public class MendixModelChangeDisplayTextFormatterTests
 
         var displayText = change.DisplayText;
 
-        Assert.Contains("removed: validation feedback, decision FTE >=0", displayText);
+        Assert.Contains("removed: decision EntryType is TWK?", displayText);
         Assert.Contains("modified: decision is TWK?", displayText);
+        Assert.DoesNotContain("validation feedback", displayText, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("decisions:", displayText, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -55,7 +56,7 @@ public class MendixModelChangeDisplayTextFormatterTests
     }
 
     [Fact]
-    public void DisplayText_FlowAnnotationAdded_AppearsInsideAddedBucket()
+    public void DisplayText_FlowAnnotationOnlyChange_IsSuppressedAndRendersModified()
     {
         var details =
             "annotations delta: added 1, removed 0, modified 0; " +
@@ -69,9 +70,31 @@ public class MendixModelChangeDisplayTextFormatterTests
 
         var displayText = change.DisplayText;
 
-        Assert.Contains("added annotation", displayText);
+        Assert.EndsWith(": modified", displayText);
+        Assert.DoesNotContain("annotation", displayText, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Need validation", displayText, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("annotations delta:", displayText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void DisplayText_FlowAnnotationAlongsideActions_DropsOnlyAnnotation()
+    {
+        var details =
+            "actions delta: added 1, removed 0, modified 0; " +
+            "actions added (1): ChangeVariableAction x1; " +
+            "added action details: ChangeVariableAction: change variable isOk=false; " +
+            "annotations delta: added 1, removed 0, modified 0; " +
+            "annotations added (1): text=Need validation";
+
+        var change = new MendixModelChange(
+            ChangeType: "Modified",
+            ElementType: "Microflow",
+            ElementName: "New_Module.ACO_new",
+            Details: details);
+
+        var displayText = change.DisplayText;
+
+        Assert.Contains("added: change variable", displayText);
+        Assert.DoesNotContain("annotation", displayText, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

@@ -1,4 +1,14 @@
+using System.Diagnostics;
 using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using AutoCommitMessage;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace AutoCommitMessage.Standalone;
 
@@ -7,72 +17,70 @@ internal static class Program
     private static async Task Main(string[] args)
     {
         LoadDotEnv();
-        var port = ResolvePort(args);
-        var prefix = $"http://localhost:{port}/";
+        ApplyPathArgument(args);
 
-        using var listener = new HttpListener();
-        listener.Prefixes.Add(prefix);
+        var preferredPort = ResolvePort(args);
+        var port = ResolveUsablePort(preferredPort);
+        if (port != preferredPort)
+        {
+            Console.WriteLine($"Port {preferredPort} is unavailable on this machine; using {port} instead.");
+        }
+
+        var url = $"http://localhost:{port}";
+        var openBrowser = !HasFlag(args, "--no-browser");
+
+        var builder = WebApplication.CreateBuilder(args);
+        builder.WebHost.UseUrls(url);
+        // Keep the console quiet — this is an end-user app, not a server log.
+        builder.Logging.ClearProviders();
+        builder.Logging.AddSimpleConsole(options => options.SingleLine = true);
+        builder.Logging.SetMinimumLevel(LogLevel.Warning);
+
+        var app = builder.Build();
+
+        // Single terminal handler — delegate every request to the shared router.
+        app.Run(async context =>
+        {
+            await AutoCommitMessageWebServerExtension.HandleRequestCoreAsync(
+                new KestrelRequestAdapter(context.Request),
+                new KestrelResponseAdapter(context.Response),
+                context.RequestAborted);
+        });
 
         try
         {
-            listener.Start();
+            await app.StartAsync();
         }
-        catch (HttpListenerException ex)
+        catch (Exception ex)
         {
-            Console.Error.WriteLine($"Failed to start listener on {prefix}: {ex.Message}");
-            Console.Error.WriteLine("Try running as administrator, or choose a different port with --port <number>.");
+            Console.Error.WriteLine($"Failed to start the web server on {url}: {ex.Message}");
+            Console.Error.WriteLine($"The port may be in use. Try a different one with --port <number>.");
             Environment.Exit(1);
+            return;
         }
 
-        Console.WriteLine($"AutoCommitMessage running at http://localhost:{port}");
+        Console.WriteLine($"AutoCommitMessage running at {url}");
         Console.WriteLine("Press Ctrl+C to stop.");
 
-        using var cts = new CancellationTokenSource();
-        Console.CancelKeyPress += (_, e) =>
+        if (openBrowser)
         {
-            e.Cancel = true;
-            cts.Cancel();
-        };
-
-        while (!cts.Token.IsCancellationRequested)
-        {
-            HttpListenerContext context;
-            try
-            {
-                context = await listener.GetContextAsync().WaitAsync(cts.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            catch (HttpListenerException)
-            {
-                break;
-            }
-
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await AutoCommitMessageWebServerExtension.HandleRequestAsync(
-                        context.Request,
-                        context.Response,
-                        CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Request error: {ex.Message}");
-                    try { context.Response.StatusCode = 500; } catch { }
-                }
-                finally
-                {
-                    try { context.Response.Close(); } catch { }
-                }
-            });
+            TryOpenBrowser(url);
         }
 
-        listener.Stop();
+        await app.WaitForShutdownAsync();
         Console.WriteLine("Server stopped.");
+    }
+
+    private static void TryOpenBrowser(string url)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch
+        {
+            Console.WriteLine($"Open {url} in your browser to get started.");
+        }
     }
 
     private static int ResolvePort(string[] args)
@@ -95,6 +103,66 @@ internal static class Program
         }
 
         return 3109;
+    }
+
+    /// <summary>
+    /// Returns the preferred port if it can actually be bound on loopback, otherwise an
+    /// OS-assigned free port. Some Windows machines reserve/exclude port ranges (Hyper-V, WSL,
+    /// Docker), so binding the default port can fail with a socket-access error — in that case we
+    /// transparently fall back rather than crashing.
+    /// </summary>
+    private static int ResolveUsablePort(int preferredPort)
+    {
+        if (CanBind(preferredPort))
+        {
+            return preferredPort;
+        }
+
+        // Ask the OS for any free loopback port.
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var freePort = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return freePort;
+    }
+
+    private static bool CanBind(int port)
+    {
+        TcpListener? listener = null;
+        try
+        {
+            listener = new TcpListener(IPAddress.Loopback, port);
+            listener.Start();
+            return true;
+        }
+        catch (SocketException)
+        {
+            return false;
+        }
+        finally
+        {
+            listener?.Stop();
+        }
+    }
+
+    private static bool HasFlag(string[] args, string flag) =>
+        args.Any(arg => string.Equals(arg, flag, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Reads an optional <c>--path &lt;dir&gt;</c> argument and exposes it as MENDIX_APP_PATH, the
+    /// variable the shared handler falls back to when no projectPath query parameter is supplied.
+    /// </summary>
+    private static void ApplyPathArgument(string[] args)
+    {
+        for (var i = 0; i < args.Length - 1; i++)
+        {
+            if (string.Equals(args[i], "--path", StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrWhiteSpace(args[i + 1]))
+            {
+                Environment.SetEnvironmentVariable("MENDIX_APP_PATH", args[i + 1]);
+                return;
+            }
+        }
     }
 
     /// <summary>
@@ -161,5 +229,53 @@ internal static class Program
             }
         }
     }
+}
 
+/// <summary>Adapts an ASP.NET Core <see cref="HttpRequest"/> to the shared handler abstraction.</summary>
+internal sealed class KestrelRequestAdapter : IAcmHttpRequest
+{
+    private readonly HttpRequest _request;
+
+    public KestrelRequestAdapter(HttpRequest request)
+    {
+        _request = request;
+        // Reconstruct an absolute Uri so the shared query-string parsing works unchanged.
+        Url = new Uri($"{request.Scheme}://{request.Host}{request.PathBase}{request.Path}{request.QueryString}");
+    }
+
+    public Uri? Url { get; }
+
+    public Encoding ContentEncoding => Encoding.UTF8;
+
+    public Stream InputStream => _request.Body;
+}
+
+/// <summary>Adapts an ASP.NET Core <see cref="HttpResponse"/> to the shared handler abstraction.</summary>
+internal sealed class KestrelResponseAdapter : IAcmHttpResponse
+{
+    private readonly HttpResponse _response;
+
+    public KestrelResponseAdapter(HttpResponse response) => _response = response;
+
+    public int StatusCode
+    {
+        get => _response.StatusCode;
+        set => _response.StatusCode = value;
+    }
+
+    public string ContentType
+    {
+        get => _response.ContentType ?? string.Empty;
+        set => _response.ContentType = value;
+    }
+
+    public long ContentLength64
+    {
+        get => _response.ContentLength ?? 0;
+        set => _response.ContentLength = value;
+    }
+
+    public void SetHeader(string name, string value) => _response.Headers[name] = value;
+
+    public Stream OutputStream => _response.Body;
 }

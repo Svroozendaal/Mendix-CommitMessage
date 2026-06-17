@@ -180,7 +180,13 @@ If `elementType` is not in the dictionary, leave abbreviation empty.
     - `associations removed (<n>): ...`
   - Merge aggregated association details into the parent entity `details`.
   - If parent entity has no row yet, create a synthetic `Modified Entity` row for that parent.
+  - Parseable association rows are represented **only** on their parent entity; they are **not**
+    re-emitted as standalone `resources` rows (no `NEW <Entity>_<Child> : parent=...; association=...` line).
   - Keep unparseable association rows in `resources` as fallback.
+- Example input (changes):
+  - `Added Association Service.WerkbonOA_WorkOrder : parent=Service.WerkbonOA; association=[1-1] WorkOrder (owner=Both)`
+- Example output (on the entity row, no standalone association row):
+  - `NEW WerkbonOA : associations added (1): [1-1] WorkOrder (owner=Both)`
 
 ### C011 - Entity Empty-Details Rendering
 
@@ -216,33 +222,18 @@ If `elementType` is not in the dictionary, leave abbreviation empty.
     - `decisions removed (...)` -> `removed`
   - Render each decision as `decision <Caption>` and append to the matching bucket list.
   - Do not emit a standalone `decisions:` section.
+  - `ValidationFeedbackAction` items are suppressed before bucket rendering (see `C021`).
 - Example input:
-  - `...; actions removed (1): ValidationFeedbackAction x1; ...; decisions removed (1): FTE >=0 expression=...; decisions modified (1): is TWK? expression=... -> is TWK? expression=...`
+  - `...; actions removed (1): ValidationFeedbackAction x1; ...; decisions removed (1): EntryType is TWK? expression=...; decisions modified (1): is TWK? expression=... -> is TWK? expression=...`
 - Example output:
-  - `removed: validation feedback, decision FTE >=0; modified: decision is TWK?`
+  - `removed: decision EntryType is TWK?; modified: decision is TWK?`
 
-### C014 - Flow Annotation Bucket Alignment
+### C014 - Flow Annotation Bucket Alignment (SUPERSEDED by C022)
 
 - Rule ID: `C014`
-- Purpose: keep annotation deltas inside action buckets so flow output stays grouped by `added/modified/removed`.
-- Applies to:
-  - `elementType = Microflow|Nanoflow`
-  - compacted flow details built from `annotations delta` anchors
-- Logic:
-  - Parse annotation labels per bucket:
-    - `annotations added (...)` -> `added`
-    - `annotations modified (...)` -> `modified`
-    - `annotations removed (...)` -> `removed`
-  - Do not render annotation payload text/captions in `displayText`.
-  - Render generic annotation phrases only:
-    - standalone bucket summary: `added annotation`, `modified annotation`, `removed annotation`
-    - mixed bucket summary (with other items): `annotation`
-  - Do not emit a standalone `annotations:` section.
-  - Do not parse annotation text content (e.g. `text=...`); extract only the presence indicator.
-- Example input:
-  - `annotations delta: added 1, removed 0, modified 0; annotations added (1): text=Need validation`
-- Example output:
-  - `added annotation`
+- Status: **superseded** — annotations are no longer rendered in flow `displayText`. See `C022`.
+- Historical purpose: kept annotation deltas inside action buckets, rendering generic
+  `added annotation` / `modified annotation` / `removed annotation` phrases. This behavior is removed.
 
 ### C015 - Page Functional Widget-Only Rendering
 
@@ -387,6 +378,39 @@ If `elementType` is not in the dictionary, leave abbreviation empty.
 - Example output:
   - `updated`
 
+### C021 - Validation Feedback Action Suppression
+
+- Rule ID: `C021`
+- Purpose: omit `ValidationFeedbackAction` from flow action buckets — validation feedback is implementation
+  noise that does not need to be written out.
+- Applies to:
+  - `elementType = Microflow|Nanoflow`
+  - compacted flow details built from `actions delta` anchors (added/modified/removed buckets)
+- Logic:
+  - Treat `ValidationFeedbackAction` as a suppressed action type.
+  - Produce no bucket item for it; remaining actions/decisions in the same bucket render normally.
+  - If a bucket contains only suppressed actions, that bucket is omitted.
+- Example input:
+  - `actions removed (1): ValidationFeedbackAction x1; removed action details: ValidationFeedbackAction: action payload changed; decisions removed (1): EntryType is TWK? expression=...`
+- Example output:
+  - `removed: decision EntryType is TWK?`
+
+### C022 - Flow Annotation Suppression (supersedes C014)
+
+- Rule ID: `C022`
+- Purpose: never write annotation changes into flow `displayText` — annotations are documentation-only and
+  carry no functional signal.
+- Applies to:
+  - `elementType = Microflow|Nanoflow`
+  - any `annotations delta` / `annotations added|removed|modified (...)` detail segments
+- Logic:
+  - Strip every `annotations <delta|added|removed|modified> ...` segment from details before bucket rendering.
+  - Do not parse annotation captions/text and do not emit `annotation` bucket phrases.
+  - A flow whose only change is annotations falls through to the generic `modified` fallback (see `C004`).
+- Example input:
+  - `annotations delta: added 1, removed 0, modified 0; annotations added (1): text=Need validation`
+- Example output:
+  - `modified`
 
 
 

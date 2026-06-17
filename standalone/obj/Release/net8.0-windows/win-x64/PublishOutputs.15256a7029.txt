@@ -1,0 +1,4 @@
+C:\Workspace\Mendix-AutoCommitMessage\artifact\AutoCommitMessage.Standalone.pdb
+C:\Workspace\Mendix-AutoCommitMessage\artifact\manifest.json
+C:\Workspace\Mendix-AutoCommitMessage\artifact\AutoCommitMessage.pdb
+C:\Workspace\Mendix-AutoCommitMessage\artifact\AutoCommitMessage.Standalone.exe

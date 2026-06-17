@@ -12,10 +12,7 @@ C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\AutoCo
 C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\AutoCommitMessage.Standalone.pdb
 C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\LibGit2Sharp.dll
 C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\Mendix.StudioPro.ExtensionsAPI.dll
-C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\Microsoft.Extensions.ObjectPool.dll
 C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\System.ComponentModel.Composition.dll
-C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\System.Security.Cryptography.Pkcs.dll
-C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\System.Security.Cryptography.Xml.dll
 C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\System.ServiceModel.Primitives.dll
 C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\cs\System.ServiceModel.Primitives.resources.dll
 C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\de\System.ServiceModel.Primitives.resources.dll
@@ -41,7 +38,6 @@ C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\runtim
 C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\runtimes\win-arm64\native\git2-a418d9d.dll
 C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\runtimes\win-x64\native\git2-a418d9d.dll
 C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\runtimes\win-x86\native\git2-a418d9d.dll
-C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
 C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\AutoCommitMessage.dll
 C:\Workspace\Mendix-AutoCommitMessage\standalone\bin\Debug\net8.0-windows\AutoCommitMessage.pdb
 C:\Workspace\Mendix-AutoCommitMessage\standalone\obj\Debug\net8.0-windows\AutoComm.55403F45.Up2Date

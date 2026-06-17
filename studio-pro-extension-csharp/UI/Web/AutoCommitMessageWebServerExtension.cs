@@ -2,7 +2,6 @@ using System.ComponentModel.Composition;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using System.Windows.Forms;
 using LibGit2Sharp;
 using Mendix.StudioPro.ExtensionsAPI.UI.WebServer;
 
@@ -16,9 +15,26 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
         webServer.AddRoute(ExtensionConstants.WebServerRoutePrefix, HandleRequestAsync);
     }
 
-    public static async Task HandleRequestAsync(
-        HttpListenerRequest request,
-        HttpListenerResponse response,
+    /// <summary>
+    /// Entry point used by the Mendix Studio Pro web server, whose route delegate hands us
+    /// <see cref="HttpListener"/> types. Wraps them in adapters and delegates to the shared core.
+    /// </summary>
+    public static Task HandleRequestAsync(
+        HttpListenerRequest httpListenerRequest,
+        HttpListenerResponse httpListenerResponse,
+        CancellationToken cancellationToken) =>
+        HandleRequestCoreAsync(
+            new HttpListenerRequestAdapter(httpListenerRequest),
+            new HttpListenerResponseAdapter(httpListenerResponse),
+            cancellationToken);
+
+    /// <summary>
+    /// Shared request router. Works on top of any <see cref="IAcmHttpRequest"/>/<see cref="IAcmHttpResponse"/>
+    /// pair, so the same logic serves both the Studio Pro extension and the standalone Kestrel app.
+    /// </summary>
+    public static async Task HandleRequestCoreAsync(
+        IAcmHttpRequest request,
+        IAcmHttpResponse response,
         CancellationToken cancellationToken)
     {
         var projectPath = NormalizeProjectPath(ReadQueryParameter(request.Url, ExtensionConstants.ProjectPathQueryKey));
@@ -132,7 +148,7 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
 
     private static async Task HandleRefreshRequestAsync(
         string projectPath,
-        HttpListenerResponse response,
+        IAcmHttpResponse response,
         CancellationToken cancellationToken,
         bool headDumpCacheEnabled = true,
         IReadOnlyList<string>? moduleFilter = null)
@@ -146,7 +162,7 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
         string? dataRootBasePath,
         bool persistDumps,
         bool persistRawChanges,
-        HttpListenerResponse response,
+        IAcmHttpResponse response,
         CancellationToken cancellationToken,
         bool headDumpCacheEnabled = true,
         IReadOnlyList<string>? moduleFilter = null)
@@ -245,10 +261,10 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
     }
 
     private static async Task HandleStoreCommitMessageRequestAsync(
-        HttpListenerRequest request,
+        IAcmHttpRequest request,
         string projectPath,
         string? commitMessagesBasePath,
-        HttpListenerResponse response,
+        IAcmHttpResponse response,
         CancellationToken cancellationToken)
     {
         try
@@ -331,7 +347,7 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
     private static async Task HandleDetectionRequestAsync(
         string projectPath,
         Uri? requestUrl,
-        HttpListenerResponse response,
+        IAcmHttpResponse response,
         CancellationToken cancellationToken)
     {
         try
@@ -398,7 +414,7 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
     private static async Task HandleListCommitMessagesRequestAsync(
         string projectPath,
         string? commitMessagesBasePath,
-        HttpListenerResponse response,
+        IAcmHttpResponse response,
         CancellationToken cancellationToken)
     {
         try
@@ -440,7 +456,7 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
         string projectPath,
         string? filePath,
         string? commitMessagesBasePath,
-        HttpListenerResponse response,
+        IAcmHttpResponse response,
         CancellationToken cancellationToken)
     {
         try
@@ -498,7 +514,7 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
 
     private static async Task HandleListChangeModulesRequestAsync(
         string projectPath,
-        HttpListenerResponse response,
+        IAcmHttpResponse response,
         CancellationToken cancellationToken)
     {
         try
@@ -578,7 +594,7 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
     private static async Task ServeEmbeddedResourceAsync(
         string resourceName,
         string contentType,
-        HttpListenerResponse response,
+        IAcmHttpResponse response,
         CancellationToken cancellationToken)
     {
         var assembly = typeof(AutoCommitMessageWebServerExtension).Assembly;
@@ -599,7 +615,7 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
     }
 
     private static Task HandleBrowseFolderRequestAsync(
-        HttpListenerResponse response,
+        IAcmHttpResponse response,
         CancellationToken cancellationToken)
     {
         var tcs = new TaskCompletionSource<string?>();
@@ -608,30 +624,10 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
         {
             try
             {
-                Application.EnableVisualStyles();
-
-                // A zero-opacity, off-taskbar form gives the folder picker a valid
-                // foreground-capable owner HWND. Without one, the native dialog opens
-                // behind the browser window (especially in the standalone console app
-                // where the process has no main window of its own).
-                using var ownerForm = new Form
-                {
-                    ShowInTaskbar = false,
-                    Opacity = 0,
-                    FormBorderStyle = FormBorderStyle.None,
-                    WindowState = FormWindowState.Minimized,
-                };
-                ownerForm.Show();
-
-                using var dialog = new FolderBrowserDialog
-                {
-                    Description = "Select Mendix project folder",
-                    UseDescriptionForTitle = true,
-                    ShowNewFolderButton = false,
-                };
-
-                var result = dialog.ShowDialog(ownerForm);
-                tcs.SetResult(result == DialogResult.OK ? dialog.SelectedPath : null);
+                // Uses the Win32 shell IFileOpenDialog (modern Vista-style folder picker).
+                // This is part of Windows itself, so it needs no .NET Desktop runtime and
+                // keeps the standalone app free of a WindowsDesktop framework dependency.
+                tcs.SetResult(ShellFolderPicker.PickFolder("Select Mendix project folder"));
             }
             catch (Exception ex)
             {
@@ -903,16 +899,15 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
     }
 
     private static async Task<string> ReadRequestBodyAsStringAsync(
-        HttpListenerRequest request,
+        IAcmHttpRequest request,
         CancellationToken cancellationToken)
     {
-        var encoding = request.ContentEncoding ?? Encoding.UTF8;
-        using var reader = new StreamReader(request.InputStream, encoding, detectEncodingFromByteOrderMarks: true);
+        using var reader = new StreamReader(request.InputStream, request.ContentEncoding, detectEncodingFromByteOrderMarks: true);
         return await reader.ReadToEndAsync(cancellationToken);
     }
 
     private static async Task WriteJsonResponseAsync(
-        HttpListenerResponse response,
+        IAcmHttpResponse response,
         int statusCode,
         object payload,
         CancellationToken cancellationToken)
@@ -927,11 +922,11 @@ public sealed class AutoCommitMessageWebServerExtension : WebServerExtension
         await response.OutputStream.WriteAsync(content, cancellationToken);
     }
 
-    private static void ApplyNoCacheHeaders(HttpListenerResponse response)
+    private static void ApplyNoCacheHeaders(IAcmHttpResponse response)
     {
-        response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
-        response.Headers["Pragma"] = "no-cache";
-        response.Headers["Expires"] = "0";
+        response.SetHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+        response.SetHeader("Pragma", "no-cache");
+        response.SetHeader("Expires", "0");
     }
 
     private sealed record ChangedModuleItem(string Id, string Name);

@@ -18,21 +18,26 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Publish standalone (self-contained, win-x64)
+      - name: Publish standalone (framework-dependent, single file, win-x64)
         run: >
           dotnet publish standalone/
           -c Release
           -r win-x64
-          --self-contained true
-          -o ./artifact/app
+          --self-contained false
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o ./artifact
           --nologo
           -v quiet
 
       - name: Copy distribution files
         shell: pwsh
         run: |
-          Copy-Item .env.example        ./artifact/.env.example
-          Copy-Item Start-AutoCommitMessage.bat ./artifact/Start-AutoCommitMessage.bat
+          Copy-Item .env.example                ./artifact/.env.example
+          Copy-Item standalone/dist-README.txt  ./artifact/README.txt
+          # Keep only the exe + docs in the artifact; drop loose build leftovers.
+          Get-ChildItem ./artifact -Filter *.pdb | Remove-Item -Force -ErrorAction SilentlyContinue
+          Remove-Item ./artifact/manifest.json -Force -ErrorAction SilentlyContinue
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

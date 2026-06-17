@@ -986,18 +986,23 @@ internal static class AutoCommitMessagePanelHtml
       }
     }
     async function acmBrowseFolder() {
+      const btn = document.getElementById("acm-browse-btn");
       try {
+        if (btn) { btn.disabled = true; btn.textContent = "Opening..."; }
         const url = new URL(location.href);
         url.searchParams.set(actionQueryKey, "{{ExtensionConstants.BrowseFolderActionValue}}");
         const resp = await fetch(url.toString());
-        if (!resp.ok) return;
-        const data = await resp.json();
-        if (data.success && data.path) {
-          const input = document.getElementById("acm-setup-path-input");
-          if (input) input.value = data.path;
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.success && data.path) {
+            const input = document.getElementById("acm-setup-path-input");
+            if (input) input.value = data.path;
+          }
         }
       } catch (err) {
         // Server unavailable or user cancelled — do nothing
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = "Browse..."; }
       }
     }
     function acmConfirmSetup() {

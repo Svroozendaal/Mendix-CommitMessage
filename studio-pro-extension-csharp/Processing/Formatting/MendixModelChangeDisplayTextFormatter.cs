@@ -171,6 +171,11 @@ internal static class MendixModelChangeDisplayTextFormatter
         var normalizedSegments = new List<string>();
         foreach (var segment in details.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
+            if (IsAnnotationDetailSegment(segment))
+            {
+                continue;
+            }
+
             var cleanedSegment = RemoveSuppressedSegmentTokens(segment);
             if (!string.IsNullOrWhiteSpace(cleanedSegment))
             {
@@ -182,6 +187,13 @@ internal static class MendixModelChangeDisplayTextFormatter
             ? string.Empty
             : string.Join("; ", normalizedSegments);
     }
+
+    private static bool IsAnnotationDetailSegment(string segment) =>
+        !string.IsNullOrWhiteSpace(segment) &&
+        Regex.IsMatch(
+            segment.Trim(),
+            @"^annotations\s+(delta|added|removed|modified)\b",
+            RegexOptions.IgnoreCase);
 
     private static string RemoveSuppressedSegmentTokens(string segment)
     {
@@ -929,8 +941,7 @@ internal static class MendixModelChangeDisplayTextFormatter
     {
         if (!IsFlowElementType(elementType) ||
             (!details.Contains("actions delta:", StringComparison.OrdinalIgnoreCase) &&
-             !details.Contains("decisions delta:", StringComparison.OrdinalIgnoreCase) &&
-             !details.Contains("annotations delta:", StringComparison.OrdinalIgnoreCase)))
+             !details.Contains("decisions delta:", StringComparison.OrdinalIgnoreCase)))
         {
             return null;
         }
@@ -947,9 +958,6 @@ internal static class MendixModelChangeDisplayTextFormatter
         MergeDecisionCaptionsIntoBucket(addedItems, ParseDecisionCaptions(details, "added"));
         MergeDecisionCaptionsIntoBucket(modifiedItems, ParseDecisionCaptions(details, "modified"));
         MergeDecisionCaptionsIntoBucket(removedItems, ParseDecisionCaptions(details, "removed"));
-        MergeAnnotationLabelsIntoBucket(addedItems, ParseAnnotationLabels(details, "added"));
-        MergeAnnotationLabelsIntoBucket(modifiedItems, ParseAnnotationLabels(details, "modified"));
-        MergeAnnotationLabelsIntoBucket(removedItems, ParseAnnotationLabels(details, "removed"));
         var loopDescriptors = ParseLoopDescriptors(details);
         var returnChangeDetails = ParseReturnChangeDetails(details);
 
@@ -980,12 +988,6 @@ internal static class MendixModelChangeDisplayTextFormatter
     {
         if (items.Count == 0)
         {
-            return;
-        }
-
-        if (items.Count == 1 && string.Equals(items[0], "annotation", StringComparison.OrdinalIgnoreCase))
-        {
-            sections.Add($"{bucket} annotation");
             return;
         }
 
@@ -1026,8 +1028,16 @@ internal static class MendixModelChangeDisplayTextFormatter
         return items;
     }
 
+    private static bool IsSuppressedActionType(string actionType) =>
+        string.Equals(actionType, "ValidationFeedbackAction", StringComparison.OrdinalIgnoreCase);
+
     private static string BuildSimpleActionPhrase(string actionType, string? descriptor)
     {
+        if (IsSuppressedActionType(actionType))
+        {
+            return string.Empty;
+        }
+
         switch (actionType)
         {
             case "ShowPageAction":
@@ -1162,34 +1172,6 @@ internal static class MendixModelChangeDisplayTextFormatter
         }
     }
 
-    private static void MergeAnnotationLabelsIntoBucket(
-        ICollection<string> bucketItems,
-        IEnumerable<string> annotationLabels)
-    {
-        var seen = new HashSet<string>(bucketItems, StringComparer.OrdinalIgnoreCase);
-        var hasAnyLabel = false;
-        foreach (var label in annotationLabels)
-        {
-            if (string.IsNullOrWhiteSpace(label))
-            {
-                continue;
-            }
-
-            hasAnyLabel = true;
-        }
-
-        if (!hasAnyLabel)
-        {
-            return;
-        }
-
-        const string phrase = "annotation";
-        if (seen.Add(phrase))
-        {
-            bucketItems.Add(phrase);
-        }
-    }
-
     private static List<string> ParseDecisionCaptions(string details, string bucket)
     {
         var captions = new List<string>();
@@ -1227,46 +1209,6 @@ internal static class MendixModelChangeDisplayTextFormatter
         }
 
         return captions;
-    }
-
-    private static List<string> ParseAnnotationLabels(string details, string bucket)
-    {
-        var labels = new List<string>();
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        var anchor = $"annotations {bucket} (";
-        var segment = ExtractSegment(
-            details,
-            anchor,
-            "; annotations added (",
-            "; annotations removed (",
-            "; annotations modified (",
-            "; loops delta:",
-            "; decisions delta:",
-            "; actions delta:");
-        if (string.IsNullOrWhiteSpace(segment))
-        {
-            return labels;
-        }
-
-        var colonIndex = segment.IndexOf(':');
-        if (colonIndex >= 0 && colonIndex < segment.Length - 1)
-        {
-            segment = segment[(colonIndex + 1)..].Trim();
-        }
-
-        foreach (var token in segment.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            if (token.StartsWith("+", StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            var label = ExtractAnnotationLabel(token);
-            AddUniqueIfNotEmpty(labels, seen, label);
-        }
-
-        return labels;
     }
 
     private static List<string> ParseLoopDescriptors(string details)
@@ -1390,35 +1332,6 @@ internal static class MendixModelChangeDisplayTextFormatter
 
         working = working.Trim(' ', ',', ';');
         return working.Length == 0 ? null : NormalizeInlineToken(working);
-    }
-
-    private static string? ExtractAnnotationLabel(string token)
-    {
-        var working = token.Trim();
-        if (working.Length == 0)
-        {
-            return null;
-        }
-
-        var arrowIndex = working.LastIndexOf("->", StringComparison.Ordinal);
-        if (arrowIndex >= 0 && arrowIndex < working.Length - 2)
-        {
-            working = working[(arrowIndex + 2)..].Trim();
-        }
-
-        const string textPrefix = "text=";
-        if (working.StartsWith(textPrefix, StringComparison.OrdinalIgnoreCase))
-        {
-            working = working[textPrefix.Length..].Trim();
-        }
-
-        working = working.Trim(' ', ',', ';');
-        if (working.Length == 0 || string.Equals(working, "annotation", StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
-
-        return null;
     }
 
     private static string? ParseCallTarget(string? descriptor, string flowKind)
@@ -1975,6 +1888,11 @@ internal static class MendixModelChangeDisplayTextFormatter
 
     private static string BuildRemovedActionPhrase(string actionType, string? descriptor)
     {
+        if (IsSuppressedActionType(actionType))
+        {
+            return string.Empty;
+        }
+
         switch (actionType)
         {
             case "CreateObjectAction":
