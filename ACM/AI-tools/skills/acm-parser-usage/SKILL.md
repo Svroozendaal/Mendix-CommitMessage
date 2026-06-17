@@ -13,10 +13,17 @@ input and output lives, so any AI can drive it without reading the C# source. Th
 uncommitted Mendix model changes (`.mpr`), derives a semantic diff from `mx dump-mpr` output, and
 writes structured results into the shared `mendix-data` folder.
 
-The parser does not ship as a standalone CLI — it runs **inside the local web app** (Kestrel on
-`localhost`). You drive it by starting that app once and then calling its HTTP actions. This skill
-covers: locating the Mendix version, pointing the parser at the right `.mpr` working copy, and
-forcing every result into this repository's `mendix-data` folder.
+There are two ways to drive the parser. Both wrap the **same** parser services:
+
+- **MCP server (preferred for AI clients)** — `ACM/mcp-server` exposes the parser as MCP tools over
+  local stdio. Claude Code / Copilot / Cursor launch it on demand (no port, no server to manage) and
+  auto-discover the tools `resolve_app`, `list_apps`, `read_changes`, `export_changes`,
+  `store_commit_message`. This is the low-threshold path; see `ACM/mcp-server/README.md`.
+- **Local web app (browser + scripted HTTP)** — `ACM/applicatiefolder` (Kestrel on `localhost`). The
+  human UI, and a fallback for scripted callers. Documented in full below.
+
+Either way the three location concerns are identical: locating the Mendix version, pointing the
+parser at the right `.mpr` working copy, and forcing every result into the `mendix-data` folder.
 
 ## Input
 
@@ -50,6 +57,23 @@ Written under the `mendix-data` folder that `dataRootBasePath` / `commitMessages
   commit-message destination; note the literal name is `Commit messages`, with a space.)
 
 ## Steps
+
+### Path A — MCP tools (preferred)
+
+If the `autocommitmessage` MCP server is registered (see `ACM/mcp-server/README.md`), drive the
+parser directly through its tools — no app to start:
+
+1. `resolve_app("<app name or story id>")` → the app entry incl. `projectPath` (from the registry).
+2. `read_changes(projectPath)` → confirm branch + that uncommitted `.mpr` changes exist.
+3. `export_changes(projectPath)` → writes `raw-changes` + `dumps` into `mendix-data`; returns the
+   flattened changes with `displayText`.
+4. Author the message (see the commit-message skills), then
+   `store_commit_message(projectPath, storyId, signature, message)`.
+
+`dataRoot` defaults to the server's `ACM_DATA_ROOT`; pass it explicitly to override. Path B below is
+the equivalent HTTP route for the browser app or scripted callers.
+
+### Path B — local web app (HTTP)
 
 ### 1. Start the local app (once per session)
 

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "autocommitmessage": {
+      "command": "C:\\Workspace\\Mendix-AutoCommitMessage\\ACM\\mcp-server\\bin\\Release\\net8.0-windows\\AutoCommitMessage.Mcp.exe",
+      "args": [],
+      "env": {
+        "ACM_DATA_ROOT": "C:\\Workspace\\Mendix-AutoCommitMessage\\mendix-data"
+      }
+    }
+  }
+}

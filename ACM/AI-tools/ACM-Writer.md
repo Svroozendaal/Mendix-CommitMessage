@@ -30,9 +30,11 @@ Read before acting:
   maps to an app in the registry.
 - `mendix-data/apps-registry.json` — the source of truth for app → working-copy locations,
   story prefixes, Mendix versions, and branches. **Always read first.**
-- `ACM/AI-tools/skills/acm-parser-usage/SKILL.md` — the procedure for actually running the parser
-  (start the app, then call the `refresh` / `export` / `store-commit-message` actions). **Always
-  followed; never bypassed.**
+- `ACM/AI-tools/skills/acm-parser-usage/SKILL.md` — the procedure for actually running the parser.
+  **Always followed; never bypassed.** Prefer **Path A (MCP tools)** when the `autocommitmessage`
+  MCP server is available; fall back to **Path B (web app HTTP)** otherwise.
+- `ACM/mcp-server/README.md` — the MCP tools (`resolve_app`, `list_apps`, `read_changes`,
+  `export_changes`, `store_commit_message`) and how they are registered.
 - `mendix-data/README.md` — the data-folder contract (`raw-changes`, `dumps`, `Commit messages`,
   `processed`, `errors`).
 - Downstream message skills, when a commit message must be authored from the export:

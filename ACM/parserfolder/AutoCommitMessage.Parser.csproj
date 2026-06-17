@@ -24,6 +24,7 @@
        (services, ExtensionConstants, ExtensionDataPaths) that were same-assembly before the split. -->
   <ItemGroup>
     <InternalsVisibleTo Include="AutoCommitMessage.Standalone" />
+    <InternalsVisibleTo Include="AutoCommitMessage.Mcp" />
     <InternalsVisibleTo Include="AutoCommitMessage.Tests" />
   </ItemGroup>
 

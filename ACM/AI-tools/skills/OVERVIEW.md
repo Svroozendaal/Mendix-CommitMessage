@@ -27,6 +27,15 @@ App-specific skills are used when:
 |---|---|---|
 | ACM-Writer | `../ACM-Writer.md` | Entry point for any AI using the parser: resolves app/branch locations from the apps registry, runs the parser via `acm-parser-usage`, and writes raw changes + commit messages into `mendix-data` |
 
+## Parser surfaces
+
+The parser library (`ACM/parserfolder`) is driven through thin adapters:
+
+| Surface | Path | For |
+|---|---|---|
+| MCP server | `ACM/mcp-server/` | AI clients (Claude Code, Copilot, Cursor) — local stdio tools, preferred |
+| Web app | `ACM/applicatiefolder/` | Human browser UI + scripted HTTP fallback |
+
 ## Adding a New App-Specific Skill
 
 Place the new skill in a subfolder here, then update this OVERVIEW.md with a new row in the Contents table.
