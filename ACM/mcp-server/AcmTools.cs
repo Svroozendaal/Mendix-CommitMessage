@@ -118,8 +118,9 @@ internal static class AcmTools
     }
 
     [McpServerTool(Name = "list_apps")]
-    [Description("List the Mendix apps/branches known to the registry (mendix-data/apps-registry.json), with their " +
-                 "on-disk working-copy paths. Lets a client resolve an app by name without the user supplying a path.")]
+    [Description("List the Mendix customers/apps/branches known to the registry (mendix-data/apps-registry.json), with " +
+                 "their on-disk working-copy paths, plus the installed Mendix versions and their mx.exe locations. " +
+                 "Lets a client resolve an app by name without the user supplying a path.")]
     public static string ListApps(
         [Description("Optional absolute path to the mendix-data data root. Defaults to env / built-in default.")]
         string? dataRoot = null)
@@ -127,7 +128,12 @@ internal static class AcmTools
         try
         {
             var registry = LoadRegistry(ResolveDataRoot(dataRoot));
-            return Json(new { success = true, apps = registry?.Apps ?? new List<AppEntry>() });
+            return Json(new
+            {
+                success = true,
+                customers = registry?.Customers ?? new List<CustomerEntry>(),
+                mendixVersions = registry?.MendixVersions ?? new Dictionary<string, string>(),
+            });
         }
         catch (Exception ex)
         {
@@ -137,7 +143,8 @@ internal static class AcmTools
 
     [McpServerTool(Name = "resolve_app")]
     [Description("Resolve a Mendix app from the registry by app name or by a story id (its prefix maps to an app). " +
-                 "Returns the app entry including projectPath so the parser can be driven without a path from the user.")]
+                 "Returns the customer, app, the resolved branch (with projectPath), and the mx.exe location for the " +
+                 "branch's Mendix version, so the parser can be driven without a path from the user.")]
     public static string ResolveApp(
         [Description("App name (e.g. SelektBouw) or a story id (e.g. SH-2086, whose prefix SH maps to an app).")]
         string appOrStoryId,
@@ -147,20 +154,46 @@ internal static class AcmTools
         try
         {
             var registry = LoadRegistry(ResolveDataRoot(dataRoot));
-            var apps = registry?.Apps ?? new List<AppEntry>();
+            var customers = registry?.Customers ?? new List<CustomerEntry>();
             var query = appOrStoryId.Trim();
             var prefix = query.Contains('-') ? query[..query.IndexOf('-')] : query;
 
-            var match =
-                apps.FirstOrDefault(a => string.Equals(a.Name, query, StringComparison.OrdinalIgnoreCase)) ??
-                apps.FirstOrDefault(a => a.StoryPrefixes?.Any(p => string.Equals(p, prefix, StringComparison.OrdinalIgnoreCase)) == true);
+            var hit = customers
+                .SelectMany(c => (c.Apps ?? new List<AppEntry>()).Select(a => (Customer: c, App: a)))
+                .FirstOrDefault(x =>
+                    string.Equals(x.App.Name, query, StringComparison.OrdinalIgnoreCase) ||
+                    x.App.StoryPrefixes?.Any(p => string.Equals(p, prefix, StringComparison.OrdinalIgnoreCase)) == true);
 
-            if (match is null)
+            if (hit.App is null)
             {
-                return Json(new { success = false, error = $"No app found for '{appOrStoryId}'.", apps });
+                return Json(new { success = false, error = $"No app found for '{appOrStoryId}'.", customers });
             }
 
-            return Json(new { success = true, app = match });
+            var branches = hit.App.Branches ?? new List<BranchEntry>();
+
+            // Prefer the branch that knows this story id; otherwise the most recently used branch.
+            var branch =
+                branches.FirstOrDefault(b => b.KnownStoryIds?.Any(s => string.Equals(s, query, StringComparison.OrdinalIgnoreCase)) == true) ??
+                branches.OrderByDescending(b => b.LastUsed ?? string.Empty).FirstOrDefault();
+
+            var versions = registry?.MendixVersions ?? new Dictionary<string, string>();
+            string? mxExePath = null;
+            if (!string.IsNullOrWhiteSpace(branch?.MendixVersion))
+            {
+                versions.TryGetValue(branch!.MendixVersion!, out mxExePath);
+            }
+
+            return Json(new
+            {
+                success = true,
+                customer = hit.Customer.Name,
+                app = hit.App.Name,
+                storyPrefixes = hit.App.StoryPrefixes,
+                branch,
+                projectPath = branch?.ProjectPath,
+                mendixVersion = branch?.MendixVersion,
+                mxExePath,
+            });
         }
         catch (Exception ex)
         {
@@ -259,18 +292,19 @@ internal static class AcmTools
 
     private static string Error(Exception ex) => Json(new { success = false, error = ex.Message });
 
-    private sealed record AppsRegistry(string? SchemaVersion, List<AppEntry>? Apps);
+    private sealed record AppsRegistry(
+        string? SchemaVersion,
+        Dictionary<string, string>? MendixVersions,
+        List<CustomerEntry>? Customers);
 
-    private sealed record AppEntry(
-        string Name,
-        List<string>? StoryPrefixes,
+    private sealed record CustomerEntry(string Name, List<AppEntry>? Apps);
+
+    private sealed record AppEntry(string Name, List<string>? StoryPrefixes, List<BranchEntry>? Branches);
+
+    private sealed record BranchEntry(
+        string? Name,
         string? ProjectPath,
-        string? MprPath,
         string? MendixVersion,
-        string? MendixInstallRoot,
-        List<BranchEntry>? Branches,
         List<string>? KnownStoryIds,
-        string? Notes);
-
-    private sealed record BranchEntry(string Name, string? Signature, string? LastUsed, string? ProjectPath);
+        string? LastUsed);
 }

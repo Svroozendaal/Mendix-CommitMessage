@@ -1,57 +1,75 @@
 {
-  "schemaVersion": "1.0",
-  "description": "Registry of Mendix apps and branches the ACM-Writer agent has worked on. Maps each app to its on-disk working copy so the parser can be driven without re-sending paths. Maintained by ACM/AI-tools/ACM-Writer.md.",
+  "schemaVersion": "2.0",
+  "description": "Registry of Mendix customers, apps and branches the ACM-Writer agent has worked on. Maps each branch to its on-disk working copy and Mendix version so the parser can be driven without re-sending paths. Maintained by ACM/AI-tools/ACM-Writer.md.",
   "dataRoot": "c:\\Workspace\\Mendix-AutoCommitMessage\\mendix-data",
   "defaults": {
     "signature": "SvR",
     "mendixInstallRoot": "C:\\Program Files\\Mendix"
   },
   "fieldDocs": {
-    "name": "Human-readable app name. Unique key. Apps are sorted by this field.",
-    "storyPrefixes": "Ticket prefixes used for this app (e.g. SH-2086 -> prefix SH). Used to infer the app from a story id.",
-    "projectPath": "Absolute path to the git working copy folder that contains the .mpr. Passed to the parser as projectPath. null until recorded.",
-    "mprPath": "Absolute path to the .mpr file (informational; the parser finds the top-level *.mpr inside projectPath). null until recorded.",
-    "mendixVersion": "Studio Pro version the app needs, from mx show-version. null until recorded.",
-    "mendixInstallRoot": "Override for the Mendix install root if not the default. null = use defaults.mendixInstallRoot.",
-    "branches": "Branches worked on. Each: { name, signature, lastUsed (yyyy-MM-dd), projectPath (optional, if the branch has its own working copy) }.",
-    "knownStoryIds": "Story ids seen in mendix-data/Commit messages for this app. Informational.",
-    "notes": "Free-text notes for the agent."
+    "mendixVersions": "Map of installed Mendix version -> on-disk mx.exe location. A branch's mendixVersion looks up its mx.exe here, so the agent never scans the disk for it.",
+    "customers.name": "Customer name. Top-level grouping.",
+    "customers.apps.name": "App name within the customer.",
+    "customers.apps.storyPrefixes": "Ticket prefixes for this app (e.g. SH-2086 -> prefix SH). Used to map a story id to the app.",
+    "customers.apps.branches.name": "Git branch name of a specific working copy.",
+    "customers.apps.branches.projectPath": "Absolute path to the git working copy folder that contains the .mpr for this branch. Passed to the parser as projectPath. null until recorded.",
+    "customers.apps.branches.knownStoryIds": "Story ids seen for this branch (informational).",
+    "customers.apps.branches.mendixVersion": "Studio Pro version this branch is built with (key into mendixVersions). null until recorded.",
+    "customers.apps.branches.lastUsed": "Date this branch was last driven through the parser (yyyy-MM-dd)."
   },
-  "apps": [
+  "mendixVersions": {
+    "9.18.0.53394": "C:\\Program Files\\Mendix\\9.18.0.53394\\modeler\\mx.exe",
+    "9.24.25.40954": "C:\\Program Files\\Mendix\\9.24.25.40954\\modeler\\mx.exe",
+    "9.24.31.53726": "C:\\Program Files\\Mendix\\9.24.31.53726\\modeler\\mx.exe",
+    "9.24.35.71123": "C:\\Program Files\\Mendix\\9.24.35.71123\\modeler\\mx.exe",
+    "9.24.37.77045": "C:\\Program Files\\Mendix\\9.24.37.77045\\modeler\\mx.exe",
+    "9.24.40.80973": "C:\\Program Files\\Mendix\\9.24.40.80973\\modeler\\mx.exe",
+    "10.24.9.81004": "C:\\Program Files\\Mendix\\10.24.9.81004\\modeler\\mx.exe",
+    "10.24.10.83478": "C:\\Program Files\\Mendix\\10.24.10.83478\\modeler\\mx.exe",
+    "10.24.13.86719": "C:\\Program Files\\Mendix\\10.24.13.86719\\modeler\\mx.exe",
+    "10.24.14.90436": "C:\\Program Files\\Mendix\\10.24.14.90436\\modeler\\mx.exe",
+    "10.24.15.93102": "C:\\Program Files\\Mendix\\10.24.15.93102\\modeler\\mx.exe",
+    "10.24.16.96987": "C:\\Program Files\\Mendix\\10.24.16.96987\\modeler\\mx.exe",
+    "10.24.19.104498": "C:\\Program Files\\Mendix\\10.24.19.104498\\modeler\\mx.exe",
+    "10.24.20.105674": "C:\\Program Files\\Mendix\\10.24.20.105674\\modeler\\mx.exe",
+    "11.0.0.73100": "C:\\Program Files\\Mendix\\11.0.0.73100\\modeler\\mx.exe"
+  },
+  "customers": [
     {
-      "name": "FIN",
-      "storyPrefixes": ["FIN"],
-      "projectPath": null,
-      "mprPath": null,
-      "mendixVersion": null,
-      "mendixInstallRoot": null,
-      "branches": [],
-      "knownStoryIds": ["FIN-990", "FIN-1153", "FIN-1402", "FIN-1552"],
-      "notes": "Placeholder name (story prefix). Rename to the real app name and fill projectPath on first use."
+      "name": "VU",
+      "apps": [
+        {
+          "name": "VU Project Budgetting",
+          "storyPrefixes": ["FIN", "VU"],
+          "branches": [
+            {
+              "name": "FIN_1582_FacultyReport",
+              "projectPath": "C:\\MendixWorkers\\VU - FIN_1582_FacultyReport",
+              "mendixVersion": null,
+              "knownStoryIds": ["FIN-1582"],
+              "lastUsed": null
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "SelektBouw",
-      "storyPrefixes": ["SH"],
-      "projectPath": "C:\\MendixWorkers\\SH - SB SS Sprint64 REBASED",
-      "mprPath": "C:\\MendixWorkers\\SH - SB SS Sprint64 REBASED\\SelektBouw.mpr",
-      "mendixVersion": null,
-      "mendixInstallRoot": null,
-      "branches": [
-        { "name": "Sprint64_SelektService_20260705", "signature": "SvR", "lastUsed": "2026-06-17" }
-      ],
-      "knownStoryIds": ["SH-1891", "SH-1908", "SH-2021", "SH-2032", "SH-2065", "SH-2086"],
-      "notes": "Working copy may sit in different C:\\MendixWorkers\\SH - ... folders per sprint/rebase; update projectPath when switching."
-    },
-    {
-      "name": "VU",
-      "storyPrefixes": ["VU"],
-      "projectPath": null,
-      "mprPath": null,
-      "mendixVersion": null,
-      "mendixInstallRoot": null,
-      "branches": [],
-      "knownStoryIds": ["VU-4575"],
-      "notes": "Placeholder name (story prefix). Rename to the real app name and fill projectPath on first use."
+      "apps": [
+        {
+          "name": "SelektBouw",
+          "storyPrefixes": ["SH"],
+          "branches": [
+            {
+              "name": "Sprint64_SelektService_20260705",
+              "projectPath": "C:\\MendixWorkers\\SH - SB SS Sprint64 REBASED",
+              "mendixVersion": null,
+              "knownStoryIds": ["SH-1891", "SH-1908", "SH-2021", "SH-2032", "SH-2065", "SH-2086"],
+              "lastUsed": "2026-06-18"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
