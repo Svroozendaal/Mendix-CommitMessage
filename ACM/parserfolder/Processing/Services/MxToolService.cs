@@ -76,7 +76,7 @@ public static class MxToolService
     /// <returns>The <paramref name="outputPath"/> value on success.</returns>
     /// <exception cref="FileNotFoundException">Thrown when the .mpr file is missing.</exception>
     /// <exception cref="InvalidOperationException">Thrown when mx exits with a non-zero code.</exception>
-    public static string DumpMpr(string mprPath, string outputPath)
+    public static string DumpMpr(string mprPath, string outputPath, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(mprPath) || !File.Exists(mprPath))
         {
@@ -121,8 +121,22 @@ public static class MxToolService
 
         var stdoutTask = process.StandardOutput.ReadToEndAsync();
         var stderrTask = process.StandardError.ReadToEndAsync();
+        using var cancellationRegistration = cancellationToken.Register(() =>
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+            }
+            catch
+            {
+                // Best-effort cleanup for a cancelled process.
+            }
+        });
 
-        if (!process.WaitForExit(DumpTimeoutMs))
+        if (!WaitForExitOrCancellation(process, DumpTimeoutMs, cancellationToken))
         {
             try
             {
@@ -137,6 +151,10 @@ public static class MxToolService
         }
 
         Task.WaitAll(stdoutTask, stderrTask);
+        if (cancellationToken.IsCancellationRequested)
+        {
+            throw new InvalidOperationException("mx.exe dump-mpr cancelled before the MCP client timeout.");
+        }
         var stdout = stdoutTask.Result;
         var stderr = stderrTask.Result;
 
@@ -153,6 +171,39 @@ public static class MxToolService
         }
 
         return outputPath;
+    }
+
+    private static bool WaitForExitOrCancellation(
+        Process process,
+        int timeoutMs,
+        CancellationToken cancellationToken)
+    {
+        var deadline = Stopwatch.GetTimestamp() + (long)(timeoutMs / 1000.0 * Stopwatch.Frequency);
+        while (!process.HasExited)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                    // Best-effort cleanup for a cancelled process.
+                }
+
+                return process.WaitForExit(5000);
+            }
+
+            if (Stopwatch.GetTimestamp() >= deadline)
+            {
+                return false;
+            }
+
+            process.WaitForExit(250);
+        }
+
+        return true;
     }
 
     private static IEnumerable<string> EnumerateMxCandidates()

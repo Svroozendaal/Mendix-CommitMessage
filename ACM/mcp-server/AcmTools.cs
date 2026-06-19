@@ -12,6 +12,7 @@ namespace AutoCommitMessage.Mcp;
 [McpServerToolType]
 internal static class AcmTools
 {
+    private static readonly TimeSpan McpAnalysisTimeout = TimeSpan.FromSeconds(100);
     private static readonly JsonSerializerOptions JsonOut = new() { WriteIndented = true };
     private static readonly JsonSerializerOptions JsonIn = new() { PropertyNameCaseInsensitive = true };
 
@@ -25,7 +26,7 @@ internal static class AcmTools
     {
         try
         {
-            var payload = AutoCommitMessageChangeService.ReadChanges(projectPath);
+            var payload = ReadChangesWithinMcpBudget(projectPath);
             return Json(new
             {
                 success = true,
@@ -54,10 +55,12 @@ internal static class AcmTools
         try
         {
             var resolvedDataRoot = ResolveDataRoot(dataRoot);
+            using var timeout = CreateMcpTimeout();
             var payload = AutoCommitMessageChangeService.ReadChanges(
                 projectPath,
                 persistModelDumps: true,
-                dataRootBasePath: resolvedDataRoot);
+                dataRootBasePath: resolvedDataRoot,
+                cancellationToken: timeout.Token);
 
             var outputPath = AutoCommitMessageExportService.ExportChanges(payload, projectPath, resolvedDataRoot);
 
@@ -76,6 +79,14 @@ internal static class AcmTools
             return Error(ex);
         }
     }
+
+    private static AutoCommitMessagePayload ReadChangesWithinMcpBudget(string projectPath)
+    {
+        using var timeout = CreateMcpTimeout();
+        return AutoCommitMessageChangeService.ReadChanges(projectPath, cancellationToken: timeout.Token);
+    }
+
+    private static CancellationTokenSource CreateMcpTimeout() => new(McpAnalysisTimeout);
 
     [McpServerTool(Name = "store_commit_message")]
     [Description("Store a commit message under mendix-data/Commit messages as <storyId>_<signature>_<date>.txt, " +

@@ -32,10 +32,13 @@ public static class AutoCommitMessageChangeService
         bool persistModelDumps = false,
         string? dataRootBasePath = null,
         bool headDumpCacheEnabled = true,
-        IReadOnlyList<string>? selectedModules = null)
+        IReadOnlyList<string>? selectedModules = null,
+        CancellationToken cancellationToken = default)
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (string.IsNullOrWhiteSpace(projectPath))
             {
                 return new AutoCommitMessagePayload
@@ -76,6 +79,8 @@ public static class AutoCommitMessageChangeService
             var changes = new List<AutoCommitMessageFileChange>();
             foreach (var entry in statusEntries)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (entry.State == FileStatus.Unaltered || entry.State == FileStatus.Ignored)
                 {
                     continue;
@@ -100,7 +105,8 @@ public static class AutoCommitMessageChangeService
                             persistModelDumps,
                             dataRootBasePath,
                             headDumpCacheEnabled,
-                            selectedModules);
+                            selectedModules,
+                            cancellationToken);
 
                         fileChange = fileChange with
                         {
@@ -241,8 +247,11 @@ public static class AutoCommitMessageChangeService
         bool persistModelDumps,
         string? dataRootBasePath,
         bool headDumpCacheEnabled = true,
-        IReadOnlyList<string>? selectedModules = null)
+        IReadOnlyList<string>? selectedModules = null,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var workingMprPath = Path.Combine(repositoryRoot, repositoryRelativeMprPath.Replace('/', Path.DirectorySeparatorChar));
 
         // For MPR v2 projects with module filtering, skip analysis for unselected modules
@@ -277,7 +286,7 @@ public static class AutoCommitMessageChangeService
             {
                 try
                 {
-                    MxToolService.DumpMpr(workingMprPath, workingDumpPath);
+                    MxToolService.DumpMpr(workingMprPath, workingDumpPath, cancellationToken);
                 }
                 catch (Exception exception) when (LooksLikeDumpEnvironmentIssue(exception))
                 {
@@ -307,7 +316,7 @@ public static class AutoCommitMessageChangeService
                         // Cache read failure: fall back to live dump
                         try
                         {
-                            MxToolService.DumpMpr(headMprPath, headDumpPath);
+                            MxToolService.DumpMpr(headMprPath, headDumpPath, cancellationToken);
                             // Attempt to cache the newly created dump
                             AutoCommitMessageHeadDumpCacheService.TryCacheDump(headDumpPath, headMprPath, headCommitSha);
                         }
@@ -322,7 +331,7 @@ public static class AutoCommitMessageChangeService
                     // Cache miss or disabled: run live dump
                     try
                     {
-                        MxToolService.DumpMpr(headMprPath, headDumpPath);
+                        MxToolService.DumpMpr(headMprPath, headDumpPath, cancellationToken);
                         // Attempt to cache the newly created dump if caching is enabled
                         if (headDumpCacheEnabled && !string.IsNullOrWhiteSpace(headCommitSha))
                         {
@@ -341,6 +350,7 @@ public static class AutoCommitMessageChangeService
                 WriteEmptyDump(headDumpPath);
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
             var modelChanges = MendixModelDiffService.CompareDumps(workingDumpPath, headDumpPath);
             var modelDumpArtifact = persistModelDumps
                 ? PersistModelDumpArtifacts(
